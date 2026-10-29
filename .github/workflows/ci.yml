@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      # Action versions follow the rest of the monorepo.
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      # No version input: pnpm/action-setup reads packageManager from package.json.
+      - uses: pnpm/action-setup@v6
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Check
+        run: pnpm run check
+
+      - name: Test
+        run: pnpm run test
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Pack inspection
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          bash ./scripts/release.sh "$VERSION" --skip-install --skip-tests

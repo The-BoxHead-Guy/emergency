@@ -1,0 +1,11 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+*.tgz
+.env
+.env.local
+examples/vanilla/.runtime/
+
+examples/vanilla/emergency.global.js
+examples/vanilla/emergency.global.js.map

@@ -1,0 +1,38 @@
+/*
+ * `@dataemergencia/emergency` design tokens.
+ *
+ * The resolved `bp.scaem.app` palette and typography used by the emergency
+ * panel. A host may override any value on `:root`, on a wrapper, or through
+ * the `theme` mount option.
+ */
+:root {
+  --de-emergency-red: #ff0000;
+  --de-emergency-red-hover: #ff3535;
+  --de-emergency-on-red: #fff;
+  --de-emergency-blue: #00adf6;
+  --de-emergency-blue-hover: #29bfff;
+  --de-emergency-primary: #007bff;
+  --de-emergency-primary-dark: #1e40af;
+  --de-emergency-text: #3d4461;
+  --de-emergency-text-secondary: #686868;
+  --de-emergency-white: #fff;
+  --de-emergency-white-soft: #f7f7f7;
+  --de-emergency-white-pearl: #f1f1f1;
+  --de-emergency-gray: #555;
+  --de-emergency-gray-medium: #55555555;
+  --de-emergency-gray-light: #929292;
+  --de-emergency-success: #4cd03a;
+  --de-emergency-success-soft: #dcffd8;
+  --de-emergency-error: #dc3545;
+  --de-emergency-information: #3fabf3;
+  --de-emergency-green: #008000;
+  --de-emergency-radius: 0.5rem;
+  --de-emergency-font:
+    'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --de-emergency-font-small: clamp(0.875rem, 1.5vw, 1rem);
+  --de-emergency-font-medium: clamp(1rem, 2vw, 1.25rem);
+  --de-emergency-font-title: clamp(1.5rem, 2vw, 1.75rem);
+  --de-emergency-panel-z-index: 100;
+  --de-emergency-overlay-z-index: 1000;
+}

@@ -1,0 +1,95 @@
+# Publishes @dataemergencia/emergency from the public split repository.
+#
+# Requires npm Trusted Publishing configured on npmjs.com:
+#   package -> Settings -> Trusted publishing -> GitHub Actions
+#   owner/user: The-BoxHead-Guy, repository: emergency
+#   workflow: publish-npm.yml, environment: npm
+# No NPM_TOKEN is used or stored; the OIDC id-token is exchanged by npm.
+#
+# The first 0.1.0 publish is manual (`scripts/release.sh 0.1.0 --publish`).
+# Provenance is only valid when this runs from the public split repository.
+name: Publish to npm
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version already present in package.json
+        required: true
+        type: string
+      confirm:
+        description: Type "publish" to confirm the release
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+# Never run two publishes for the same repository at once.
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      # Action versions follow the rest of the monorepo.
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      # No version input: pnpm/action-setup reads packageManager from package.json.
+      - uses: pnpm/action-setup@v6
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Validate release request
+        env:
+          VERSION: ${{ inputs.version }}
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          test "$CONFIRM" = "publish" || {
+            echo 'input "confirm" must be exactly "publish".'
+            exit 1
+          }
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          test "$PACKAGE_VERSION" = "$VERSION" || {
+            echo "package.json ($PACKAGE_VERSION) does not match the requested version ($VERSION)."
+            exit 1
+          }
+          grep -qE "^## \\[$VERSION\\]" CHANGELOG.md || {
+            echo "CHANGELOG.md has no '## [$VERSION]' entry."
+            exit 1
+          }
+
+      - name: Upgrade npm for Trusted Publishing
+        run: npm install --global npm@12.2.1
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Check
+        run: pnpm run check
+
+      - name: Test
+        run: pnpm run test
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Pack inspection
+        env:
+          VERSION: ${{ inputs.version }}
+        run: bash ./scripts/release.sh "$VERSION" --skip-install --skip-tests
+
+      - name: Publish with provenance
+        run: npm publish --access public --provenance

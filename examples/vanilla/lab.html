@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>DataEmergencia · laboratorio visual</title>
+    <style>
+      :root {
+        color-scheme: light;
+      }
+      body {
+        min-height: 100vh;
+        margin: 0;
+        padding: 1.5rem;
+        font-family: system-ui, sans-serif;
+        background: #f4f6f9;
+        color: #1f2937;
+      }
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: 1.4rem;
+      }
+      p {
+        margin: 0 0 1.25rem;
+        max-width: 70ch;
+        line-height: 1.5;
+        color: #475569;
+      }
+      .lab-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+        gap: 0.5rem;
+        max-width: 70rem;
+      }
+      .lab-grid button {
+        padding: 0.7rem 0.9rem;
+        font: inherit;
+        text-align: left;
+        color: #0f172a;
+        cursor: pointer;
+        background: #fff;
+        border: 1px solid #cbd5e1;
+        border-radius: 0.5rem;
+      }
+      .lab-grid button:hover {
+        border-color: #007bff;
+        background: #eff6ff;
+      }
+      .lab-grid button strong {
+        display: block;
+        font-size: 0.95rem;
+      }
+      .lab-grid button span {
+        font-size: 0.8rem;
+        color: #64748b;
+      }
+      #emergency-root {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      #emergency-root > * {
+        pointer-events: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Laboratorio visual del panel</h1>
+    <p>
+      Cada botón fija un escenario determinista en el mock BFF y lleva al
+      cliente al estado correspondiente. Usa 360, 768 y 1280 px de ancho para
+      revisar el contrato visual y deja las capturas en <code>/tmp</code>.
+    </p>
+    <div class="lab-grid" id="lab">
+      <button type="button" data-run="idle">
+        <strong>Idle</strong><span>pregunta + ilustración</span>
+      </button>
+      <button type="button" data-run="activating">
+        <strong>Activando</strong><span>botones deshabilitados</span>
+      </button>
+      <button type="button" data-run="active">
+        <strong>Activa (mixta)</strong><span>enviado / recibido</span>
+      </button>
+      <button type="button" data-run="read">
+        <strong>Recibido y leído</strong><span>timestamps visibles</span>
+      </button>
+      <button type="button" data-run="simulation">
+        <strong>Simulación exitosa</strong><span>feedback verde</span>
+      </button>
+      <button type="button" data-run="simulation-error">
+        <strong>Simulación fallida</strong><span>feedback rojo</span>
+      </button>
+      <button type="button" data-run="abort-confirm">
+        <strong>Confirmar aborto</strong><span>diálogo destructivo</span>
+      </button>
+      <button type="button" data-run="abort-success">
+        <strong>Aborto exitoso</strong><span>feedback de éxito</span>
+      </button>
+      <button type="button" data-run="abort-error">
+        <strong>Aborto fallido</strong><span>feedback de error</span>
+      </button>
+      <button type="button" data-run="geolocation-denied">
+        <strong>Geolocalización denegada</strong
+        ><span>fallback telefónico</span>
+      </button>
+      <button type="button" data-run="activate-error">
+        <strong>Error al activar</strong><span>alerta + reintento</span>
+      </button>
+      <button type="button" data-run="session-error">
+        <strong>Error de sesión</strong><span>recarga con error de sesión</span>
+      </button>
+      <button type="button" data-run="resume">
+        <strong>Emergencia en curso</strong><span>notificación naranja</span>
+      </button>
+      <button type="button" data-run="failed-messages">
+        <strong>Mensajes fallidos</strong><span>filas rojas</span>
+      </button>
+      <button type="button" data-run="reset">
+        <strong>Reiniciar</strong><span>escenario default</span>
+      </button>
+    </div>
+    <div id="emergency-root"></div>
+
+    <script type="module">
+      import { mount } from '../../src/mount.tsx';
+
+      const BFF = 'http://localhost:8787/de-bff/emergency';
+      let denyGeolocation = false;
+
+      Object.defineProperty(navigator, 'geolocation', {
+        configurable: true,
+        value: {
+          getCurrentPosition(success, failure) {
+            if (denyGeolocation) {
+              failure({
+                code: 1,
+                message: 'User denied geolocation.',
+                PERMISSION_DENIED: 1,
+                POSITION_UNAVAILABLE: 2,
+                TIMEOUT: 3,
+              });
+              return;
+            }
+
+            success({
+              coords: {
+                latitude: 4.711,
+                longitude: -74.0721,
+                accuracy: 25,
+                altitude: null,
+                altitudeAccuracy: null,
+                heading: null,
+                speed: null,
+              },
+              timestamp: Date.now(),
+            });
+          },
+        },
+      });
+
+      const client = mount({
+        root: '#emergency-root',
+        bffBaseUrl: BFF,
+        code: 'DABC12',
+        fallback: { phone: '+57 300 123 4567', label: 'Línea de emergencia' },
+        geolocationTimeoutMs: 2000,
+        onEvent(event, payload) {
+          console.info('[emergency]', event, payload);
+        },
+      });
+
+      async function setScenario(name) {
+        await fetch(`${BFF}/__scenario`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scenario: name }),
+        });
+      }
+
+      async function openWithSnapshot(name) {
+        await setScenario(name);
+        await client.resume();
+        client.dismissFeedback();
+        client.open('manual');
+      }
+
+      const actions = {
+        idle: async () => {
+          await setScenario('default');
+          await client.resume();
+          client.dismissFeedback();
+          client.close('manual');
+          client.open('manual');
+        },
+        activating: async () => {
+          await setScenario('slow');
+          await client.resume();
+          denyGeolocation = false;
+          client.close('manual');
+          client.open('manual');
+          void client.activate();
+        },
+        active: () => openWithSnapshot('active-mixed'),
+        read: () => openWithSnapshot('active-delivered-read'),
+        simulation: async () => {
+          await setScenario('simulacrum-success');
+          await client.resume();
+          client.open('manual');
+          await client.simulate();
+        },
+        'simulation-error': async () => {
+          await setScenario('simulacrum-error');
+          await client.resume();
+          client.open('manual');
+          await client.simulate();
+        },
+        'abort-confirm': async () => {
+          await openWithSnapshot('active-mixed');
+          client.requestAbortConfirmation();
+        },
+        'abort-success': async () => {
+          await openWithSnapshot('active-mixed');
+          client.requestAbortConfirmation();
+          await client.abort();
+        },
+        'abort-error': async () => {
+          await openWithSnapshot('active-mixed');
+          await setScenario('abort-error');
+          client.requestAbortConfirmation();
+          await client.abort();
+        },
+        'geolocation-denied': async () => {
+          await setScenario('default');
+          await client.resume();
+          denyGeolocation = true;
+          client.close('manual');
+          client.open('manual');
+          await client.activate();
+        },
+        'activate-error': async () => {
+          await setScenario('activate-error');
+          await client.resume();
+          denyGeolocation = false;
+          client.close('manual');
+          client.open('manual');
+          await client.activate();
+        },
+        'session-error': async () => {
+          await setScenario('session-error');
+          location.reload();
+        },
+        resume: async () => {
+          await setScenario('active-mixed');
+          client.close('manual');
+          await client.resume();
+        },
+        'failed-messages': () => openWithSnapshot('active-failed'),
+        reset: async () => {
+          await setScenario('default');
+          location.reload();
+        },
+      };
+
+      document.getElementById('lab').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-run]');
+
+        if (!button) {
+          return;
+        }
+
+        const action = actions[button.dataset.run];
+
+        if (action) {
+          void action().catch((error) => console.error(error));
+        }
+      });
+
+      window.lab = { client, setScenario, actions };
+
+      window.addEventListener(
+        'pagehide',
+        () => {
+          client.destroy();
+        },
+        { once: true }
+      );
+    </script>
+  </body>
+</html>
