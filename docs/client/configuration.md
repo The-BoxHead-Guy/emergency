@@ -4,19 +4,20 @@ Applies to: React and vanilla JavaScript integrators.
 
 ## Mount options
 
-| Option                 | Type                                                      | Default | Notes                                                                          |
-| ---------------------- | --------------------------------------------------------- | ------- | ------------------------------------------------------------------------------ |
-| `root`                 | `HTMLElement \| string`                                   | —       | Required. Selector or element that receives the React tree.                    |
-| `bffBaseUrl`           | `string`                                                  | —       | Required. Full BFF prefix, for example `https://example.com/de-bff/emergency`. |
-| `code`                 | `string`                                                  | —       | Required. Six characters, first is a letter.                                   |
-| `trigger`              | `string \| HTMLElement \| (open) => void \| (() => void)` | none    | Optional click trigger.                                                        |
-| `fallback`             | `{ phone: string; label: string }`                        | none    | Optional host fallback included in `emergency:fallback`.                       |
-| `theme`                | `EmergencyTheme`                                          | none    | CSS variable overrides.                                                        |
-| `fontLoading`          | `{ load?: boolean; fonts?: EmergencyFontFamilyFlags }`    | all on  | Runtime Google Fonts injection. See [Fonts](#fonts).                           |
-| `locale`               | `string`                                                  | `es`    | BCP 47 locale for dates and numbers. Does not translate UI copy.               |
-| `geolocationTimeoutMs` | `number`                                                  | `8000`  | Browser geolocation timeout.                                                   |
-| `requestTimeoutMs`     | `number`                                                  | `15000` | BFF request timeout.                                                           |
-| `onEvent`              | `(name, payload) => void`                                 | none    | Typed lifecycle events.                                                        |
+| Option                 | Type                                                        | Default | Notes                                                                          |
+| ---------------------- | ----------------------------------------------------------- | ------- | ------------------------------------------------------------------------------ |
+| `root`                 | `HTMLElement \| string`                                     | —       | Required. Selector or element that receives the React tree.                    |
+| `bffBaseUrl`           | `string`                                                    | —       | Required. Full BFF prefix, for example `https://example.com/de-bff/emergency`. |
+| `code`                 | `string`                                                    | —       | Required. Six characters, first is a letter.                                   |
+| `trigger`              | `string \| HTMLElement \| (open) => void \| (() => void)`   | none    | Optional click trigger.                                                        |
+| `fallback`             | `{ phone: string; label: string }`                          | none    | Optional host fallback included in `emergency:fallback`.                       |
+| `theme`                | `EmergencyTheme`                                            | none    | CSS variable overrides.                                                        |
+| `fontLoading`          | `{ load?: boolean; fonts?: EmergencyFontFamilyFlags }`      | all on  | Runtime Google Fonts injection. See [Fonts](#fonts).                           |
+| `locale`               | `string`                                                    | `es`    | BCP 47 locale for dates and numbers. Does not translate UI copy.               |
+| `geolocationTimeoutMs` | `number`                                                    | `8000`  | Browser geolocation timeout.                                                   |
+| `requestTimeoutMs`     | `number`                                                    | `15000` | BFF request timeout.                                                           |
+| `realtime`             | `{ key: string; cluster: string; channelPattern?: string }` | none    | Public Pusher settings supplied by the host. See [Realtime](#realtime).        |
+| `onEvent`              | `(name, payload) => void`                                   | none    | Typed lifecycle events.                                                        |
 
 ## Validation
 
@@ -34,6 +35,8 @@ Cases:
   `http://` outside loopback.
 - `code` does not match `^[A-Za-z][A-Za-z0-9]{5}$`.
 - `fallback` is present but `phone` or `label` is blank.
+- `realtime` is present but `key` or `cluster` is blank, or `channelPattern` is
+  blank or does not contain `{phone}`.
 - `mount()` is called outside a browser (`document` is undefined).
 
 The error code is `configuration`.
@@ -157,12 +160,30 @@ value produces the corresponding timeout error.
 
 ## Realtime
 
-Realtime is configured by the BFF, not by mount options. `GET /config` returns
-the public Pusher key, cluster and channel pattern. The client subscribes only
-when an emergency is active and responders exist.
+Realtime is configured by the host through the `realtime` mount option. The API
+publishes the events and the client connects to the public Pusher app directly;
+the BFF is not involved.
 
-There is no private-channel option in the MVP. Do not add a Pusher secret to
-the browser.
+```ts
+realtime: {
+  key: 'your-public-pusher-key',
+  cluster: 'us2',
+  // Optional. Defaults to `whatsapp.{phone}`.
+  channelPattern: 'whatsapp.{phone}',
+}
+```
+
+- `key` and `cluster` are required when the block is present and must be
+  non-empty strings.
+- `channelPattern` must contain `{phone}`. The placeholder is replaced with the
+  responder phone in digits-only form, matching the API contract.
+- Omitting `realtime` keeps the client in pull mode: it never opens a Pusher
+  connection and reports `realtimeStatus: 'unavailable'` once responders exist.
+
+An incomplete or malformed block fails `validateConfig` with a `configuration`
+error rather than silently disabling realtime. There is no private-channel
+option in the MVP. Do not add a Pusher secret to the browser; only the public
+key belongs in the mount options.
 
 ## Multiple mounts
 

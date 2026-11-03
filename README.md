@@ -86,6 +86,7 @@ cancels in-flight requests, disconnects Pusher and clears the store.
     code: 'DABC12',
     trigger: '#sos',
     fallback: { phone: '+57 300 123 4567', label: 'Línea de emergencia' },
+    realtime: { key: 'your-public-pusher-key', cluster: 'us2' },
   });
 </script>
 ```
@@ -111,7 +112,13 @@ against the mock BFF: see
 | `locale`               | `string`                                                  | Defaults to `es`; used for time formatting.            |
 | `geolocationTimeoutMs` | `number`                                                  | Defaults to `8000`.                                    |
 | `requestTimeoutMs`     | `number`                                                  | Defaults to `15000`.                                   |
+| `realtime`             | `{ key, cluster, channelPattern? }`                       | Public Pusher settings supplied by the host.           |
 | `onEvent`              | `(name, payload) => void`                                 | Typed lifecycle events.                                |
+
+Realtime is optional. Pass the public Pusher `key` and `cluster` (plus an
+optional `channelPattern`, defaulting to `whatsapp.{phone}`) to subscribe
+directly to the API's channels; omit the block to stay in pull mode. The API
+publishes the events, and the BFF never holds Pusher credentials.
 
 Invalid roots or codes do not throw into the host page. `mount()` reports a
 `configuration` error through `onEvent('emergency:failed', …)`, logs it, and
@@ -159,15 +166,15 @@ client's own emitter, not DOM custom events.
 The client expects the emergency BFF documented in
 `packages/emergency-bff`:
 
-| Method   | Route           | Purpose                                        |
-| -------- | --------------- | ---------------------------------------------- |
-| `GET`    | `/config`       | Initial CSRF token and public realtime config. |
-| `POST`   | `/session`      | `{ code }` → session + rotated CSRF token.     |
-| `GET`    | `/current`      | Active emergency for the session, if any.      |
-| `POST`   | `/activate`     | `{ geolocation: { latitude, longitude } }`.    |
-| `POST`   | `/simulacrum`   | Test message, no emergency created.            |
-| `POST`   | `/{id}/refresh` | Reconcile snapshot and responder statuses.     |
-| `DELETE` | `/{id}`         | Abort and notify contacts.                     |
+| Method   | Route           | Purpose                                     |
+| -------- | --------------- | ------------------------------------------- |
+| `GET`    | `/config`       | Initial CSRF token.                         |
+| `POST`   | `/session`      | `{ code }` → session + rotated CSRF token.  |
+| `GET`    | `/current`      | Active emergency for the session, if any.   |
+| `POST`   | `/activate`     | `{ geolocation: { latitude, longitude } }`. |
+| `POST`   | `/simulacrum`   | Test message, no emergency created.         |
+| `POST`   | `/{id}/refresh` | Reconcile snapshot and responder statuses.  |
+| `DELETE` | `/{id}`         | Abort and notify contacts.                  |
 
 Every mutating request sends the CSRF token in `X-CSRF-Token`. The default
 strategy keeps the token in memory and updates it from `/config` and `/session`.

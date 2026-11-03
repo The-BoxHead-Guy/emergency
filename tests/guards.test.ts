@@ -9,7 +9,8 @@ import {
   isSessionResponse,
 } from '@/core/guards';
 
-const realtime = {
+// An older BFF still ships this key; the guard must ignore it.
+const legacyRealtime = {
   mode: 'public',
   pusher: { key: 'k', cluster: 'us2', channel_pattern: 'whatsapp.{phone}' },
 };
@@ -27,24 +28,27 @@ const responders = [
 ];
 
 describe('BFF response guards', () => {
-  it('accepts a valid config response', () => {
+  it('accepts a config response without realtime', () => {
     expect(
       isConfigResponse({
         route_prefix: '/de-bff/emergency',
-        realtime,
         csrf_token: 'token',
       }),
     ).toBe(true);
   });
 
-  it('rejects config without a public pusher block', () => {
+  it('ignores an extra realtime key from an older BFF', () => {
     expect(
       isConfigResponse({
         route_prefix: '/de-bff/emergency',
-        realtime: { mode: 'private', pusher: {} },
+        realtime: legacyRealtime,
         csrf_token: 'token',
       }),
-    ).toBe(false);
+    ).toBe(true);
+  });
+
+  it('rejects a config response without a CSRF token', () => {
+    expect(isConfigResponse({ route_prefix: '/de-bff/emergency' })).toBe(false);
   });
 
   it('validates session responses', () => {
@@ -55,19 +59,21 @@ describe('BFF response guards', () => {
   });
 
   it('validates current responses for idle and active sessions', () => {
+    expect(isCurrentResponse({ active: false, emergency: null })).toBe(true);
     expect(
-      isCurrentResponse({ active: false, emergency: null, realtime }),
+      isCurrentResponse({
+        active: true,
+        emergency: { emergency_id: 'emg-1', is_active: true },
+      }),
     ).toBe(true);
     expect(
       isCurrentResponse({
         active: true,
         emergency: { emergency_id: 'emg-1', is_active: true },
-        realtime,
+        realtime: legacyRealtime,
       }),
     ).toBe(true);
-    expect(
-      isCurrentResponse({ active: true, emergency: 'emg-1', realtime }),
-    ).toBe(false);
+    expect(isCurrentResponse({ active: true, emergency: 'emg-1' })).toBe(false);
   });
 
   it('validates activation results and failures', () => {

@@ -5,9 +5,52 @@ import type {
   EmergencyConfig,
   EmergencyError,
   EmergencyFallback,
+  EmergencyRealtimeConfig,
 } from '@/core/types';
 
 export const EMERGENCY_CODE_PATTERN = /^[A-Za-z][A-Za-z0-9]{5}$/;
+
+export const DEFAULT_REALTIME_CHANNEL_PATTERN = 'whatsapp.{phone}';
+
+/**
+ * Validates the host-supplied realtime block. Returns `null` when the value is
+ * present but invalid; callers treat `undefined` as "realtime not requested".
+ */
+export function normalizeRealtimeConfig(
+  value: unknown,
+): EmergencyRealtimeConfig | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const key = value['key'];
+  const cluster = value['cluster'];
+  const channelPattern = value['channelPattern'];
+
+  if (
+    typeof key !== 'string' ||
+    key.trim() === '' ||
+    typeof cluster !== 'string' ||
+    cluster.trim() === ''
+  ) {
+    return null;
+  }
+
+  if (
+    channelPattern !== undefined &&
+    (typeof channelPattern !== 'string' ||
+      channelPattern.trim() === '' ||
+      !channelPattern.includes('{phone}'))
+  ) {
+    return null;
+  }
+
+  return {
+    key,
+    cluster,
+    channelPattern: channelPattern ?? DEFAULT_REALTIME_CHANNEL_PATTERN,
+  };
+}
 
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 
@@ -134,6 +177,22 @@ export function validateConfig(
     };
   }
 
+  const realtime =
+    config.realtime === undefined
+      ? undefined
+      : normalizeRealtimeConfig(config.realtime);
+
+  if (realtime === null) {
+    return {
+      ok: false,
+      config: null,
+      error: createEmergencyError(
+        'configuration',
+        'The realtime configuration requires a non-empty key and cluster, and a channel pattern containing {phone}.',
+      ),
+    };
+  }
+
   return {
     ok: true,
     error: null,
@@ -145,6 +204,7 @@ export function validateConfig(
       geolocationTimeoutMs: config.geolocationTimeoutMs ?? 8000,
       requestTimeoutMs: config.requestTimeoutMs ?? 15000,
       fontLoading: normalizeFontLoading(config.fontLoading),
+      realtime,
     },
   };
 }

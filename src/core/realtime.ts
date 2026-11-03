@@ -1,6 +1,7 @@
 import Pusher from 'pusher-js';
-import type { RealtimePublicConfig } from '@/core/bff-types';
-import type { RealtimeStatus } from '@/core/types';
+import type { EmergencyRealtimeConfig, RealtimeStatus } from '@/core/types';
+
+const DEFAULT_CHANNEL_PATTERN = 'whatsapp.{phone}';
 
 export interface RealtimeHandlers {
   readonly onEvent: (channel: string, event: string, data: unknown) => void;
@@ -18,14 +19,14 @@ export interface RealtimeProvider {
    * the client keeps working in pull mode.
    */
   subscribe(
-    config: RealtimePublicConfig,
+    config: EmergencyRealtimeConfig,
     phones: readonly string[],
     handlers: RealtimeHandlers,
   ): RealtimeSubscription | null;
 }
 
 export function channelForPhone(pattern: string, phone: string): string {
-  return pattern.replace('{phone}', phone.replace(/^\+/, ''));
+  return pattern.replace('{phone}', phone.replace(/\D/g, ''));
 }
 
 type PusherConnectionState =
@@ -56,19 +57,15 @@ function toStatus(state: PusherConnectionState): RealtimeStatus {
 export function createPusherRealtimeProvider(): RealtimeProvider {
   return {
     subscribe(config, phones, handlers) {
-      if (
-        typeof window === 'undefined' ||
-        !config.pusher.key ||
-        !config.pusher.cluster
-      ) {
+      if (typeof window === 'undefined' || !config.key || !config.cluster) {
         return null;
       }
 
       let pusher: Pusher;
 
       try {
-        pusher = new Pusher(config.pusher.key, {
-          cluster: config.pusher.cluster,
+        pusher = new Pusher(config.key, {
+          cluster: config.cluster,
           forceTLS: true,
         });
       } catch {
@@ -89,7 +86,7 @@ export function createPusherRealtimeProvider(): RealtimeProvider {
       const channels = [...new Set(phones.filter((phone) => phone !== ''))].map(
         (phone) => {
           const channelName = channelForPhone(
-            config.pusher.channel_pattern,
+            config.channelPattern ?? DEFAULT_CHANNEL_PATTERN,
             phone,
           );
           const channel = pusher.subscribe(channelName);

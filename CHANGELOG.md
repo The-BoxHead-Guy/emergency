@@ -6,6 +6,29 @@ and [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-03
+
+### Added
+
+- `realtime` mount option carrying the public Pusher `key`, `cluster` and an
+  optional `channelPattern`. Omitting it keeps the client in pull mode.
+
+### Changed
+
+- The client subscribes directly to the API's Pusher app instead of reading
+  realtime settings from `GET /config` and `GET /current`.
+- Channel names replace `{phone}` with the responder phone in digits-only form,
+  matching the API's `PhoneNumberFormatter::stripNonDigits`.
+- This is a MINOR release (`0.3.0`): the mount option is a new public
+  capability, and removing the BFF-sourced realtime field is a coordinated
+  contract change that PATCH would misrepresent.
+
+### Removed
+
+- `RealtimePusherConfig`, `RealtimePublicConfig`, the `realtime` field on the
+  `ConfigResponse` and `CurrentResponse` types, and the `isRealtimeConfig`
+  guard. The client ignores an extra `realtime` key from older BFFs.
+
 ## [0.2.1] - 2026-11-03
 
 ### Changed

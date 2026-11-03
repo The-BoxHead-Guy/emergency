@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { validateBaseUrl, validateConfig } from '@/core/config';
-import type { EmergencyConfig } from '@/core/types';
+import type { EmergencyConfig, EmergencyRealtimeConfig } from '@/core/types';
 
 const base: EmergencyConfig = {
   bffBaseUrl: 'https://example.com/de-bff/emergency',
@@ -54,5 +54,69 @@ describe('validateConfig base URL', () => {
 
     expect(result.ok).toBe(true);
     expect(result.config?.bffBaseUrl).toBe('/de-bff/emergency');
+  });
+});
+
+describe('validateConfig realtime', () => {
+  const invalid = (realtime: unknown) =>
+    validateConfig({
+      ...base,
+      realtime: realtime as EmergencyRealtimeConfig,
+    });
+
+  it('leaves realtime undefined when the option is absent', () => {
+    const result = validateConfig(base);
+
+    expect(result.ok).toBe(true);
+    expect(result.config?.realtime).toBeUndefined();
+  });
+
+  it('normalizes the channel pattern default', () => {
+    const result = validateConfig({
+      ...base,
+      realtime: { key: 'demo-key', cluster: 'us2' },
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.config?.realtime).toEqual({
+      key: 'demo-key',
+      cluster: 'us2',
+      channelPattern: 'whatsapp.{phone}',
+    });
+  });
+
+  it('keeps a custom channel pattern', () => {
+    const result = validateConfig({
+      ...base,
+      realtime: {
+        key: 'demo-key',
+        cluster: 'us2',
+        channelPattern: 'emergency.{phone}',
+      },
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.config?.realtime?.channelPattern).toBe('emergency.{phone}');
+  });
+
+  it.each([
+    ['a missing key', { cluster: 'us2' }],
+    ['a missing cluster', { key: 'demo-key' }],
+    ['an empty key', { key: '', cluster: 'us2' }],
+    ['an empty cluster', { key: 'demo-key', cluster: '  ' }],
+    [
+      'a blank channel pattern',
+      { key: 'demo-key', cluster: 'us2', channelPattern: '' },
+    ],
+    [
+      'a pattern without the phone placeholder',
+      { key: 'demo-key', cluster: 'us2', channelPattern: 'whatsapp' },
+    ],
+  ])('rejects %s with a configuration error', (_label, realtime) => {
+    const result = invalid(realtime);
+
+    expect(result.ok).toBe(false);
+    expect(result.config).toBeNull();
+    expect(result.error).toMatchObject({ code: 'configuration' });
   });
 });

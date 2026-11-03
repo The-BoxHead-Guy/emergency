@@ -1,17 +1,5 @@
-export interface RealtimePusherConfig {
-  readonly key: string;
-  readonly cluster: string;
-  readonly channel_pattern: string;
-}
-
-export interface RealtimePublicConfig {
-  readonly mode: 'public';
-  readonly pusher: RealtimePusherConfig;
-}
-
 export interface ConfigResponse {
   readonly route_prefix: string;
-  readonly realtime: RealtimePublicConfig;
   readonly csrf_token: string;
 }
 
@@ -64,7 +52,6 @@ export type EmergencyPayload = Readonly<Record<string, unknown>>;
 export interface CurrentResponse {
   readonly active: boolean;
   readonly emergency: EmergencyPayload | null;
-  readonly realtime: RealtimePublicConfig;
 }
 
 export interface GeolocationRequest {

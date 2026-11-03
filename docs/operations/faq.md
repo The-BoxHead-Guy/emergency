@@ -61,8 +61,9 @@ urgent and verify contrast.
 
 ## Does it support private Pusher channels?
 
-Not in `0.1.0`. The BFF exposes a public channel with metadata-only events. Do
-not add a Pusher secret to the browser. Private channels are post-MVP.
+Not in `0.1.0`. The host configures the public `realtime` mount option and the
+API publishes metadata-only events on public channels. Do not add a Pusher
+secret to the browser. Private channels are post-MVP.
 
 ## How do I upgrade?
 

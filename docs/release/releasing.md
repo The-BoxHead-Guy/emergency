@@ -4,9 +4,13 @@ Applies to: maintainers. This page is the single source of truth for releasing
 `@dataemergencia/emergency`. Everything else in `docs/release/` explains one
 part of this flow.
 
-If the release also changes the HTTP contract, release the
-[BFF first](https://github.com/The-BoxHead-Guy/emergency-bff/blob/main/docs/release/releasing.md).
-Do not publish a client against an unpublished BFF contract.
+When a release changes the HTTP contract, publish the package that tolerates
+both contracts first. Mergeable additive fields can ship in either order; a
+removed or renamed field requires the tolerant side to ship first.
+
+For example, `@dataemergencia/emergency` `0.3.0` ships before `emergency-bff`
+`0.2.0`: the new client ignores the legacy `realtime` key, while published
+`0.2.x` clients require it. Reversing that order breaks those clients.
 
 ## One-time setup
 

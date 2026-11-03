@@ -96,13 +96,17 @@ the emergency and show which contacts failed.
 
 ## No realtime updates
 
-- `GET /config` must return a non-null `realtime.pusher.key` and `cluster`. The
-  BFF exposes only the public key; there is no secret in the browser.
-- The BFF must be reachable from the browser at Pusher's WebSocket endpoint.
-  Corporate proxies can block `wss://`.
+- Pass a `realtime` mount option with the public Pusher `key` and `cluster`, and
+  optionally a `channelPattern` containing `{phone}`. The key is public; never
+  ship the Pusher secret to the browser.
+- Pusher's WebSocket endpoint must be reachable from the browser. Corporate
+  proxies can block `wss://`.
+- The API publishes the events, not the BFF. Check the API broadcaster when no
+  events arrive even though `realtimeStatus` is `connected`.
 - The panel still works without realtime; **Actualizar** and automatic
   reconciliation on focus keep it current.
-- The channel pattern is `whatsapp.{phone}` with the leading `+` removed.
+- The default channel pattern is `whatsapp.{phone}`; the placeholder receives the
+  responder phone in digits-only form.
 
 ## Styles look wrong
 

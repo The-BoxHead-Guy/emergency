@@ -45,6 +45,7 @@ export type {
   EmergencyOperation,
   EmergencyPhase,
   EmergencyPhaseName,
+  EmergencyRealtimeConfig,
   EmergencySnapshot,
   EmergencyTheme,
   EmergencyTrigger,

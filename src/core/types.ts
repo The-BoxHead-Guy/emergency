@@ -145,6 +145,18 @@ export interface EmergencyGeolocation {
   readonly accuracy?: number;
 }
 
+export interface EmergencyRealtimeConfig {
+  /** Public Pusher app key supplied by the host. */
+  readonly key: string;
+  /** Pusher cluster that serves the app key. */
+  readonly cluster: string;
+  /**
+   * Channel name pattern. `{phone}` is replaced with the responder phone in
+   * digits-only form. Defaults to `whatsapp.{phone}`.
+   */
+  readonly channelPattern?: string;
+}
+
 export interface EmergencyConfig {
   /** Full BFF route prefix, for example `https://example.com/de-bff/emergency`. */
   readonly bffBaseUrl: string;
@@ -166,6 +178,11 @@ export interface EmergencyConfig {
   readonly geolocationTimeoutMs?: number;
   /** Request timeout in milliseconds. Defaults to 15000. */
   readonly requestTimeoutMs?: number;
+  /**
+   * Public Pusher values supplied by the host. When omitted, the client stays
+   * in pull mode and never opens a realtime connection.
+   */
+  readonly realtime?: EmergencyRealtimeConfig;
 }
 
 export interface EmergencySnapshot {

@@ -4,6 +4,7 @@ import type { EmergencyEventName, EmergencyEventMap } from '@/core/types';
 import type { EmergencyResultPayload } from '@/core/bff-types';
 import {
   activeEmergency,
+  config,
   createFakeBff,
   createTestController,
   responders,
@@ -35,14 +36,6 @@ describe('emergency controller', () => {
       current: vi.fn(async () => ({
         active: true,
         emergency: activeEmergency,
-        realtime: {
-          mode: 'public' as const,
-          pusher: {
-            key: 'k',
-            cluster: 'us2',
-            channel_pattern: 'whatsapp.{phone}',
-          },
-        },
       })),
     });
     const controller = createTestController({ bff });
@@ -58,6 +51,26 @@ describe('emergency controller', () => {
     expect(state.panelOpen).toBe(false);
     expect(state.phase.kind).toBe('active');
     expect(resumed).toHaveBeenCalledTimes(1);
+    expect(controller.realtime.handlers).toHaveLength(1);
+  });
+
+  it('subscribes from the mount realtime config on activation', async () => {
+    const controller = createTestController();
+
+    await controller.client.activate();
+
+    expect(controller.realtime.handlers).toHaveLength(1);
+  });
+
+  it('stays in pull mode when no realtime config is supplied', async () => {
+    const controller = createTestController({
+      config: { ...config, realtime: undefined },
+    });
+
+    await controller.client.activate();
+
+    expect(controller.realtime.handlers).toHaveLength(0);
+    expect(controller.client.getState().realtimeStatus).toBe('unavailable');
   });
 
   it('opens the panel immediately and activates after geolocation', async () => {

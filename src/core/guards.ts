@@ -6,7 +6,6 @@ import type {
   ErrorEnvelope,
   FailurePayload,
   RefreshResponse,
-  RealtimePublicConfig,
   ResponderPayload,
   SessionResponse,
 } from '@/core/bff-types';
@@ -34,32 +33,11 @@ function isArrayOf<T>(
   return Array.isArray(value) && value.every(guard);
 }
 
-export function isRealtimeConfig(
-  value: unknown,
-): value is RealtimePublicConfig {
-  if (
-    !isRecord(value) ||
-    value['mode'] !== 'public' ||
-    !isRecord(value['pusher'])
-  ) {
-    return false;
-  }
-
-  const pusher = value['pusher'];
-
-  return (
-    isString(pusher['key']) &&
-    isString(pusher['cluster']) &&
-    isString(pusher['channel_pattern'])
-  );
-}
-
 export function isConfigResponse(value: unknown): value is ConfigResponse {
   return (
     isRecord(value) &&
     isString(value['route_prefix']) &&
-    isString(value['csrf_token']) &&
-    isRealtimeConfig(value['realtime'])
+    isString(value['csrf_token'])
   );
 }
 
@@ -118,11 +96,7 @@ export function isEmergencyResultPayload(
 }
 
 export function isCurrentResponse(value: unknown): value is CurrentResponse {
-  if (
-    !isRecord(value) ||
-    !isBoolean(value['active']) ||
-    !isRealtimeConfig(value['realtime'])
-  ) {
+  if (!isRecord(value) || !isBoolean(value['active'])) {
     return false;
   }
 

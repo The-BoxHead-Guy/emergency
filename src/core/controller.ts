@@ -1,4 +1,3 @@
-import type { RealtimePublicConfig } from '@/core/bff-types';
 import { createBffClient } from '@/core/bff-client';
 import { isRecord } from '@/core/guards';
 import { copy } from '@/core/copy';
@@ -91,7 +90,6 @@ export function createEmergencyController(
   let sessionPromise: Promise<void> | null = null;
   let refreshing = false;
   let realtimeSubscription: RealtimeSubscription | null = null;
-  let realtimeConfig: RealtimePublicConfig | null = null;
   let subscribedPhones: readonly string[] = [];
   let messageSequence = 0;
   let lastReconcileAt = 0;
@@ -173,15 +171,16 @@ export function createEmergencyController(
     subscribedPhones = [];
   }
 
-  function startRealtime(
-    realtime: RealtimePublicConfig | null,
-    responders: readonly Responder[],
-  ): void {
+  function startRealtime(responders: readonly Responder[]): void {
+    const realtime = config.realtime ?? null;
+
     if (!realtime) {
+      if (responders.length > 0) {
+        patch({ realtimeStatus: 'unavailable' });
+      }
+
       return;
     }
-
-    realtimeConfig = realtime;
 
     const phones = [...new Set(responders.map((responder) => responder.phone))];
 
@@ -247,9 +246,8 @@ export function createEmergencyController(
 
     try {
       // `/config` hands out the first CSRF token; the BFF rejects `POST /session`
-      // without it. The same call carries the public realtime settings.
-      const configuration = await bff.config();
-      realtimeConfig = configuration.realtime;
+      // without it. Realtime settings come from the mount configuration.
+      await bff.config();
 
       const session = await bff.session(config.code);
 
@@ -289,7 +287,6 @@ export function createEmergencyController(
   async function hydrateCurrent(): Promise<void> {
     try {
       const current = await bff.current();
-      realtimeConfig = current.realtime;
 
       if (current.active && current.emergency) {
         const snapshot = payloadToSnapshot(current.emergency, {
@@ -309,7 +306,7 @@ export function createEmergencyController(
           emergencyId: snapshot.emergencyId,
           simulated: snapshot.simulated,
         });
-        startRealtime(current.realtime, snapshot.responders);
+        startRealtime(snapshot.responders);
         events.emit('emergency:resumed', { snapshot });
 
         return;
@@ -417,7 +414,7 @@ export function createEmergencyController(
         failures.length > 0 ? copy.partialFailure : copy.activeBanner,
       );
       events.emit('emergency:activated', { snapshot: hydrated });
-      startRealtime(realtimeConfig, responders);
+      startRealtime(responders);
     } catch (error) {
       const normalized = toEmergencyError(error, 'network');
 
@@ -537,7 +534,7 @@ export function createEmergencyController(
         });
       }
 
-      startRealtime(realtimeConfig, responders);
+      startRealtime(responders);
       events.emit('emergency:updated', { snapshot: updated });
     } catch (error) {
       const normalized = toEmergencyError(error, 'network');
@@ -718,7 +715,6 @@ export function createEmergencyController(
     bff.destroy();
     realtimeSubscription?.disconnect();
     realtimeSubscription = null;
-    realtimeConfig = null;
     subscribedPhones = [];
 
     patch({

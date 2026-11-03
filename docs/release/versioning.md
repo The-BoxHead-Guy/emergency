@@ -32,8 +32,11 @@ The contract is versioned with the BFF.
 | Client  | BFF     | Status                                                    |
 | ------- | ------- | --------------------------------------------------------- |
 | `0.1.x` | `0.1.x` | Supported.                                                |
-| `0.1.x` | `0.2.x` | Read the BFF changelog; additive changes are compatible.  |
+| `0.1.x` | `0.2.x` | Not supported: BFF 0.2.0 removes the `realtime` block.    |
 | `0.2.x` | `0.1.x` | Not supported unless the client changelog says otherwise. |
+| `0.2.x` | `0.2.x` | Not supported: BFF 0.2.0 removes the `realtime` block.    |
+| `0.3.x` | `0.1.x` | Supported. The client ignores the legacy `realtime` key.  |
+| `0.3.x` | `0.2.x` | Supported. The client ignores the legacy `realtime` key.  |
 
 Additive response fields are not breaking: both packages ignore unknown keys.
 Removing, renaming or changing the type of a field is breaking.
@@ -96,8 +99,13 @@ tag, not against `main`.
 
 ## Release order
 
-Publish the BFF first when a change touches both packages, because the client
-depends on the BFF contract. Release the client second. See
+Publish first the package that tolerates both contracts. A change that only adds
+fields can ship in either order because both packages ignore unknown keys. A
+change that removes or renames a field ships after the tolerant consumer.
+
+For the realtime-ownership change, publish `@dataemergencia/emergency` `0.3.0`
+before `emergency-bff` `0.2.0`: the new client ignores the legacy `realtime` key,
+but published `0.2.x` clients require it. See
 [Releasing the client](releasing.md).
 
 ## Next step

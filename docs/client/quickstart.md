@@ -30,6 +30,7 @@ const client = mount({
     phone: '+57 300 123 4567',
     label: 'Línea de emergencia',
   },
+  realtime: { key: 'your-public-pusher-key', cluster: 'us2' },
   onEvent: (event, payload) => {
     console.log('[emergency]', event, payload);
   },
@@ -110,6 +111,7 @@ that owns the client goes away.
         code: 'DABC12',
         trigger: '#sos',
         fallback: { phone: '+57 300 123 4567', label: 'Línea de emergencia' },
+        realtime: { key: 'your-public-pusher-key', cluster: 'us2' },
       });
 
       window.addEventListener('pagehide', () => client.destroy(), {

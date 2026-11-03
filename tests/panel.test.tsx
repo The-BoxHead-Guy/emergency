@@ -8,7 +8,6 @@ import {
   activeEmergency,
   createFakeBff,
   createTestController,
-  realtimePayload,
   responders,
 } from '@/test/fakes';
 import { renderEmergency } from '@tests/render';
@@ -365,7 +364,6 @@ describe('emergency panel visual contract', () => {
       current: vi.fn(async () => ({
         active: true,
         emergency: activeEmergency,
-        realtime: realtimePayload,
       })),
     });
     const { controller } = setup(createTestController({ bff }));

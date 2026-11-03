@@ -94,13 +94,13 @@ emergency again after fixing the upstream issue.
 
 ## Status is live but not authoritative
 
-With public Pusher channels configured, delivery status updates arrive in real
-time. Realtime is a convenience:
+With the public `realtime` mount option configured, delivery status updates
+arrive in real time from the API's Pusher app. Realtime is a convenience:
 
 - if Pusher is not configured or the connection drops, the panel still works;
 - the client reconciles with `GET /current` on focus, `online`, visibility
   change and realtime events (throttled to 1500 ms);
-- the BFF remains the source of truth.
+- the API, read through the BFF, remains the source of truth.
 
 Pusher payloads are metadata-only. The client never trusts a Pusher payload as a
 complete snapshot; it refreshes the BFF.

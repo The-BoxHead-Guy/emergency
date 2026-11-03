@@ -17,15 +17,6 @@ import {
 import type { EmergencyConfig } from '@/core/types';
 import type { RealtimeHandlers, RealtimeProvider } from '@/core/realtime';
 
-export const realtimePayload = {
-  mode: 'public' as const,
-  pusher: {
-    key: 'demo-key',
-    cluster: 'us2',
-    channel_pattern: 'whatsapp.{phone}',
-  },
-};
-
 export const responders: ResponderPayload[] = [
   {
     phone: '573001234567',
@@ -77,6 +68,7 @@ export const config: EmergencyConfig = {
   code: 'DABC12',
   fallback: { phone: '+57 300 123 4567', label: 'Línea de emergencia' },
   geolocationTimeoutMs: 1000,
+  realtime: { key: 'demo-key', cluster: 'us2' },
 };
 
 export interface FakeBff extends BffClient {
@@ -94,7 +86,6 @@ export function createFakeBff(overrides: Partial<BffClient> = {}): FakeBff {
   const defaults: BffClient = {
     config: vi.fn<BffClient['config']>(async (): Promise<ConfigResponse> => ({
       route_prefix: '/de-bff/emergency',
-      realtime: realtimePayload,
       csrf_token: 'csrf-1',
     })),
     session: vi.fn<BffClient['session']>(
@@ -108,7 +99,6 @@ export function createFakeBff(overrides: Partial<BffClient> = {}): FakeBff {
       async (): Promise<CurrentResponse> => ({
         active: false,
         emergency: null,
-        realtime: realtimePayload,
       }),
     ),
     activate: vi.fn<BffClient['activate']>(

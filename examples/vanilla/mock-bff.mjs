@@ -232,10 +232,6 @@ const server = createServer(async (request, response) => {
   if (request.method === 'GET' && route === '/config') {
     json(response, 200, {
       route_prefix: '/de-bff/emergency',
-      realtime: {
-        mode: 'public',
-        pusher: { key: '', cluster: '', channel_pattern: 'whatsapp.{phone}' },
-      },
       csrf_token: CSRF_TOKEN,
     });
     return;
@@ -263,24 +259,18 @@ const server = createServer(async (request, response) => {
   }
 
   if (request.method === 'GET' && route === '/current') {
-    const realtime = {
-      mode: 'public',
-      pusher: { key: '', cluster: '', channel_pattern: 'whatsapp.{phone}' },
-    };
-
     if (scenario.startsWith('active-') && !activeEmergency) {
       startEmergency();
     }
 
     if (!activeEmergency) {
-      json(response, 200, { active: false, emergency: null, realtime });
+      json(response, 200, { active: false, emergency: null });
       return;
     }
 
     json(response, 200, {
       active: true,
       emergency: emergencyPayload(),
-      realtime,
     });
     return;
   }

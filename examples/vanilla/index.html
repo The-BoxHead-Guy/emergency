@@ -66,6 +66,7 @@
         code: 'DABC12',
         trigger: '#sos',
         fallback: { phone: '+57 300 123 4567', label: 'Línea de emergencia' },
+        realtime: { key: 'demo-key', cluster: 'us2' },
         onEvent(event, payload) {
           console.info('[emergency]', event, payload);
         },

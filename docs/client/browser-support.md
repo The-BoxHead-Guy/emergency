@@ -11,7 +11,7 @@ The builds target `es2022` and rely on:
 - `Intl.DateTimeFormat` and `Intl.NumberFormat`,
 - `crypto.randomUUID()` for idempotency keys,
 - `navigator.geolocation` for activation,
-- `WebSocket` when realtime is configured,
+- `WebSocket` when the `realtime` mount option is configured,
 - CSS custom properties and `rgb(… / …)` color syntax.
 
 Practical baseline:

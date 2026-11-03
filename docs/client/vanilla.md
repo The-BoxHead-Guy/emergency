@@ -57,6 +57,7 @@ window.DataEmergenciaEmergency.mount(options);
           phone: '+57 300 123 4567',
           label: 'Línea de emergencia',
         },
+        realtime: { key: 'your-public-pusher-key', cluster: 'us2' },
         onEvent(event, payload) {
           console.info('[emergency]', event, payload);
         },
@@ -98,6 +99,7 @@ const client = window.DataEmergenciaEmergency.mount({
   bffBaseUrl: '/de-bff/emergency',
   code: 'DABC12',
   fallback: { phone: '+57 300 123 4567', label: 'Emergencia' },
+  realtime: { key: 'your-public-pusher-key', cluster: 'us2' },
 });
 
 document.querySelector('#sos').addEventListener('click', () => {
