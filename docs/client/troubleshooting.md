@@ -71,12 +71,12 @@ emergency and shows it instead of overwriting it.
 ## Geolocation denied or timed out
 
 The client emits `geolocation_denied`, `geolocation_timeout`,
-`geolocation_unavailable` or `geolocation_unsupported` and shows the fallback
-phone.
+`geolocation_unavailable` or `geolocation_unsupported` and shows a dismissable
+error feedback card that auto-dismisses after five seconds.
 
 - Geolocation requires HTTPS (or `localhost`).
-- The user may have denied permission permanently; the fallback is the designed
-  path.
+- The user may have denied permission permanently; the `emergency:fallback`
+  event lets the host offer an alternative path.
 - `geolocationTimeoutMs` defaults to 8000 ms. A very short timeout produces
   `geolocation_timeout`.
 - High accuracy can be slow indoors; do not lower the timeout below a few

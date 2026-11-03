@@ -17,26 +17,26 @@ the stable BEM suffix when you need to override a rule.
 
 ## CSS variables
 
-| Variable                        | Default       | Used for                             |
-| ------------------------------- | ------------- | ------------------------------------ |
-| `--de-emergency-red`            | `#ff0000`     | Header, emergency button, failures.  |
-| `--de-emergency-red-hover`      | `#ff3535`     | Emergency hover.                     |
-| `--de-emergency-on-red`         | `#fff`        | Text and icons on red/blue surfaces. |
-| `--de-emergency-blue`           | `#00adf6`     | Test/simulation button.              |
-| `--de-emergency-blue-hover`     | `#29bfff`     | Test hover.                          |
-| `--de-emergency-primary`        | `#007bff`     | Status header, refresh, links.       |
-| `--de-emergency-text`           | `#3d4461`     | Primary text.                        |
-| `--de-emergency-text-secondary` | `#686868`     | Secondary text.                      |
-| `--de-emergency-white`          | `#fff`        | Panel surface.                       |
-| `--de-emergency-white-soft`     | `#f7f7f7`     | Footer and soft surfaces.            |
-| `--de-emergency-white-pearl`    | `#f1f1f1`     | Row hover.                           |
-| `--de-emergency-gray`           | `#555`        | Disabled state, muted icons.         |
-| `--de-emergency-gray-medium`    | `#55555555`   | Borders and dashed outlines.         |
-| `--de-emergency-gray-light`     | `#929292`     | Timestamps.                          |
-| `--de-emergency-success`        | `#4cd03a`     | Checked icons, success outline.      |
-| `--de-emergency-error`          | `#dc3545`     | Error icon, failed outline.          |
-| `--de-emergency-radius`         | `0.5rem`      | Panel and card corners.              |
-| `--de-emergency-font`           | Poppins stack | Typography; the font is not bundled. |
+| Variable                        | Default       | Used for                                |
+| ------------------------------- | ------------- | --------------------------------------- |
+| `--de-emergency-red`            | `#ff0000`     | Header, emergency button, failures.     |
+| `--de-emergency-red-hover`      | `#ff3535`     | Emergency hover.                        |
+| `--de-emergency-on-red`         | `#fff`        | Text and icons on red/blue surfaces.    |
+| `--de-emergency-blue`           | `#00adf6`     | Test/simulation button.                 |
+| `--de-emergency-blue-hover`     | `#29bfff`     | Test hover.                             |
+| `--de-emergency-primary`        | `#007bff`     | Status header, refresh, links.          |
+| `--de-emergency-text`           | `#3d4461`     | Primary text.                           |
+| `--de-emergency-text-secondary` | `#686868`     | Secondary text.                         |
+| `--de-emergency-white`          | `#fff`        | Panel surface.                          |
+| `--de-emergency-white-soft`     | `#f7f7f7`     | Footer and soft surfaces.               |
+| `--de-emergency-white-pearl`    | `#f1f1f1`     | Row hover.                              |
+| `--de-emergency-gray`           | `#555`        | Disabled state, muted icons.            |
+| `--de-emergency-gray-medium`    | `#55555555`   | Borders and dashed outlines.            |
+| `--de-emergency-gray-light`     | `#929292`     | Timestamps.                             |
+| `--de-emergency-success`        | `#4cd03a`     | Checked icons, success outline.         |
+| `--de-emergency-error`          | `#dc3545`     | Error icon, failed outline.             |
+| `--de-emergency-radius`         | `0.5rem`      | Panel and card corners.                 |
+| `--de-emergency-font`           | Poppins stack | Typography; Google Fonts load at mount. |
 
 Every rule also has a literal fallback, so the panel renders correctly even if
 the variables are missing.

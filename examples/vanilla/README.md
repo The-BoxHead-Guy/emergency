@@ -29,23 +29,23 @@ Every button calls `POST /de-bff/emergency/__scenario` before driving the
 client, so states are deterministic. The mock also supports the plain default
 flow when no scenario is selected.
 
-| Button                   | Scenario                | What to review                                    |
-| ------------------------ | ----------------------- | ------------------------------------------------- |
-| Idle                     | `default`               | Illustration, question, red/blue action buttons.  |
-| Activando                | `slow`                  | Disabled footer, 1.2 s activation window.         |
-| Activa (mixta)           | `active-mixed`          | 4-column grid, sent + delivered, no timestamps.   |
-| Recibido y leído         | `active-delivered-read` | All cells checked, `h:mmam/pm` timestamps.        |
-| Simulación exitosa       | `simulacrum-success`    | Green success surface and details.                |
-| Simulación fallida       | `simulacrum-error`      | Red error surface.                                |
-| Confirmar aborto         | `active-mixed`          | Destructive confirmation with explicit cancel.    |
-| Aborto exitoso           | `active-mixed`          | Success feedback after abort.                     |
-| Aborto fallido           | `abort-error`           | Error feedback, emergency stays active.           |
-| Geolocalización denegada | `default`               | Typed message + `tel:` fallback, no "sent" claim. |
-| Error al activar         | `activate-error`        | Error block with retry.                           |
-| Error de sesión          | `session-error`         | Reloads with a failing `/session`.                |
-| Emergencia en curso      | `active-mixed`          | Orange resume overlay above the panel.            |
-| Mensajes fallidos        | `active-failed`         | Failed message rows and red sent icon.            |
-| Reiniciar                | `default`               | Clears the fixture and reloads.                   |
+| Button                   | Scenario                | What to review                                   |
+| ------------------------ | ----------------------- | ------------------------------------------------ |
+| Idle                     | `default`               | Illustration, question, red/blue action buttons. |
+| Activando                | `slow`                  | Disabled footer, 1.2 s activation window.        |
+| Activa (mixta)           | `active-mixed`          | 4-column grid, sent + delivered, no timestamps.  |
+| Recibido y leído         | `active-delivered-read` | All cells checked, `h:mmam/pm` timestamps.       |
+| Simulación exitosa       | `simulacrum-success`    | Green success surface and details.               |
+| Simulación fallida       | `simulacrum-error`      | Red error surface.                               |
+| Confirmar aborto         | `active-mixed`          | Destructive confirmation with explicit cancel.   |
+| Aborto exitoso           | `active-mixed`          | Success feedback after abort.                    |
+| Aborto fallido           | `abort-error`           | Error feedback, emergency stays active.          |
+| Geolocalización denegada | `default`               | Error feedback with 5 s auto-dismiss.            |
+| Error al activar         | `activate-error`        | Error block with retry.                          |
+| Error de sesión          | `session-error`         | Reloads with a failing `/session`.               |
+| Emergencia en curso      | `active-mixed`          | Orange resume overlay above the panel.           |
+| Mensajes fallidos        | `active-failed`         | Failed message rows and red sent icon.           |
+| Reiniciar                | `default`               | Clears the fixture and reloads.                  |
 
 ## Visual review loop
 
@@ -58,7 +58,6 @@ flow when no scenario is selected.
    message rows, orange resume overlay, error/success surfaces, confirmation
    dialogs.
 4. Record deviations in the PR description. Known intentional deviations: the
-   Poppins font is not loaded (the `--de-emergency-font` fallback is used), the
    branded photograph is replaced by the neutral inline mark, and transient
    confirmations follow the same palette but use the package's own keyframes.
 5. Fix regressions in `src/styles/panel.module.css` (tokens live in
@@ -76,7 +75,6 @@ Measured with Chrome DevTools in the lab against the bp reference:
 - **1280 px:** same 448 px status panel centered in the full-screen grid; no
   horizontal overflow.
 
-Intentional deviations: Poppins falls back to the token stack, the branded
-photograph is replaced by the neutral inline mark, and the package keeps its
-own confirmation keyframes. The bp overflow defect is fixed by giving the
+Intentional deviations: the branded photograph is replaced by the neutral
+inline mark, and the package keeps its own confirmation keyframes. The bp overflow defect is fixed by giving the
 middle grid row `overflow-y: auto`.

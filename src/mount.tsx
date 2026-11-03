@@ -3,6 +3,7 @@ import { createEmergencyController } from '@/core/controller';
 import { validateConfig } from '@/core/config';
 import { createEmergencyError } from '@/core/errors';
 import { EMERGENCY_EVENT_NAMES } from '@/core/events';
+import { installEmergencyFonts } from '@/core/fonts';
 import { EmergencyRoot } from '@/react/components/EmergencyRoot';
 import { EmergencyProvider } from '@/react/context';
 import type {
@@ -171,6 +172,9 @@ export function mount(options: EmergencyMountOptions): EmergencyClient {
   }
 
   const config = validation.config;
+
+  installEmergencyFonts(config.fontLoading);
+
   const controller = createEmergencyController({ config });
   const container = document.createElement('div');
   container.setAttribute('data-de-emergency-container', '');

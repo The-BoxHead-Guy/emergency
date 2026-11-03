@@ -61,6 +61,19 @@ function fixtures() {
       read_at: null,
       last_messages: messages('Enterado.'),
     },
+    {
+      phone: '584122585225',
+      name: 'George Gorkq',
+      sent: true,
+      delivered: true,
+      read: true,
+      failed: false,
+      message_id: 'msg-3',
+      sent_at: FIXED_SENT_AT,
+      delivered_at: FIXED_DELIVERED_AT,
+      read_at: FIXED_READ_AT,
+      last_messages: messages('Enterado.'),
+    },
   ];
   const deliveredRead = [
     {

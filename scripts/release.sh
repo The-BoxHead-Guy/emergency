@@ -215,4 +215,4 @@ npm publish --access public
 echo
 echo "Published $PKG_NAME@$VERSION"
 echo "Verify: npm view $PKG_NAME version dist-tags"
-echo "Next: tag the split repository v$VERSION and the monorepo npm-v$VERSION."
+echo "Next: tag the split repository v$VERSION and the monorepo emergency-client-v$VERSION."

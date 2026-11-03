@@ -1,14 +1,12 @@
-import { ParamedicalMark } from '@/styles/assets/paramedical-mark';
+import { ParamedicalMark } from '@/react/components/icons/paramedical-mark';
 import { copy } from '@/core/copy';
 import type {
   AbortResult,
   EmergencyError,
-  EmergencyFallback as EmergencyFallbackTarget,
   Responder,
   SimulationResult,
 } from '@/core/types';
 import { EmergencyError as EmergencyErrorBlock } from '@/react/components/EmergencyError';
-import { EmergencyFallback } from '@/react/components/EmergencyFallback';
 import { EmergencyFeedback } from '@/react/components/EmergencyFeedback';
 import { EmergencyLoading } from '@/react/components/EmergencyLoading';
 import { EmergencyStatusPanel } from '@/react/components/EmergencyStatusPanel';
@@ -21,8 +19,8 @@ export interface EmergencyBodyProps {
   loading: boolean;
   locale: string;
   geolocationError: EmergencyError | null;
+  activationError?: EmergencyError | null;
   error: EmergencyError | null;
-  fallback: EmergencyFallbackTarget | null;
   abortResult: AbortResult | null;
   simulationResult: SimulationResult | null;
   onRefresh: () => void;
@@ -38,8 +36,8 @@ export function EmergencyBody(props: EmergencyBodyProps) {
     loading,
     locale,
     geolocationError,
+    activationError,
     error,
-    fallback,
     abortResult,
     simulationResult,
     onRefresh,
@@ -47,16 +45,24 @@ export function EmergencyBody(props: EmergencyBodyProps) {
     onDismissFeedback,
   } = props;
 
+  const showingFeedback =
+    geolocationError !== null ||
+    Boolean(activationError) ||
+    abortResult !== null ||
+    simulationResult !== null;
+
   return (
     <>
-      <div className={cls('sos-img__container')} id="sos-img__container">
-        <ParamedicalMark
-          className={cls('sos-img')}
-          title={copy.illustrationAlt}
-        />
-      </div>
+      {!loading && !showingFeedback ? (
+        <div className={cls('sos-img__container')} id="sos-img__container">
+          <ParamedicalMark
+            className={cls('sos-img')}
+            title={copy.illustrationAlt}
+          />
+        </div>
+      ) : null}
 
-      {active ? null : (
+      {active || loading || showingFeedback ? null : (
         <div className={cls('emergency-panel__body-title-container')}>
           <h4 className={cls('emergency-panel__body-title')}>
             {copy.question}
@@ -64,7 +70,7 @@ export function EmergencyBody(props: EmergencyBodyProps) {
         </div>
       )}
 
-      {active ? (
+      {active && !showingFeedback ? (
         <EmergencyStatusPanel
           responders={responders}
           refreshing={refreshing}
@@ -75,15 +81,13 @@ export function EmergencyBody(props: EmergencyBodyProps) {
 
       {loading ? <EmergencyLoading /> : null}
 
-      {geolocationError ? (
-        <EmergencyFallback fallback={fallback} error={geolocationError} />
-      ) : null}
-
       {error ? <EmergencyErrorBlock error={error} onRetry={onRetry} /> : null}
 
       <EmergencyFeedback
         abortResult={abortResult}
         simulationResult={simulationResult}
+        geolocationError={geolocationError}
+        activationError={activationError}
         onDismiss={onDismissFeedback}
       />
     </>

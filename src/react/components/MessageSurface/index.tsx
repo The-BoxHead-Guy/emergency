@@ -34,7 +34,7 @@ export function MessageSurface(props: MessageSurfaceProps) {
     >
       <div className={cls(`${prefix}__container`)}>
         <div className={cls(`${prefix}__icon`)}>
-          <Icon name={icon} />
+          <Icon name={icon} className="status-icon" />
         </div>
         <div className={cls(`${prefix}__content`)}>
           <h3 className={cls(`${prefix}__title`)}>{title}</h3>

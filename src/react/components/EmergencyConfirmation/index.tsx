@@ -38,6 +38,7 @@ export function EmergencyConfirmation(props: EmergencyConfirmationProps) {
 
   const title = danger ? copy.abortConfirmTitle : copy.simulateConfirmTitle;
   const text = danger ? copy.abortConfirmText : copy.simulateConfirmText;
+  const tone = danger ? 'danger' : 'information';
 
   return (
     <div
@@ -46,21 +47,22 @@ export function EmergencyConfirmation(props: EmergencyConfirmationProps) {
       aria-modal="true"
       aria-labelledby={titleId}
     >
-      <div
-        ref={cardRef}
-        className={cls(
-          'emergency-confirmation__card',
-          danger && 'emergency-confirmation__card--danger',
-        )}
-      >
-        <div className={cls('emergency-confirmation__icon')}>
-          <Icon name={danger ? 'alert-triangle' : 'info'} />
+      <div ref={cardRef} className={cls('emergency-confirmation__card')}>
+        <div className={cls('emergency-confirmation__body')}>
+          <div
+            className={cls(
+              'emergency-confirmation__icon',
+              `emergency-confirmation__icon--${tone}`,
+            )}
+          >
+            <Icon name={danger ? 'alert-triangle' : 'info'} />
+          </div>
+          <h5 className={cls('emergency-confirmation__title')} id={titleId}>
+            {title}
+          </h5>
+          <p className={cls('emergency-confirmation__text')}>{text}</p>
         </div>
-        <h3 className={cls('emergency-confirmation__title')} id={titleId}>
-          {title}
-        </h3>
-        <p className={cls('emergency-confirmation__text')}>{text}</p>
-        <div className={cls('emergency-confirmation__actions')}>
+        <div className={cls('emergency-confirmation__footer')}>
           <button
             type="button"
             className={cls(

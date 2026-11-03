@@ -1,6 +1,6 @@
 {
   "name": "@dataemergencia/emergency",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Framework-agnostic emergency client for DataEmergencia, with a mountable React panel and an IIFE build.",
   "license": "MIT",
   "type": "module",
@@ -74,7 +74,8 @@
     "example:vanilla:mock": "node examples/vanilla/mock-bff.mjs",
     "lab": "vp dev",
     "release": "bash ./scripts/release.sh",
-    "split": "bash ./scripts/split.sh"
+    "split": "bash ./scripts/split.sh",
+    "bump": "pnpm version --no-git-tag-version"
   },
   "dependencies": {
     "axios": "^1.20.0",

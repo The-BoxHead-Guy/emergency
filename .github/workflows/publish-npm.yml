@@ -92,4 +92,4 @@ jobs:
         run: bash ./scripts/release.sh "$VERSION" --skip-install --skip-tests
 
       - name: Publish with provenance
-        run: npm publish --access public --provenance
+        run: npm publish

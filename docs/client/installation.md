@@ -92,6 +92,20 @@ curl -s https://cdn.jsdelivr.net/npm/@dataemergencia/emergency@0.1.0/dist/iife/e
 Recompute the hash when you upgrade. A version published to npm is immutable,
 so a pinned URL cannot change under you.
 
+## Fonts
+
+The client injects the Google Fonts stylesheet for Google Sans, Montserrat and
+Poppins at mount time, in both the ESM/CJS and IIFE builds. Do not add the
+font `<link>` tags yourself; see [Configuration](configuration.md#fonts) to
+disable loading or select families.
+
+A strict Content Security Policy must allow:
+
+```text
+style-src https://fonts.googleapis.com;
+font-src https://fonts.gstatic.com;
+```
+
 ## Runtime dependencies
 
 The ESM/CJS builds keep these packages external and declare them as

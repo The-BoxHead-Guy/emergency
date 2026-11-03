@@ -2,8 +2,8 @@
 
 `@dataemergencia/emergency` is the browser client for the DataEmergencia
 emergency flow. It owns everything that happens after the SOS trigger: the
-panel, the emergency lifecycle, public realtime updates and the fallback
-surfaces.
+panel, the emergency lifecycle, public realtime updates and the geolocation
+fallback feedback.
 
 The client never calls the upstream DataEmergencia API. Its only backend
 contract is the emergency BFF (`/de-bff/emergency`), documented at
@@ -18,7 +18,7 @@ contract is the emergency BFF (`/de-bff/emergency`), documented at
 | Building the whole flow            | [Zero to panel](https://github.com/The-BoxHead-Guy/emergency-bff/blob/main/docs/onboarding/zero-to-panel.md) |
 | Configuring the client             | [Configuration](client/configuration.md)                                                                     |
 | Styling or reviewing accessibility | [Theming](client/theming.md) and [Accessibility](client/accessibility.md)                                    |
-| Publishing a release               | [Release and deployment](release/release-checklist.md)                                                       |
+| Publishing a release               | [Releasing the client](release/releasing.md)                                                                 |
 
 ## Documentation map
 
@@ -50,10 +50,10 @@ deployment, and troubleshooting.
 ### Operations and release
 
 - [Client operations FAQ](operations/faq.md)
+- [Releasing the client](release/releasing.md)
 - [Split repositories](release/split-repositories.md)
 - [Versioning](release/versioning.md)
 - [npm publication](release/npm.md)
-- [Release checklist](release/release-checklist.md)
 
 ### Contributor documentation
 
@@ -62,5 +62,5 @@ deployment, and troubleshooting.
 
 ## Version
 
-These docs describe `0.1.0` and are versioned with the package. The quickstart
+These docs describe `0.2.0` and are versioned with the package. The quickstart
 is tested against the latest published tag.

@@ -43,13 +43,18 @@ documentation and release-test concern.
 
 ## Tags
 
-| Package | Monorepo tag | Split tag |
-| ------- | ------------ | --------- |
-| BFF     | `php-v0.1.0` | `v0.1.0`  |
-| Client  | `npm-v0.1.0` | `v0.1.0`  |
+| Package                        | Monorepo tag              | Split tag |
+| ------------------------------ | ------------------------- | --------- |
+| `dataemergencia/emergency-bff` | `emergency-bff-v0.1.3`    | `v0.1.3`  |
+| `@dataemergencia/emergency`    | `emergency-client-v0.2.0` | `v0.2.0`  |
 
-The two `v0.1.0` tags live in different repositories, so they do not collide.
-The monorepo prefixes disambiguate them.
+Monorepo tags are project-scoped so several packages can release independently in
+one repository. Split tags stay plain `vX.Y.Z` because each package has its own
+repository.
+
+The prefix also routes the release: only `emergency-client-v*` starts the client
+split workflow, and only `emergency-bff-v*` starts the BFF split workflow. Never
+reuse the old `npm-v*` and `php-v*` prefixes.
 
 ## Deprecation
 
@@ -93,7 +98,7 @@ tag, not against `main`.
 
 Publish the BFF first when a change touches both packages, because the client
 depends on the BFF contract. Release the client second. See
-[Release checklist](release-checklist.md).
+[Releasing the client](releasing.md).
 
 ## Next step
 

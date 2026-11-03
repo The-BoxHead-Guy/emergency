@@ -8,11 +8,13 @@
 :root {
   --de-emergency-red: #ff0000;
   --de-emergency-red-hover: #ff3535;
+  --de-emergency-red-pressed: #e33327;
   --de-emergency-on-red: #fff;
   --de-emergency-blue: #00adf6;
   --de-emergency-blue-hover: #29bfff;
   --de-emergency-primary: #007bff;
   --de-emergency-primary-dark: #1e40af;
+  --de-emergency-primary-foreground: #f9f9f9;
   --de-emergency-text: #3d4461;
   --de-emergency-text-secondary: #686868;
   --de-emergency-white: #fff;

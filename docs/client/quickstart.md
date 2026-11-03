@@ -74,8 +74,9 @@ When the user presses **Activar emergencia**:
 4. The panel shows the responders and their delivery status once the BFF
    confirms.
 
-If geolocation fails, the client shows the typed error and the fallback phone
-number. It never claims that an emergency was sent without a position.
+If geolocation fails, the client shows a typed error feedback card that
+auto-dismisses after five seconds. It never claims that an emergency was sent
+without a position.
 
 ## 6. Cleanup
 

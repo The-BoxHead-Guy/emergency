@@ -6,6 +6,7 @@ export interface EmergencyFooterProps {
   active: boolean;
   busy: boolean;
   aborting: boolean;
+  feedbackVisible: boolean;
   onActivate: () => void;
   onRequestAbort: () => void;
   onRequestSimulation: () => void;
@@ -16,6 +17,7 @@ export function EmergencyFooter(props: EmergencyFooterProps) {
     active,
     busy,
     aborting,
+    feedbackVisible,
     onActivate,
     onRequestAbort,
     onRequestSimulation,
@@ -28,7 +30,7 @@ export function EmergencyFooter(props: EmergencyFooterProps) {
           type="button"
           className={cls('emergency-status__abort-btn')}
           aria-label={copy.abort}
-          disabled={aborting}
+          disabled={aborting || feedbackVisible}
           onClick={onRequestAbort}
         >
           {copy.abort}
@@ -47,7 +49,7 @@ export function EmergencyFooter(props: EmergencyFooterProps) {
           'emergency-panel__button--emergency',
         )}
         aria-label={copy.emergencyAria}
-        disabled={busy}
+        disabled={busy || feedbackVisible}
         onClick={onActivate}
       >
         {copy.emergency}
@@ -61,7 +63,7 @@ export function EmergencyFooter(props: EmergencyFooterProps) {
           'emergency-panel__button--simulation',
         )}
         aria-label={copy.testAria}
-        disabled={busy}
+        disabled={busy || feedbackVisible}
         onClick={onRequestSimulation}
       >
         {copy.test}

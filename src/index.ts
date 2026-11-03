@@ -38,6 +38,8 @@ export type {
   EmergencyEventName,
   EmergencyFallback,
   EmergencyFailure,
+  EmergencyFontFamilyFlags,
+  EmergencyFontLoading,
   EmergencyGeolocation,
   EmergencyMountOptions,
   EmergencyOperation,

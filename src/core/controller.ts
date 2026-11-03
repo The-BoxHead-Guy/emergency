@@ -384,7 +384,6 @@ export function createEmergencyController(
       const normalized = geolocationFailure(error);
       patch({ geolocation: null, geolocationError: normalized });
       transition({ kind: 'ready' });
-      pushMessage('error', normalized.message);
       events.emit('emergency:failed', {
         error: normalized,
         operation: 'geolocation',
@@ -777,7 +776,21 @@ export function createEmergencyController(
     },
     cancelSimulationConfirmation: () =>
       patch({ simulationConfirmation: false }),
-    dismissFeedback: () => patch({ abortResult: null, simulationResult: null }),
+    dismissFeedback: () => {
+      const state = get();
+      const dismissedFailure =
+        state.geolocationError !== null ||
+        state.abortResult?.ok === false ||
+        state.simulationResult?.ok === false ||
+        (state.phase.kind === 'ready' && state.lastError !== null);
+
+      patch({
+        abortResult: null,
+        simulationResult: null,
+        geolocationError: null,
+        ...(dismissedFailure ? { lastError: null } : {}),
+      });
+    },
   };
 
   return { client, store, events };

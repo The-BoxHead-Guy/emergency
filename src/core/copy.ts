@@ -52,7 +52,7 @@ export const copy = {
 
   feedbackDismiss: 'Entendido',
 
-  errorTitle: 'Error',
+  errorTitle: 'Ha ocurrido un error',
   errorText: 'Ha ocurrido un error inesperado.',
   errorDetailInfo: 'Revisa la información requerida',
   errorDetailRetry: 'Intenta nuevamente',
@@ -60,17 +60,13 @@ export const copy = {
 
   geolocationTitle: 'No pudimos obtener tu ubicación',
   geolocationDenied:
-    'Permiso de ubicación denegado. Activa el permiso o llama directamente.',
+    'Permiso de ubicación denegado. Habilita el acceso a la ubicación en tu navegador e inténtalo de nuevo.',
   geolocationUnavailable:
-    'Tu ubicación no está disponible en este momento. Llama directamente.',
+    'Tu ubicación no está disponible en este momento. Verifica que el GPS esté activado e inténtalo de nuevo.',
   geolocationTimeout:
-    'La ubicación tardó demasiado. Inténtalo de nuevo o llama directamente.',
+    'La ubicación tardó demasiado. Muévete a un lugar con mejor señal e inténtalo de nuevo.',
   geolocationUnsupported:
-    'Este dispositivo no permite compartir la ubicación. Llama directamente.',
-  fallbackTitle: 'Llama directamente',
-  fallbackDescription:
-    'Si no puedes completar la emergencia desde aquí, llama a este número.',
-  fallbackCall: 'Llamar',
+    'Este dispositivo no permite compartir la ubicación. Inténtalo desde otro navegador o dispositivo.',
 
   resumeTitle: 'Emergencia Activa Detectada',
   resumeDescription:

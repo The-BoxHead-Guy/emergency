@@ -46,7 +46,7 @@ and the resume notification appears. Delivery status is fetched again.
 - The panel shows the network or `upstream_error` message.
 - Activation does not create a local emergency.
 - Realtime may disconnect; reconciliation retries on focus/online.
-- The fallback phone remains available.
+- The `emergency:fallback` event carries the configured phone for host UI.
 
 ## How do I measure adoption?
 

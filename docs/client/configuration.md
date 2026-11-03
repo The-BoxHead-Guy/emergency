@@ -10,8 +10,9 @@ Applies to: React and vanilla JavaScript integrators.
 | `bffBaseUrl`           | `string`                                                  | —       | Required. Full BFF prefix, for example `https://example.com/de-bff/emergency`. |
 | `code`                 | `string`                                                  | —       | Required. Six characters, first is a letter.                                   |
 | `trigger`              | `string \| HTMLElement \| (open) => void \| (() => void)` | none    | Optional click trigger.                                                        |
-| `fallback`             | `{ phone: string; label: string }`                        | none    | Direct-call surface used when geolocation fails.                               |
+| `fallback`             | `{ phone: string; label: string }`                        | none    | Optional host fallback included in `emergency:fallback`.                       |
 | `theme`                | `EmergencyTheme`                                          | none    | CSS variable overrides.                                                        |
+| `fontLoading`          | `{ load?: boolean; fonts?: EmergencyFontFamilyFlags }`    | all on  | Runtime Google Fonts injection. See [Fonts](#fonts).                           |
 | `locale`               | `string`                                                  | `es`    | BCP 47 locale for dates and numbers. Does not translate UI copy.               |
 | `geolocationTimeoutMs` | `number`                                                  | `8000`  | Browser geolocation timeout.                                                   |
 | `requestTimeoutMs`     | `number`                                                  | `15000` | BFF request timeout.                                                           |
@@ -88,11 +89,12 @@ fallback: {
 
 The client does not hardcode a country emergency number. Provide the number your
 organization operates. When geolocation is denied, unavailable, times out or is
-unsupported, the panel shows this number with a `tel:` call button and a
-`Llamar` action.
+unsupported, the client shows an error feedback card that dismisses itself after
+five seconds and emits `emergency:fallback` with this configuration so the host
+can offer its own direct-call action.
 
-If you omit `fallback`, the panel still explains the geolocation error but
-offers no direct-call action. Provide it.
+If you omit `fallback`, the client still shows the geolocation error feedback,
+and the `emergency:fallback` payload carries `null`.
 
 ## Theme
 
@@ -108,6 +110,37 @@ theme: {
 ```
 
 See [Theming](theming.md) for the CSS variables and defaults.
+
+## Fonts
+
+The panel uses the Google Fonts families Google Sans, Montserrat and Poppins.
+The client injects the required `preconnect` and stylesheet links into
+`document.head` on the first successful mount, so the host does not add any
+font `<link>` tags. When every family is enabled the stylesheet URL is the
+documented Google Fonts URL.
+
+```ts
+fontLoading: {
+  load: true,
+  fonts: {
+    googleSans: true,
+    montserrat: true,
+    poppins: true,
+  },
+}
+```
+
+- `load` is the master switch and defaults to `true`.
+- `fonts` selects individual families; every family defaults to `true`.
+- A disabled family is left out of the request. With `load: false`, or with no
+  family enabled, the client makes no font request at all.
+- The links are page-level assets. They are injected once and are not removed
+  on `destroy()`. If several mounts configure different families, the first
+  successful mount wins.
+- If your Content Security Policy blocks third-party assets, allow
+  `style-src https://fonts.googleapis.com` and
+  `font-src https://fonts.gstatic.com`, or set `fontLoading.load` to `false`
+  and self-host the fonts with `--de-emergency-font`.
 
 ## Locale
 

@@ -2,7 +2,7 @@
 
 Client for the DataEmergencia emergency flow. It owns everything that happens
 after the SOS trigger: the panel, the emergency lifecycle, the public realtime
-updates and the fallback surfaces.
+updates and the geolocation fallback feedback.
 
 The upstream DataEmergencia API is never called from the browser. The only
 backend contract is the emergency BFF (`/de-bff/emergency`), which validates the
@@ -22,13 +22,14 @@ identity code, sends the WhatsApp messages and proxies the upstream state.
 - [Vanilla, no-build guide](docs/client/vanilla.md)
 - [Theming](docs/client/theming.md)
 - [Troubleshooting](docs/client/troubleshooting.md)
+- [Releasing](docs/release/releasing.md)
 
 The BFF is a separate package:
 [`dataemergencia/emergency-bff`](https://github.com/The-BoxHead-Guy/emergency-bff).
 
 ## Requirements
 
-- Node.js 24.22.1 or newer, LTS (the monorepo currently runs Node 26.13.0; the pinned LTS toolchain is 24.22.2).
+- Node.js 22 or newer. CI and releases use the pinned LTS from `.nvmrc` (24.22.2).
 - pnpm 10+ (the monorepo currently runs pnpm 12.8.1).
 - Vite+ 1.4.0 for this package's build and test commands.
 
@@ -99,18 +100,18 @@ against the mock BFF: see
 
 ## Mount options
 
-| Option                 | Type                                                      | Notes                                                         |
-| ---------------------- | --------------------------------------------------------- | ------------------------------------------------------------- |
-| `root`                 | `HTMLElement \| string`                                   | Host container. Validated at mount.                           |
-| `bffBaseUrl`           | `string`                                                  | Full BFF route prefix, including `/de-bff/emergency`.         |
-| `code`                 | `string`                                                  | 6-character identity code supplied by the host.               |
-| `trigger`              | `string \| HTMLElement \| (open) => void \| (() => void)` | Optional. Click opens the panel.                              |
-| `fallback`             | `{ phone, label }`                                        | Optional direct-call surface. No country number is hardcoded. |
-| `theme`                | `EmergencyTheme`                                          | CSS variable overrides (see Theming).                         |
-| `locale`               | `string`                                                  | Defaults to `es`; used for time formatting.                   |
-| `geolocationTimeoutMs` | `number`                                                  | Defaults to `8000`.                                           |
-| `requestTimeoutMs`     | `number`                                                  | Defaults to `15000`.                                          |
-| `onEvent`              | `(name, payload) => void`                                 | Typed lifecycle events.                                       |
+| Option                 | Type                                                      | Notes                                                  |
+| ---------------------- | --------------------------------------------------------- | ------------------------------------------------------ |
+| `root`                 | `HTMLElement \| string`                                   | Host container. Validated at mount.                    |
+| `bffBaseUrl`           | `string`                                                  | Full BFF route prefix, including `/de-bff/emergency`.  |
+| `code`                 | `string`                                                  | 6-character identity code supplied by the host.        |
+| `trigger`              | `string \| HTMLElement \| (open) => void \| (() => void)` | Optional. Click opens the panel.                       |
+| `fallback`             | `{ phone, label }`                                        | Optional. Emitted in `emergency:fallback` for host UI. |
+| `theme`                | `EmergencyTheme`                                          | CSS variable overrides (see Theming).                  |
+| `locale`               | `string`                                                  | Defaults to `es`; used for time formatting.            |
+| `geolocationTimeoutMs` | `number`                                                  | Defaults to `8000`.                                    |
+| `requestTimeoutMs`     | `number`                                                  | Defaults to `15000`.                                   |
+| `onEvent`              | `(name, payload) => void`                                 | Typed lifecycle events.                                |
 
 Invalid roots or codes do not throw into the host page. `mount()` reports a
 `configuration` error through `onEvent('emergency:failed', …)`, logs it, and
@@ -135,8 +136,8 @@ client.destroy()
 
 Activation opens the panel immediately, requests geolocation and only reports
 success after the BFF confirms. If geolocation is denied, unavailable, times out
-or is unsupported, the client shows the typed error and the host-provided phone
-fallback; it never implies that an emergency was sent without a location.
+or is unsupported, the client shows a dismissable error feedback card for five
+seconds and never implies that an emergency was sent without a location.
 
 Abort requires confirmation: `requestAbortConfirmation()` sets the state that
 the UI uses for the "keep active / cancel emergency" step, and `abort()` acts on
@@ -213,6 +214,11 @@ and `radius` onto `--de-emergency-red`, `--de-emergency-on-red`,
 `--de-emergency-white`, `--de-emergency-text`, `--de-emergency-text-secondary`
 and `--de-emergency-radius`.
 
+The client injects the Google Fonts stylesheet for Google Sans, Montserrat and
+Poppins at mount time, in both the ESM/CJS and IIFE builds, so the host does not
+add font `<link>` tags. Use the `fontLoading` mount option to disable loading or
+select families; see [Configuration](docs/client/configuration.md#fonts).
+
 The IIFE bundle embeds this stylesheet in a single injected `<style>` tag and
 removes it when the last mount is destroyed. Hosts using the IIFE must not load
 a second copy of the CSS. ESM/CJS consumers import `styles.css` once.
@@ -262,30 +268,42 @@ Build outputs:
 
 The IIFE gzip budget is 150 KB (current build: ~115 KB).
 
-## Repository split and release
+## Releasing
 
 This package lives at `libs/emergency` in the DataEmergencia monorepo and is
 published from the public split repository `The-BoxHead-Guy/emergency` as
 `@dataemergencia/emergency` (npm org `dataemergencia`).
 
-- Monorepo tags: `npm-v0.1.0`.
-- Split repository tags: `v0.1.0`.
-- The split workflow `.github/workflows/split-emergency-client.yml` copies this
-  directory to the split root, regenerates a standalone `pnpm-lock.yaml`, and
-  pushes the tag.
+The full runbook is [Releasing the client](docs/release/releasing.md). The short
+version:
+
+```bash
+cd libs/emergency
+pnpm bump 0.2.1                 # package.json only; commit the bump
+pnpm run check && pnpm run test && pnpm run build
+git tag -a emergency-client-v0.2.1 -m "release: 0.2.1"
+git push origin emergency-client-v0.2.1
+```
+
+The tag push runs the split workflow, which mirrors this directory to the split
+root, regenerates a standalone `pnpm-lock.yaml`, and pushes the split tag. Then
+run **Publish to npm** from the split repository.
+
+- Monorepo tags are project-scoped: `emergency-client-v0.2.1`.
+- Split repository tags: `v0.2.1`.
 - `scripts/split.sh <version> [--push] [--publish]` performs the same mirror
-  manually and is the fallback when Actions minutes are exhausted.
+  manually and is the fallback when Actions is unavailable.
 - `scripts/release.sh <version> [--publish]` verifies the committed version, the
   changelog entry, the tarball contents and the IIFE budget before publishing.
-- The first publish is manual (`scripts/release.sh <version> --publish`).
-  Trusted Publishing is prepared in `.github/workflows/publish-npm.yml` for
-  later releases.
+- Publishing uses npm Trusted Publishing from the split repository; the original
+  `0.1.0` was published manually.
 
 The published tarball contains `dist/`, `README.md`, `LICENSE` and
 `package.json`; `dist/**/*.map` files are excluded. Source maps stay in the
 repository and in the CI artifacts.
 
-See `docs/release/release-checklist.md` and `CHANGELOG.md`.
+See [Releasing the client](docs/release/releasing.md) and
+[CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

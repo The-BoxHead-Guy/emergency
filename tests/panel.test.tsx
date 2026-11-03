@@ -1,10 +1,4 @@
-import {
-  act,
-  fireEvent,
-  screen,
-  waitFor,
-  within,
-} from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ResponderPayload } from '@/core/bff-types';
@@ -134,7 +128,7 @@ describe('emergency panel visual contract', () => {
     expect(document.activeElement).toBe(first);
   });
 
-  it('renders the status table with responder cells and message rows', async () => {
+  it('renders the status table with responder cells', async () => {
     const { controller } = setup();
 
     await act(async () => {
@@ -151,11 +145,6 @@ describe('emergency panel visual contract', () => {
       document.querySelector('[class*="emergency-status__row-container"]'),
     ).not.toBeNull();
     expect(
-      document.querySelector(
-        '[class*="emergency-status__message-row--success"]',
-      ),
-    ).not.toBeNull();
-    expect(
       document.querySelector('[class*="status-icon--checked"]'),
     ).not.toBeNull();
     expect(
@@ -164,12 +153,9 @@ describe('emergency panel visual contract', () => {
     expect(screen.getAllByText(/\d{1,2}:\d{2}(am|pm)/).length).toBeGreaterThan(
       0,
     );
-    expect(
-      screen.getAllByText(copy.statusPrefix, { exact: false }).length,
-    ).toBeGreaterThan(0);
   });
 
-  it('models a failed responder with the sent alert and no empty states', async () => {
+  it('models a failed responder with the sent alert', async () => {
     const failed: ResponderPayload = {
       ...responders[0]!,
       failed: true,
@@ -204,15 +190,7 @@ describe('emergency panel visual contract', () => {
       throw new Error('Expected the failed responder row to be rendered.');
     }
 
-    expect(
-      within(row).getAllByText(copy.statusPrefix, { exact: false }),
-    ).toHaveLength(1);
     expect(row.querySelector('[class*="status-icon--failed"]')).not.toBeNull();
-    expect(
-      document.querySelector(
-        '[class*="emergency-status__message-row--failed"]',
-      ),
-    ).not.toBeNull();
   });
 
   it('requires confirmation before aborting and shows feedback', async () => {
@@ -222,6 +200,8 @@ describe('emergency panel visual contract', () => {
     await act(async () => {
       await controller.client.activate();
     });
+
+    const dialog = screen.getByRole('dialog', { name: copy.panelLabel });
 
     await user.click(screen.getByRole('button', { name: copy.abort }));
 
@@ -235,12 +215,57 @@ describe('emergency panel visual contract', () => {
 
     expect(await screen.findByText(copy.abortSuccessTitle)).toBeInTheDocument();
     expect(controller.bff.abort).toHaveBeenCalledWith('emg-1');
+    expect(dialog.querySelector('[class*="sos-img__container"]')).toBeNull();
+    expect(
+      dialog.querySelector('[class*="emergency-panel__body-title"]'),
+    ).toBeNull();
+    expect(
+      screen.getByRole('button', { name: copy.emergencyAria }),
+    ).toBeDisabled();
+    expect(screen.getByRole('button', { name: copy.testAria })).toBeDisabled();
+  });
+
+  it('disables the abort action while abort feedback is displayed', async () => {
+    const user = userEvent.setup();
+    const bff = createFakeBff({
+      abort: vi.fn(async () => {
+        throw createEmergencyError('upstream_error', 'Abort failed.');
+      }),
+    });
+    const { controller } = setup(createTestController({ bff }));
+
+    await act(async () => {
+      await controller.client.activate();
+    });
+
+    const dialog = screen.getByRole('dialog', { name: copy.panelLabel });
+
+    await user.click(screen.getByRole('button', { name: copy.abort }));
+    await user.click(screen.getByRole('button', { name: copy.abortConfirm }));
+
+    expect(await screen.findByText(copy.abortResultFail)).toBeInTheDocument();
+    expect(dialog.querySelector('[class*="sos-img__container"]')).toBeNull();
+    expect(
+      dialog.querySelector('[class*="emergency-panel__body-title"]'),
+    ).toBeNull();
+    expect(
+      dialog.querySelector('[class*="emergency-status__panel"]'),
+    ).toBeNull();
+    expect(screen.getByRole('button', { name: copy.abort })).toBeDisabled();
+
+    await user.click(
+      screen.getByRole('button', { name: copy.feedbackDismiss }),
+    );
+
+    expect(
+      dialog.querySelector('[class*="emergency-status__panel"]'),
+    ).not.toBeNull();
   });
 
   it('requires confirmation before simulating and shows the result', async () => {
     const user = userEvent.setup();
     const { controller } = setup();
-    await open(controller);
+    const dialog = await open(controller);
 
     await user.click(screen.getByRole('button', { name: copy.testAria }));
     expect(
@@ -257,6 +282,31 @@ describe('emergency panel visual contract', () => {
     ).toBeInTheDocument();
     expect(screen.getByText(copy.simulateResultOk)).toBeInTheDocument();
     expect(controller.bff.simulacrum).toHaveBeenCalledTimes(1);
+    expect(dialog.querySelector('[class*="sos-img__container"]')).toBeNull();
+    expect(
+      dialog.querySelector('[class*="emergency-panel__body-title"]'),
+    ).toBeNull();
+    expect(
+      screen.getByRole('button', { name: copy.emergencyAria }),
+    ).toBeDisabled();
+    expect(screen.getByRole('button', { name: copy.testAria })).toBeDisabled();
+
+    await user.click(
+      screen.getByRole('button', { name: copy.feedbackDismiss }),
+    );
+
+    expect(
+      dialog.querySelector('[class*="sos-img__container"]'),
+    ).not.toBeNull();
+    expect(
+      dialog.querySelector('[class*="emergency-panel__body-title"]'),
+    ).toHaveTextContent(copy.question);
+    expect(
+      screen.getByRole('button', { name: copy.emergencyAria }),
+    ).not.toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: copy.testAria }),
+    ).not.toBeDisabled();
   });
 
   it('shows the simulation error surface', async () => {
@@ -280,6 +330,33 @@ describe('emergency panel visual contract', () => {
     expect(
       document.querySelector('[class*="emergency-error-message"]'),
     ).not.toBeNull();
+  });
+
+  it('dismisses a failed simulation without re-showing the error surface', async () => {
+    const user = userEvent.setup();
+    const bff = createFakeBff({
+      simulacrum: vi.fn(async () => {
+        throw createEmergencyError('upstream_error', 'Simulation failed.');
+      }),
+    });
+    const { controller } = setup(createTestController({ bff }));
+    await open(controller);
+
+    await user.click(screen.getByRole('button', { name: copy.testAria }));
+    await user.click(
+      screen.getByRole('button', { name: copy.simulateConfirm }),
+    );
+    await screen.findByText(copy.simulateResultFail);
+
+    await user.click(
+      screen.getByRole('button', { name: copy.feedbackDismiss }),
+    );
+
+    expect(screen.queryByText(copy.simulateResultFail)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: copy.retry }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('announces an existing emergency and opens it from the overlay', async () => {
@@ -312,7 +389,7 @@ describe('emergency panel visual contract', () => {
     expect(screen.getByText(copy.statusTitle)).toBeInTheDocument();
   });
 
-  it('renders the host fallback when geolocation fails', async () => {
+  it('renders geolocation feedback instead of a fallback card', async () => {
     const controller = createTestController({
       geolocation: {
         getCurrentPosition: async () => {
@@ -331,11 +408,54 @@ describe('emergency panel visual contract', () => {
       await controller.client.activate();
     });
 
-    expect(await screen.findByText(copy.geolocationDenied)).toBeInTheDocument();
-    const call = screen.getByRole('link', { name: /Línea de emergencia/ });
-    expect(call).toHaveAttribute('href', 'tel:+573001234567');
+    expect(await screen.findByRole('alert')).toHaveTextContent(copy.errorTitle);
+    expect(screen.getByText(copy.geolocationDenied)).toBeInTheDocument();
+    expect(document.querySelector('[class*="emergency-fallback"]')).toBeNull();
     expect(controller.bff.activate).not.toHaveBeenCalled();
     expect(screen.queryByText(copy.activeBanner)).not.toBeInTheDocument();
+
+    await userEvent.click(
+      screen.getByRole('button', { name: copy.feedbackDismiss }),
+    );
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('renders activation failures as transient feedback', async () => {
+    const bff = createFakeBff({
+      activate: vi.fn(async () => {
+        throw createEmergencyError(
+          'whatsapp_delivery_failed',
+          'No message could be sent.',
+        );
+      }),
+    });
+    const { controller } = setup(createTestController({ bff }));
+
+    await act(async () => {
+      await controller.client.activate();
+    });
+
+    const dialog = screen.getByRole('dialog', { name: copy.panelLabel });
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(copy.errorTitle);
+    expect(screen.getByText('No message could be sent.')).toBeInTheDocument();
+    expect(dialog.querySelector('[class*="sos-img__container"]')).toBeNull();
+    expect(
+      dialog.querySelector('[class*="emergency-panel__body-title"]'),
+    ).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: copy.retry }),
+    ).not.toBeInTheDocument();
+
+    await userEvent.click(
+      screen.getByRole('button', { name: copy.feedbackDismiss }),
+    );
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(
+      dialog.querySelector('[class*="emergency-panel__body-title"]'),
+    ).toHaveTextContent(copy.question);
   });
 
   it('shows the error surface with a retry action', async () => {

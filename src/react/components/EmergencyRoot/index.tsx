@@ -32,12 +32,15 @@ export function EmergencyRoot() {
 
   const active = snapshot?.active === true;
   const busy = BUSY_PHASES.includes(phase.kind);
+  const feedbackActive =
+    geolocationError !== null ||
+    abortResult !== null ||
+    simulationResult !== null;
+  const activationError =
+    phase.kind === 'ready' && !feedbackActive ? lastError : null;
   const showError =
     phase.kind === 'error' ||
-    (lastError !== null &&
-      geolocationError === null &&
-      abortResult === null &&
-      simulationResult === null);
+    (lastError !== null && !feedbackActive && activationError === null);
   const error = phase.kind === 'error' ? phase.error : lastError;
 
   return (
@@ -57,8 +60,8 @@ export function EmergencyRoot() {
         responders={responders}
         refreshing={phase.kind === 'refreshing'}
         geolocationError={geolocationError}
+        activationError={activationError}
         error={showError ? error : null}
-        fallback={config.fallback ?? null}
         abortResult={abortResult}
         simulationResult={simulationResult}
         abortConfirmation={abortConfirmation}

@@ -4,7 +4,6 @@ import { themeToCssVariables } from '@/core/mappers';
 import type {
   AbortResult,
   EmergencyError,
-  EmergencyFallback,
   EmergencyTheme,
   PanelCloseReason,
   Responder,
@@ -29,8 +28,8 @@ export interface EmergencyPanelProps {
   responders: readonly Responder[];
   refreshing: boolean;
   geolocationError: EmergencyError | null;
+  activationError?: EmergencyError | null;
   error: EmergencyError | null;
-  fallback: EmergencyFallback | null;
   abortResult: AbortResult | null;
   simulationResult: SimulationResult | null;
   abortConfirmation: boolean;
@@ -60,8 +59,8 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
     responders,
     refreshing,
     geolocationError,
+    activationError,
     error,
-    fallback,
     abortResult,
     simulationResult,
     abortConfirmation,
@@ -80,6 +79,11 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
   } = props;
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
+  const feedbackVisible =
+    geolocationError !== null ||
+    Boolean(activationError) ||
+    abortResult !== null ||
+    simulationResult !== null;
 
   const closeOnEscape = useCallback(() => {
     onClose('escape');
@@ -114,8 +118,8 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
           loading={loading}
           locale={locale}
           geolocationError={geolocationError}
+          activationError={activationError}
           error={error}
-          fallback={fallback}
           abortResult={abortResult}
           simulationResult={simulationResult}
           onRefresh={onRefresh}
@@ -127,6 +131,7 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
         active={active}
         busy={busy}
         aborting={aborting}
+        feedbackVisible={feedbackVisible}
         onActivate={onActivate}
         onRequestAbort={onRequestAbort}
         onRequestSimulation={onRequestSimulation}

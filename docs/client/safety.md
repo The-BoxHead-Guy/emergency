@@ -61,10 +61,12 @@ browser denies, times out, is unavailable or unsupported, the client:
 
 1. emits `emergency:failed` with operation `geolocation`,
 2. emits `emergency:fallback`,
-3. shows the typed explanation and your `fallback` phone number,
+3. shows a typed error feedback card that can be dismissed and auto-dismisses
+   after five seconds,
 4. does not call the BFF and does not claim an emergency was created.
 
-The fallback number comes from the host:
+The `fallback` host configuration is forwarded through `emergency:fallback` so
+an integration can offer its own direct-call surface:
 
 ```ts
 fallback: { phone: '+57 300 123 4567', label: 'Línea de emergencia' }
@@ -74,8 +76,8 @@ The client does not guess a country's emergency number. Choose the number your
 organization operates and label it honestly.
 
 Geolocation requires a secure context (`https://` or `localhost`). On plain
-HTTP in production the browser rejects the request; the fallback path is the
-only option.
+HTTP in production the browser rejects the request; the host can use the
+fallback event to offer an alternative path.
 
 ## Partial delivery is visible
 
@@ -129,7 +131,8 @@ carries the typed error with `requestId` when the BFF supplied one.
 
 ## What the host still owns
 
-- A working emergency phone number in `fallback`.
+- A working emergency phone number in `fallback` if you offer a host-side
+  direct-call action from the `emergency:fallback` event.
 - Accurate identity codes; the panel does not let the user type a code.
 - Not hiding the panel behind host overlays.
 - Not calling `destroy()` while an emergency is active unless the page is

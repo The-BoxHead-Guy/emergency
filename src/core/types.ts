@@ -123,6 +123,22 @@ export interface EmergencyTheme {
   readonly radius?: string;
 }
 
+export interface EmergencyFontFamilyFlags {
+  /** Loads the Google Sans family. Defaults to `true`. */
+  readonly googleSans?: boolean;
+  /** Loads the Montserrat family. Defaults to `true`. */
+  readonly montserrat?: boolean;
+  /** Loads the Poppins family. Defaults to `true`. */
+  readonly poppins?: boolean;
+}
+
+export interface EmergencyFontLoading {
+  /** Master switch for the runtime font request. Defaults to `true`. */
+  readonly load?: boolean;
+  /** Per-family switches. Every family defaults to `true`. */
+  readonly fonts?: EmergencyFontFamilyFlags;
+}
+
 export interface EmergencyGeolocation {
   readonly latitude: number;
   readonly longitude: number;
@@ -138,6 +154,12 @@ export interface EmergencyConfig {
   readonly fallback?: EmergencyFallback;
   /** Optional theme values mapped to `--de-emergency-*` CSS variables. */
   readonly theme?: EmergencyTheme;
+  /**
+   * Optional runtime loading of the panel's Google Fonts. The client injects
+   * the stylesheet once, before the first paint. Defaults to loading every
+   * family.
+   */
+  readonly fontLoading?: EmergencyFontLoading;
   /** BCP 47 locale used for dates and numbers. Defaults to `es`. */
   readonly locale?: string;
   /** Geolocation timeout in milliseconds. Defaults to 8000. */

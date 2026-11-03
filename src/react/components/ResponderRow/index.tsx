@@ -1,5 +1,4 @@
 import type { Responder } from '@/core/types';
-import { EmergencyMessageRow } from '@/react/components/EmergencyMessageRow';
 import { StatusCell } from '@/react/components/StatusCell';
 import { cls } from '@/react/classnames';
 
@@ -39,7 +38,6 @@ export function ResponderRow({
           locale={locale}
         />
       </div>
-      <EmergencyMessageRow responder={responder} locale={locale} />
     </div>
   );
 }

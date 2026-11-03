@@ -98,7 +98,8 @@ other animation is required for understanding the state.
 - Open with the keyboard only: Tab to the SOS control, press Enter.
 - Tab through every control; focus never leaves the panel.
 - Press Escape; focus returns to the SOS control.
-- Activate with geolocation blocked; the error and fallback phone are readable.
+- Activate with geolocation blocked; the error feedback is announced and
+  readable.
 - Run a screen reader over the activation states and the resume notification.
 - Zoom to 200%; the panel remains usable and does not clip the abort action.
 

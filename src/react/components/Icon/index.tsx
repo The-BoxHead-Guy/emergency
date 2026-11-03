@@ -23,6 +23,14 @@ interface IconProps {
   readonly title?: string;
 }
 
+/** Icons whose artwork does not fit the default 24x24 grid need their own canvas. */
+const viewBoxes: Readonly<Partial<Record<IconName, string>>> = {
+  emergency: '0 0 640 640',
+};
+
+/** Icons rendered as a solid shape instead of a stroked outline. */
+const filledIcons: ReadonlySet<IconName> = new Set<IconName>(['emergency']);
+
 const paths: Readonly<Record<IconName, ReactNode>> = {
   close: <path d="M6 6l12 12M18 6L6 18" />,
   'alert-triangle': (
@@ -103,22 +111,23 @@ const paths: Readonly<Record<IconName, ReactNode>> = {
   ),
   emergency: (
     <>
-      <path d="M12 2v6M12 16v6M2 12h6M16 12h6" />
-      <circle cx="12" cy="12" r="3" />
+      <path d="M272.5 96C272.5 78.3 286.8 64 304.5 64L336.5 64C354.2 64 368.5 78.3 368.5 96L368.5 236.9L490.5 166.5C505.8 157.7 525.4 162.9 534.2 178.2L550.2 205.9C559 221.2 553.8 240.8 538.5 249.6L416.5 320L538.5 390.4C553.8 399.2 559.1 418.8 550.2 434.1L534.2 461.8C525.4 477.1 505.8 482.4 490.5 473.5L368.5 403.1L368.5 544C368.5 561.7 354.2 576 336.5 576L304.5 576C286.8 576 272.5 561.7 272.5 544L272.5 403.1L150.5 473.5C135.2 482.3 115.6 477.1 106.8 461.8L90.8 434.1C82 418.8 87.2 399.2 102.5 390.4L224.5 320L102.5 249.6C87.2 240.8 82 221.2 90.8 205.9L106.8 178.2C115.6 162.9 135.2 157.7 150.5 166.5L272.5 236.9L272.5 96z" />
     </>
   ),
 };
 
 export function Icon({ name, className, title }: IconProps) {
+  const stroked = !filledIcons.has(name);
+
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
-      width="1em"
-      height="1em"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
+      viewBox={viewBoxes[name] ?? '0 0 24 24'}
+      width="1rem"
+      height="1rem"
+      fill={stroked ? 'none' : 'currentColor'}
+      stroke={stroked ? 'currentColor' : 'none'}
+      strokeWidth={stroked ? 2 : undefined}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden={title ? undefined : 'true'}

@@ -130,11 +130,30 @@ describe('emergency controller', () => {
     expect(controller.bff.activate).not.toHaveBeenCalled();
     expect(state.geolocationError?.code).toBe('geolocation_denied');
     expect(state.phase.kind).toBe('ready');
-    expect(state.messages.at(-1)?.kind).toBe('error');
     expect(fallback).toHaveBeenCalledWith({
       error: expect.objectContaining({ code: 'geolocation_denied' }),
       fallback: { phone: '+57 300 123 4567', label: 'Línea de emergencia' },
     });
+  });
+
+  it('clears the latent geolocation error when its feedback is dismissed', async () => {
+    const controller = createTestController({
+      geolocation: {
+        getCurrentPosition: async () => {
+          throw Object.assign(new Error('denied'), {
+            emergencyError: createEmergencyError(
+              'geolocation_denied',
+              'Permission denied.',
+            ),
+          });
+        },
+      },
+    });
+
+    await controller.client.activate();
+    controller.client.dismissFeedback();
+
+    expect(controller.client.getState().geolocationError).toBeNull();
   });
 
   it('shows the fallback when activation fails', async () => {
@@ -173,6 +192,26 @@ describe('emergency controller', () => {
     expect(state.phase.kind).toBe('ready');
     expect(state.simulationResult?.ok).toBe(true);
     expect(simulated).toHaveBeenCalledTimes(1);
+  });
+
+  it('dismisses a failed simulation without keeping its error surface', async () => {
+    const bff = createFakeBff({
+      simulacrum: vi.fn(async () => {
+        throw createEmergencyError('upstream_error', 'Simulation failed.');
+      }),
+    });
+    const controller = createTestController({ bff });
+
+    await controller.client.simulate();
+
+    expect(controller.client.getState().simulationResult?.ok).toBe(false);
+    expect(controller.client.getState().lastError).not.toBeNull();
+
+    controller.client.dismissFeedback();
+
+    const state = controller.client.getState();
+    expect(state.simulationResult).toBeNull();
+    expect(state.lastError).toBeNull();
   });
 
   it('blocks simulation while a real emergency is active', async () => {

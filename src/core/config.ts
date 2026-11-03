@@ -1,4 +1,5 @@
 import { isRecord } from '@/core/guards';
+import { normalizeFontLoading } from '@/core/fonts';
 import { createEmergencyError } from '@/core/errors';
 import type {
   EmergencyConfig,
@@ -143,6 +144,7 @@ export function validateConfig(
       locale: config.locale ?? 'es',
       geolocationTimeoutMs: config.geolocationTimeoutMs ?? 8000,
       requestTimeoutMs: config.requestTimeoutMs ?? 15000,
+      fontLoading: normalizeFontLoading(config.fontLoading),
     },
   };
 }

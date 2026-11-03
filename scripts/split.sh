@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Never let git open a pager: this script is interactive and a pager would
+# hide the review output behind a "(end)" prompt.
+export GIT_PAGER=cat PAGER=cat
+
 # Manual mirror of libs/emergency to the public split repository.
 # Fallback for when GitHub Actions minutes are exhausted.
 #
@@ -41,7 +45,7 @@ The script:
   5. Regenerates pnpm-lock.yaml and runs install, check, test, build and pack
      inspection inside the mirror.
   6. Shows the exact changes, then pushes main and v<version> only with --push.
-  7. Creates the local monorepo tag npm-v<version> (never pushes it).
+  7. Creates the local monorepo tag emergency-client-v<version> (never pushes it).
 
 Environment:
   SPLIT_REMOTE   Overrides the split repository remote.
@@ -167,7 +171,7 @@ else
   IS_MONOREPO=true
 fi
 
-TAG="npm-v$VERSION"
+TAG="emergency-client-v$VERSION"
 SPLIT_TAG="v$VERSION"
 
 if [[ "$PUSH" == false ]]; then
@@ -351,7 +355,7 @@ git add -A
 CHANGES="$(git status --porcelain)"
 if [[ -n "$CHANGES" ]]; then
   printf '%s\n' "$CHANGES"
-  git diff --cached --stat
+  git --no-pager diff --cached --stat
 else
   info "No content changes (the split repository already matches HEAD)"
 fi
