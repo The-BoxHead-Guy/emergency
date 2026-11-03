@@ -346,7 +346,7 @@ if [[ "$SKIP_TESTS" == false ]]; then
 else
   bash ./scripts/release.sh "$VERSION" --skip-install --allow-dirty --skip-tests
 fi
-ok "Standalone check, build and pack inspection passed"
+ok "Standalone verification passed"
 
 # ---------------------------------------------------------------------------
 step "🔎" "Review changes"

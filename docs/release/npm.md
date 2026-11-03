@@ -31,21 +31,12 @@ includes; source, tests, docs and examples are not published.
 
 ```bash
 cd libs/emergency
-pnpm run build
 npm pack --dry-run
 ```
 
-Check:
-
-- no `src/`, `tests/`, `docs/`, `examples/`, `node_modules/` or `.env` files,
-- no `dist/**/*.map` files (source maps stay in the repository, not on npm),
-- `dist/index.js`, `dist/index.cjs`, `dist/index.d.ts`, `dist/index.d.cts`,
-  `dist/styles.css`,
-- `dist/iife/emergency.iife.global.js`,
-- the package version.
-
-`scripts/release.sh` runs this inspection before publishing and fails on any
-unexpected file.
+The `files` field in `package.json` defines the published contents: `dist/`
+without source maps, plus the metadata npm always includes. The command is only
+a manual preview; the release pipeline trusts `files` and the build.
 
 ## Publish mechanisms
 
@@ -57,7 +48,7 @@ The split repository contains `.github/workflows/publish-npm.yml`, which:
 
 - declares `permissions: id-token: write` and `environment: npm`,
 - validates that the requested version matches `package.json` and `CHANGELOG.md`,
-- runs check, test, build and the pack inspection,
+- lets the npm lifecycle run check, tests and build once,
 - publishes with `npm publish --provenance`.
 
 Configure on npmjs.com:
@@ -80,10 +71,10 @@ npm login
 bash ./scripts/release.sh 0.2.0 --publish
 ```
 
-`prepack` rebuilds `dist/` on every `npm pack` and `npm publish`, and
-`prepublishOnly` re-runs check and tests, so a bare `npm publish` cannot ship
-stale artifacts. npm prompts for the one-time password; never paste a token into
-a shell history.
+`prepublishOnly` runs check and tests, and `prepack` rebuilds `dist/`, so a bare
+`npm publish` cannot ship stale artifacts. `scripts/release.sh` delegates to
+those hooks instead of repeating them. npm prompts for the one-time password;
+never paste a token into a shell history.
 
 ## Rollback and deprecation
 

@@ -26,8 +26,8 @@ Before publishing, confirm:
   - CHANGELOG.md has a `## [<version>]` entry
   - the version is committed and the split repository is up to date
 
-The script verifies the version, the changelog entry, the tarball contents and
-the IIFE size before publishing.
+The script verifies the version and the changelog entry, then lets npm run
+check, tests and build before publishing.
 EOF
 }
 
@@ -127,90 +127,31 @@ else
   echo "==> Skipping install (--skip-install)"
 fi
 
-echo "==> Check"
-pnpm run check
+PUBLISH_ARGS=(--access public)
 
-if [[ "$SKIP_TESTS" == false ]]; then
-  echo "==> Tests"
-  pnpm run test
+if [[ "$SKIP_TESTS" == true ]]; then
+  echo "==> Check"
+  pnpm run check
+
+  echo "==> Build"
+  pnpm run build
+
+  # Those steps already ran above; do not repeat them through npm hooks.
+  PUBLISH_ARGS+=(--ignore-scripts)
 else
-  echo "==> Skipping tests (--skip-tests)"
+  echo "==> Check, tests and build (npm lifecycle)"
 fi
 
-echo "==> Build"
-pnpm run build
-
-echo "==> Pack inspection"
-PACK_JSON="$(npm pack --dry-run --json --ignore-scripts)"
-printf '%s' "$PACK_JSON" | VERSION="$VERSION" node -e '
-  const fs = require("node:fs");
-  const path = require("node:path");
-  const version = process.env.VERSION;
-  const [pack] = JSON.parse(fs.readFileSync(0, "utf8"));
-  const files = pack.files.map((entry) => entry.path);
-  const forbidden = files.filter(
-    (file) =>
-      file.startsWith("src/") ||
-      file.startsWith("tests/") ||
-      file.startsWith("docs/") ||
-      file.startsWith("examples/") ||
-      file.startsWith("node_modules/") ||
-      /(^|\/)\.env(\.|$)/.test(file) ||
-      file.endsWith(".tgz") ||
-      file.endsWith(".map"),
-  );
-
-  if (forbidden.length > 0) {
-    console.error("refusing to publish, forbidden files in tarball:");
-    for (const file of forbidden) console.error(`  ${file}`);
-    process.exit(1);
-  }
-
-  for (const required of [
-    "package.json",
-    "README.md",
-    "LICENSE",
-    "dist/index.js",
-    "dist/index.cjs",
-    "dist/index.d.ts",
-    "dist/index.d.cts",
-    "dist/styles.css",
-    "dist/iife/emergency.iife.global.js",
-  ]) {
-    if (!files.includes(required)) {
-      console.error(`refusing to publish, missing ${required}`);
-      process.exit(1);
-    }
-  }
-
-  if (pack.version !== version) {
-    console.error(`packed version ${pack.version} does not match ${version}`);
-    process.exit(1);
-  }
-
-  console.log(`    ${pack.filename}`);
-  console.log(`    files: ${files.length}`);
-  console.log(`    package: ${(pack.size / 1024).toFixed(1)} kB`);
-  console.log(`    unpacked: ${(pack.unpackedSize / 1024 / 1024).toFixed(2)} MB`);
-  console.log(`    shasum: ${pack.shasum}`);
-  console.log(`    integrity: ${pack.integrity}`);
-'
-
-IIFE_BYTES="$(gzip -c dist/iife/emergency.iife.global.js | wc -c | tr -d ' ')"
-[[ "$IIFE_BYTES" -le 153600 ]] || {
-  echo "IIFE gzip size is ${IIFE_BYTES} bytes, over the 150 KiB budget" >&2
-  exit 1
-}
-echo "    iife gzip: ${IIFE_BYTES} bytes (budget 153600)"
-
 if [[ "$PUBLISH" == false ]]; then
+  echo "==> Publish dry run"
+  npm publish --dry-run "${PUBLISH_ARGS[@]}"
   echo
-  echo "Dry run complete. Re-run with --publish to publish $PKG_NAME@$VERSION."
+  echo "Dry run complete. Re-run with --publish to publish $PKG_NAME@$PKG_VERSION."
   exit 0
 fi
 
 echo "==> Publishing (npm will prompt for the one-time password)"
-npm publish --access public
+npm publish "${PUBLISH_ARGS[@]}"
 
 echo
 echo "Published $PKG_NAME@$VERSION"

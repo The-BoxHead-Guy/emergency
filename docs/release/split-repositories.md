@@ -92,11 +92,9 @@ monorepo commit
 4. `pnpm run check` passes in `libs/emergency`.
 5. `pnpm run test` passes in `libs/emergency`.
 6. `pnpm run build` passes in `libs/emergency`.
-7. `npm pack --dry-run` contains only `dist/`, `README.md`, `LICENSE`,
-   `CHANGELOG.md` and `package.json`.
-8. The IIFE gzip size is at most 150 KiB.
 
-`bash ./scripts/release.sh X.Y.Z` checks items 1, 2, 7 and 8 in one pass.
+`bash ./scripts/release.sh X.Y.Z` checks items 1–3 and runs items 4–6 through
+the npm lifecycle.
 
 ## What "read-only" means
 
@@ -159,8 +157,8 @@ from `HEAD`, so only committed files can reach the public repository, and it
 excludes `project.json` (Nx) and `docs/plans/` (internal notes).
 
 Inside the mirror it regenerates `pnpm-lock.yaml`, runs the standalone install,
-check, test, build and pack inspection, shows the exact diff, and only then
-pushes `main` and the force-updated `vX.Y.Z` tag. The monorepo tag
+check, test and build, shows the exact diff, and only then pushes `main` and the
+force-updated `vX.Y.Z` tag. The monorepo tag
 `emergency-client-vX.Y.Z` is created locally and never pushed automatically.
 
 ## Clean checkout

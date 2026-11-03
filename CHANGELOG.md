@@ -6,6 +6,16 @@ and [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- The release pipeline runs check, tests and build once through npm lifecycle
+  hooks; CI and the publish workflow no longer repeat those steps.
+
+### Removed
+
+- The custom tarball inspection. `package.json` `files` already defines the
+  published contents, so the release only needs check, tests and build.
+
 ## [0.2.0] - 2026-11-03
 
 ### Added

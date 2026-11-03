@@ -70,18 +70,20 @@ Then from `libs/emergency`:
 pnpm run check
 pnpm run test
 pnpm run build
-npm pack --dry-run
 ```
 
-Or run the whole release preflight at once, which also checks the changelog
-entry, the tarball contents and the IIFE budget:
+`npm publish` runs the same work through `prepublishOnly` (check and tests) and
+`prepack` (build), so publishing never repeats a step.
+
+Or run the whole release preflight at once, which also checks the version and
+the changelog entry:
 
 ```bash
 bash ./scripts/release.sh 0.2.1
 ```
 
 The pull request check `Monorepo Libraries - Verify (emergency-client)` runs the
-same check, test, build and pack steps.
+same check, test and build steps.
 
 ## 5. Tag and push
 

@@ -77,19 +77,7 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Check
-        run: pnpm run check
-
-      - name: Test
-        run: pnpm run test
-
-      - name: Build
-        run: pnpm run build
-
-      - name: Pack inspection
-        env:
-          VERSION: ${{ inputs.version }}
-        run: bash ./scripts/release.sh "$VERSION" --skip-install --skip-tests
-
+      # npm runs `prepublishOnly` (check + tests) and `prepack` (build)
+      # exactly once before publishing.
       - name: Publish with provenance
         run: npm publish

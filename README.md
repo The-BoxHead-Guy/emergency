@@ -293,8 +293,9 @@ run **Publish to npm** from the split repository.
 - Split repository tags: `v0.2.1`.
 - `scripts/split.sh <version> [--push] [--publish]` performs the same mirror
   manually and is the fallback when Actions is unavailable.
-- `scripts/release.sh <version> [--publish]` verifies the committed version, the
-  changelog entry, the tarball contents and the IIFE budget before publishing.
+- `scripts/release.sh <version> [--publish]` verifies the committed version and
+  the changelog entry, then runs check, tests and build through npm before
+  publishing.
 - Publishing uses npm Trusted Publishing from the split repository; the original
   `0.1.0` was published manually.
 
