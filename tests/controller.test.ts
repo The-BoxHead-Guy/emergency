@@ -272,6 +272,27 @@ describe('emergency controller', () => {
     expect(controller.bff.refresh).toHaveBeenCalledWith('emg-1');
   });
 
+  it('takes refreshed responders from the emergency payload', async () => {
+    const bff = createFakeBff({
+      refresh: vi.fn(async () => ({
+        emergency: {
+          ...activeEmergency,
+          responders: [{ ...responders[0], read: true }],
+        },
+      })),
+    });
+    const controller = createTestController({ bff });
+
+    await controller.client.activate();
+    await controller.client.refresh();
+
+    expect(
+      controller.client
+        .getState()
+        .responders.map((responder) => responder.status),
+    ).toEqual(['read']);
+  });
+
   it('emits typed events through its own emitter', async () => {
     const controller = createTestController();
     const seen: EmergencyEventName[] = [];

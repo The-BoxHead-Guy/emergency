@@ -79,7 +79,6 @@ export interface ActivateRequest {
 
 export interface RefreshResponse {
   readonly emergency: EmergencyPayload;
-  readonly responders: readonly ResponderPayload[];
 }
 
 export interface AbortResponse extends EmergencyResultPayload {

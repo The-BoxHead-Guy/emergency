@@ -133,11 +133,7 @@ export function isCurrentResponse(value: unknown): value is CurrentResponse {
 }
 
 export function isRefreshResponse(value: unknown): value is RefreshResponse {
-  return (
-    isRecord(value) &&
-    isRecord(value['emergency']) &&
-    isArrayOf(value['responders'], isResponderPayload)
-  );
+  return isRecord(value) && isRecord(value['emergency']);
 }
 
 export function isAbortResponse(value: unknown): value is AbortResponse {

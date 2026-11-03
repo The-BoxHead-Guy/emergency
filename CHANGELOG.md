@@ -6,6 +6,8 @@ and [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-03
+
 ### Changed
 
 - The release pipeline runs check, tests and build once through npm lifecycle
@@ -15,6 +17,8 @@ and [Semantic Versioning](https://semver.org/).
 
 - The custom tarball inspection. `package.json` `files` already defines the
   published contents, so the release only needs check, tests and build.
+- Top-level `responders` from `RefreshResponse`. Read responders from
+  `emergency.responders`.
 
 ## [0.2.0] - 2026-11-03
 

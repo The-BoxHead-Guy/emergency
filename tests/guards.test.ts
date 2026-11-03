@@ -86,7 +86,7 @@ describe('BFF response guards', () => {
 
   it('validates refresh and abort responses', () => {
     expect(
-      isRefreshResponse({ emergency: { emergency_id: 'emg-1' }, responders }),
+      isRefreshResponse({ emergency: { emergency_id: 'emg-1', responders } }),
     ).toBe(true);
     expect(
       isAbortResponse({

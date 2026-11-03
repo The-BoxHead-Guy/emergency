@@ -524,11 +524,7 @@ export function createEmergencyController(
         simulated: snapshot.simulated,
       });
       const responders =
-        result.responders.length > 0
-          ? result.responders.map(toResponder)
-          : next.responders.length > 0
-            ? next.responders
-            : get().responders;
+        next.responders.length > 0 ? next.responders : get().responders;
       const updated: EmergencySnapshot = { ...next, responders };
 
       patch({ snapshot: updated, responders, lastError: null });

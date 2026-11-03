@@ -134,7 +134,6 @@ export function createFakeBff(overrides: Partial<BffClient> = {}): FakeBff {
     refresh: vi.fn<BffClient['refresh']>(
       async (): Promise<RefreshResponse> => ({
         emergency: activeEmergency,
-        responders,
       }),
     ),
     abort: vi.fn<BffClient['abort']>(async (): Promise<AbortResponse> => ({

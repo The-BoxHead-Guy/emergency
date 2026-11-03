@@ -360,7 +360,6 @@ const server = createServer(async (request, response) => {
         : activeEmergency.responders;
     json(response, 200, {
       emergency: emergencyPayload(),
-      responders: activeEmergency.responders,
     });
     return;
   }
