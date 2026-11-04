@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { validateBaseUrl, validateConfig } from '@/core/config';
-import type { EmergencyConfig, EmergencyRealtimeConfig } from '@/core/types';
+import type { EmergencyConfig } from '@/core/types';
 
 const base: EmergencyConfig = {
   bffBaseUrl: 'https://example.com/de-bff/emergency',
@@ -61,7 +61,7 @@ describe('validateConfig realtime', () => {
   const invalid = (realtime: unknown) =>
     validateConfig({
       ...base,
-      realtime: realtime as EmergencyRealtimeConfig,
+      realtime,
     });
 
   it('leaves realtime undefined when the option is absent', () => {

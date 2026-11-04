@@ -19,6 +19,7 @@ export {
   normalizeBaseUrl,
   validateConfig,
 } from '@/core/config';
+export type { EmergencyConfigInput } from '@/core/config';
 export { themeToCssVariables } from '@/core/mappers';
 export {
   createEmergencyError,

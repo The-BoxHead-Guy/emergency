@@ -22,6 +22,9 @@ and [Semantic Versioning](https://semver.org/).
 - This is a MINOR release (`0.3.0`): the mount option is a new public
   capability, and removing the BFF-sourced realtime field is a coordinated
   contract change that PATCH would misrepresent.
+- `validateConfig` accepts an `EmergencyConfigInput` whose `realtime` value is
+  untrusted, matching the runtime validation it already performs. Tests no
+  longer need a type assertion to exercise invalid realtime input.
 
 ### Removed
 

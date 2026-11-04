@@ -124,8 +124,12 @@ export interface ConfigValidationResult {
   readonly config: EmergencyConfig | null;
 }
 
+export type EmergencyConfigInput = Omit<EmergencyConfig, 'realtime'> & {
+  readonly realtime?: unknown;
+};
+
 export function validateConfig(
-  config: EmergencyConfig,
+  config: EmergencyConfigInput,
 ): ConfigValidationResult {
   const bffBaseUrl =
     typeof config.bffBaseUrl === 'string'
