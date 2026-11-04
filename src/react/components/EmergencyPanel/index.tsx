@@ -1,4 +1,4 @@
-import { useCallback, useId, useRef } from 'react';
+import { useCallback, useEffect, useId, useRef } from 'react';
 import type { CSSProperties } from 'react';
 import { themeToCssVariables } from '@/core/mappers';
 import type {
@@ -9,13 +9,16 @@ import type {
   Responder,
   SimulationResult,
 } from '@/core/types';
-import { EmergencyBody } from '@/react/components/EmergencyBody';
 import { EmergencyConfirmation } from '@/react/components/EmergencyConfirmation';
-import { EmergencyFooter } from '@/react/components/EmergencyFooter';
-import { EmergencyHeader } from '@/react/components/EmergencyHeader';
 import { cls } from '@/react/classnames';
 import { useEscapeKey } from '@/react/hooks/useEscapeKey';
 import { useFocusTrap } from '@/react/hooks/useFocusTrap';
+import {
+  EmergencyScreenProvider,
+  useScreenNavigation,
+} from '@/react/screens/context';
+import { screenRegistry } from '@/react/screens/registry';
+import type { EmergencyScreenProps } from '@/react/screens/types';
 
 export interface EmergencyPanelProps {
   open: boolean;
@@ -45,6 +48,46 @@ export interface EmergencyPanelProps {
   onCancelSimulation: () => void;
   onConfirmAbort: () => void;
   onConfirmSimulation: () => void;
+}
+
+interface ActiveScreenProps {
+  readonly screenProps: EmergencyScreenProps;
+  readonly open: boolean;
+  readonly forcePrimary: boolean;
+}
+
+function ActiveScreen({ screenProps, open, forcePrimary }: ActiveScreenProps) {
+  const { screen, reset } = useScreenNavigation();
+  const shouldReset = !open || forcePrimary;
+  const effectiveScreen = shouldReset ? 'primary' : screen;
+  const previousOpen = useRef(open);
+  const previousScreen = useRef(effectiveScreen);
+
+  useEffect(() => {
+    if (shouldReset) {
+      reset();
+    }
+  }, [reset, shouldReset]);
+
+  useEffect(() => {
+    const wasOpen = previousOpen.current;
+    const previousEffectiveScreen = previousScreen.current;
+
+    previousOpen.current = open;
+    previousScreen.current = effectiveScreen;
+
+    if (!open || !wasOpen || previousEffectiveScreen === effectiveScreen) {
+      return;
+    }
+
+    document
+      .getElementById(screenProps.titleId)
+      ?.focus({ preventScroll: true });
+  }, [effectiveScreen, open, screenProps.titleId]);
+
+  const Screen = screenRegistry[effectiveScreen];
+
+  return <Screen {...screenProps} />;
 }
 
 export function EmergencyPanel(props: EmergencyPanelProps) {
@@ -84,6 +127,7 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
     Boolean(activationError) ||
     abortResult !== null ||
     simulationResult !== null;
+  const forcePrimary = active || loading || error !== null || feedbackVisible;
 
   const closeOnEscape = useCallback(() => {
     onClose('escape');
@@ -91,6 +135,30 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
 
   useFocusTrap(dialogRef, open);
   useEscapeKey(open, closeOnEscape);
+
+  const screenProps: EmergencyScreenProps = {
+    titleId,
+    active,
+    busy,
+    aborting,
+    loading,
+    locale,
+    responders,
+    refreshing,
+    geolocationError,
+    activationError,
+    error,
+    abortResult,
+    simulationResult,
+    feedbackVisible,
+    onClose,
+    onActivate,
+    onRefresh,
+    onRetry,
+    onDismissFeedback,
+    onRequestAbort,
+    onRequestSimulation,
+  };
 
   return (
     <div
@@ -106,36 +174,13 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
       inert={!open}
       tabIndex={-1}
     >
-      <EmergencyHeader titleId={titleId} onClose={() => onClose('close')} />
-      <section
-        className={cls('emergency-panel__body')}
-        aria-labelledby={titleId}
-      >
-        <EmergencyBody
-          active={active}
-          responders={responders}
-          refreshing={refreshing}
-          loading={loading}
-          locale={locale}
-          geolocationError={geolocationError}
-          activationError={activationError}
-          error={error}
-          abortResult={abortResult}
-          simulationResult={simulationResult}
-          onRefresh={onRefresh}
-          onRetry={onRetry}
-          onDismissFeedback={onDismissFeedback}
+      <EmergencyScreenProvider>
+        <ActiveScreen
+          screenProps={screenProps}
+          open={open}
+          forcePrimary={forcePrimary}
         />
-      </section>
-      <EmergencyFooter
-        active={active}
-        busy={busy}
-        aborting={aborting}
-        feedbackVisible={feedbackVisible}
-        onActivate={onActivate}
-        onRequestAbort={onRequestAbort}
-        onRequestSimulation={onRequestSimulation}
-      />
+      </EmergencyScreenProvider>
       <EmergencyConfirmation
         abortConfirmation={abortConfirmation}
         simulationConfirmation={simulationConfirmation}

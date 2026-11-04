@@ -12,6 +12,9 @@
   --de-emergency-on-red: #fff;
   --de-emergency-blue: #00adf6;
   --de-emergency-blue-hover: #29bfff;
+  --de-emergency-blue-soft: #e6f7fe;
+  --de-emergency-blue-dark: #005f8f;
+  --de-emergency-blue-border: #b8e6fc;
   --de-emergency-primary: #007bff;
   --de-emergency-primary-dark: #1e40af;
   --de-emergency-primary-foreground: #f9f9f9;
@@ -23,11 +26,14 @@
   --de-emergency-gray: #555;
   --de-emergency-gray-medium: #55555555;
   --de-emergency-gray-light: #929292;
+  --de-emergency-border: #e3e5ea;
   --de-emergency-success: #4cd03a;
   --de-emergency-success-soft: #dcffd8;
   --de-emergency-error: #dc3545;
   --de-emergency-information: #3fabf3;
   --de-emergency-green: #008000;
+  --de-emergency-yellow: #ffd400;
+  --de-emergency-yellow-dark: #b38b00;
   --de-emergency-radius: 0.5rem;
   --de-emergency-font:
     'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,

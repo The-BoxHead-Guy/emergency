@@ -76,7 +76,11 @@ export function useFocusTrap(
         return;
       }
 
-      if (!event.shiftKey && current === last && first) {
+      if (
+        !event.shiftKey &&
+        (current === last || !container.contains(current)) &&
+        first
+      ) {
         event.preventDefault();
         first.focus({ preventScroll: true });
       }

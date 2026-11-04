@@ -173,6 +173,7 @@ export default defineConfig({
       'AGENTS.md',
       'dist/**',
       'examples/**',
+      'assets/mocks/**',
       'pnpm-lock.yaml',
     ],
   },

@@ -4,7 +4,15 @@ All notable changes to `@dataemergencia/emergency` are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.4.0] - 2026-11-04
+
+### Added
+
+- Availability section on the emergency panel's primary screen with the
+  remaining alert rounds, plus an in-memory screen system for the `primary`,
+  `pricing` and `details` screens.
+- Package catalog on the `pricing` screen, including the highlighted
+  best-value package and a local package selection.
 
 ## [0.3.0] - 2026-11-03
 

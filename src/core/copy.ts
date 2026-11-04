@@ -4,6 +4,7 @@
 export const copy = {
   panelLabel: 'Panel de emergencia',
   close: 'Cerrar panel de emergencia',
+  back: 'Volver',
   question: '¿Tiene usted una emergencia?',
   illustrationAlt: 'Ícono paramédico',
   emergency: 'Emergencia',
