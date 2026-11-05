@@ -20,6 +20,7 @@ export function EmergencyRoot() {
   const responders = useEmergencyStore((state) => state.responders);
   const resumeAvailable = useEmergencyStore((state) => state.resumeAvailable);
   const geolocationError = useEmergencyStore((state) => state.geolocationError);
+  const contactPhone = useEmergencyStore((state) => state.contactPhone);
   const lastError = useEmergencyStore((state) => state.lastError);
   const abortResult = useEmergencyStore((state) => state.abortResult);
   const simulationResult = useEmergencyStore((state) => state.simulationResult);
@@ -60,6 +61,7 @@ export function EmergencyRoot() {
         responders={responders}
         refreshing={phase.kind === 'refreshing'}
         geolocationError={geolocationError}
+        contactPhone={contactPhone}
         activationError={activationError}
         error={showError ? error : null}
         abortResult={abortResult}
@@ -87,6 +89,7 @@ export function EmergencyRoot() {
         onConfirmSimulation={() => {
           void client.simulate();
         }}
+        onSetContactPhone={(phone) => client.setContactPhone(phone)}
       />
     </>
   );

@@ -50,10 +50,6 @@ export function PricingScreen(props: EmergencyScreenProps) {
             onSelect={setSelected}
           />
         ))}
-
-        <p className={cls('emergency-pricing__footnote')}>
-          {pricingCopy.footnote}
-        </p>
       </div>
     </EmergencyScreenLayout>
   );

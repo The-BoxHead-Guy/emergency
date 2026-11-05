@@ -7,7 +7,11 @@ import type {
   SimulationResult,
 } from '@/core/types';
 
-export type EmergencyScreenId = 'primary' | 'pricing' | 'details';
+export type EmergencyScreenId =
+  | 'primary'
+  | 'pre-emergency'
+  | 'pricing'
+  | 'details';
 
 /** Props every screen receives from the panel shell. */
 export interface EmergencyScreenProps {
@@ -20,6 +24,7 @@ export interface EmergencyScreenProps {
   readonly responders: readonly Responder[];
   readonly refreshing: boolean;
   readonly geolocationError: EmergencyError | null;
+  readonly contactPhone: string | null;
   readonly activationError?: EmergencyError | null;
   readonly error: EmergencyError | null;
   readonly abortResult: AbortResult | null;
@@ -32,6 +37,7 @@ export interface EmergencyScreenProps {
   readonly onDismissFeedback: () => void;
   readonly onRequestAbort: () => void;
   readonly onRequestSimulation: () => void;
+  readonly onSetContactPhone: (phone: string | null) => void;
 }
 
 export type EmergencyScreenComponent = ComponentType<EmergencyScreenProps>;

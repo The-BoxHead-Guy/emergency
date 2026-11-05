@@ -31,6 +31,7 @@ export interface EmergencyPanelProps {
   responders: readonly Responder[];
   refreshing: boolean;
   geolocationError: EmergencyError | null;
+  contactPhone: string | null;
   activationError?: EmergencyError | null;
   error: EmergencyError | null;
   abortResult: AbortResult | null;
@@ -48,6 +49,7 @@ export interface EmergencyPanelProps {
   onCancelSimulation: () => void;
   onConfirmAbort: () => void;
   onConfirmSimulation: () => void;
+  onSetContactPhone: (phone: string | null) => void;
 }
 
 interface ActiveScreenProps {
@@ -102,6 +104,7 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
     responders,
     refreshing,
     geolocationError,
+    contactPhone,
     activationError,
     error,
     abortResult,
@@ -119,6 +122,7 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
     onCancelSimulation,
     onConfirmAbort,
     onConfirmSimulation,
+    onSetContactPhone,
   } = props;
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -151,6 +155,7 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
     abortResult,
     simulationResult,
     feedbackVisible,
+    contactPhone,
     onClose,
     onActivate,
     onRefresh,
@@ -158,6 +163,7 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
     onDismissFeedback,
     onRequestAbort,
     onRequestSimulation,
+    onSetContactPhone,
   };
 
   return (
@@ -165,7 +171,6 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
       ref={dialogRef}
       className={cls('emergency-panel', !open && 'emergency-panel--hidden')}
       // React types do not model custom `--*` properties without an assertion.
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       style={themeToCssVariables(theme) as CSSProperties}
       role="dialog"
       aria-modal="true"

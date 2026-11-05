@@ -35,7 +35,7 @@ the stable BEM suffix when you need to override a rule.
 | `--de-emergency-gray-light`     | `#929292`     | Timestamps.                             |
 | `--de-emergency-success`        | `#4cd03a`     | Checked icons, success outline.         |
 | `--de-emergency-error`          | `#dc3545`     | Error icon, failed outline.             |
-| `--de-emergency-radius`         | `0.5rem`      | Panel and card corners.                 |
+| `--de-emergency-radius`         | `0.75rem`     | Panel and card corners.                 |
 | `--de-emergency-font`           | Poppins stack | Typography; Google Fonts load at mount. |
 
 Every rule also has a literal fallback, so the panel renders correctly even if
@@ -52,7 +52,7 @@ mount({
     surface: '#ffffff',
     text: '#3d4461',
     muted: '#686868',
-    radius: '0.5rem',
+    radius: '0.75rem',
   },
 });
 ```

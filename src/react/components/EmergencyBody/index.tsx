@@ -65,9 +65,12 @@ export function EmergencyBody(props: EmergencyBodyProps) {
       )}
     >
       {idle ? (
-        <div className={cls('emergency-panel__availability-region')}>
-          <Availability onRecharge={onRecharge} onDetails={onDetails} />
-        </div>
+        <>
+          <div className={cls('emergency-panel__availability-region')}>
+            <Availability onRecharge={onRecharge} onDetails={onDetails} />
+          </div>
+          <hr className={cls('emergency-panel__divider')} aria-hidden="true" />
+        </>
       ) : null}
 
       <div className={cls('emergency-panel__prompt-region')}>

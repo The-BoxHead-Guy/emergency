@@ -278,6 +278,7 @@ export interface EmergencyClientState {
   readonly lastError: EmergencyError | null;
   readonly geolocation: EmergencyGeolocation | null;
   readonly geolocationError: EmergencyError | null;
+  readonly contactPhone: string | null;
   readonly realtimeStatus: RealtimeStatus;
   readonly abortResult: AbortResult | null;
   readonly simulationResult: SimulationResult | null;
@@ -312,6 +313,7 @@ export interface EmergencyClient {
   requestSimulationConfirmation(): void;
   cancelSimulationConfirmation(): void;
   dismissFeedback(): void;
+  setContactPhone(phone: string | null): void;
 }
 
 export type EmergencyTrigger =

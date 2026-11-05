@@ -19,10 +19,9 @@ describe('pricing catalog', () => {
       '12$',
     ]);
     expect(PRICING_PACKAGES.map((pkg) => pkg.perMessageLabel)).toEqual([
+      '$0.07',
       '$0.06',
-      '$0.05',
     ]);
-    expect(PRICING_PACKAGES[1].priceNote).toBe('($10 + IVA)');
   });
 
   it('only highlights the best-value package and gives it a badge', () => {

@@ -15,8 +15,8 @@
   --de-emergency-blue-soft: #e6f7fe;
   --de-emergency-blue-dark: #005f8f;
   --de-emergency-blue-border: #b8e6fc;
-  --de-emergency-primary: #007bff;
-  --de-emergency-primary-dark: #1e40af;
+  --de-emergency-primary: var(--de-emergency-scaem-primary);
+  --de-emergency-primary-dark: var(--de-emergency-scaem-blue-buttons-hover);
   --de-emergency-primary-foreground: #f9f9f9;
   --de-emergency-text: #3d4461;
   --de-emergency-text-secondary: #686868;
@@ -32,9 +32,59 @@
   --de-emergency-error: #dc3545;
   --de-emergency-information: #3fabf3;
   --de-emergency-green: #008000;
-  --de-emergency-yellow: #ffd400;
+  --de-emergency-yellow: var(--de-emergency-alarm-step-two);
   --de-emergency-yellow-dark: #b38b00;
-  --de-emergency-radius: 0.5rem;
+
+  /* Neutrals */
+  --de-emergency-black-absolute: #000;
+  --de-emergency-black: #050505;
+  --de-emergency-gray-dark: #3b3b3b;
+  --de-emergency-gray-progress-bar: #a7a7a7;
+  --de-emergency-gray-secondary: #6c757d;
+  --de-emergency-white-light: #f5f5f5;
+  --de-emergency-white-dimmed: #e3e3e3;
+  --de-emergency-light-gray: #f8f9fa;
+  --de-emergency-border-panic-button: #d8d8d8;
+  --de-emergency-shadow-panic-button: rgba(0, 0, 0, 0.1);
+
+  /* Alarm steps */
+  --de-emergency-alarm-step-one: #97d897;
+  --de-emergency-alarm-step-two: #ffff16;
+  --de-emergency-alarm-step-three: #ffa481;
+  --de-emergency-alarm-step-four: #ff1a1a;
+
+  /* SCAEM */
+  --de-emergency-scaem-blue: #0671b8;
+  --de-emergency-scaem-blue-hover: #1185e4;
+  --de-emergency-scaem-blue-buttons-hover: #4cb5f6;
+  --de-emergency-scaem-lightblue: #1289d7;
+  --de-emergency-scaem-red-hover: #fc3535;
+  --de-emergency-scaem-red-2: #ff5851;
+  --de-emergency-scaem-red-2-hover: #ff7b7b;
+  --de-emergency-scaem-yellow: #ffd700;
+  --de-emergency-scaem-orange: #ffa500;
+  --de-emergency-scaem-primary: #3fabf3;
+  --de-emergency-scaem-secondary: #ff5851;
+  --de-emergency-scaem-third: #3d4461;
+  --de-emergency-scaem-fourth: #cfeafc;
+
+  /* Theme */
+  --de-emergency-theme-shadow: rgba(63, 171, 243, 0.5);
+
+  /* Rutaweb */
+  --de-emergency-rutaweb-default: #004085;
+  --de-emergency-rutaweb-lighter: #1474da;
+  --de-emergency-rutaweb-light: #0560c2;
+  --de-emergency-rutaweb-secondary: #158948;
+  --de-emergency-rutaweb-hover: #002752;
+
+  /* Brands */
+  --de-emergency-facebook: #3b5998;
+  --de-emergency-instagram: #e1306c;
+  --de-emergency-whatsapp: #25d366;
+  --de-emergency-whatsapp-darker: #1aa44e;
+
+  --de-emergency-radius: 0.75rem;
   --de-emergency-font:
     'Poppins', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;

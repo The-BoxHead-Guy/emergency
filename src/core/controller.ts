@@ -652,6 +652,7 @@ export function createEmergencyController(
       panelOpen: false,
       abortConfirmation: false,
       simulationConfirmation: false,
+      contactPhone: null,
     });
     events.emit('panel:closed', { reason });
   }
@@ -730,6 +731,7 @@ export function createEmergencyController(
       lastError: null,
       geolocation: null,
       geolocationError: null,
+      contactPhone: null,
       realtimeStatus: 'idle',
       abortResult: null,
       simulationResult: null,
@@ -783,6 +785,7 @@ export function createEmergencyController(
         ...(dismissedFailure ? { lastError: null } : {}),
       });
     },
+    setContactPhone: (phone) => patch({ contactPhone: phone }),
   };
 
   return { client, store, events };

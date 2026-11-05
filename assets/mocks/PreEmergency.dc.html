@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Pre-emergencia</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button,input{font-family:'Poppins',sans-serif}
+input:focus-visible{outline:3px solid #00aef9;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 360px; height: 800px; box-sizing: border-box; display: flex; flex-direction: column; background: #ffffff; font-family: 'Poppins', sans-serif; color: #3b3f58; overflow: hidden">
+
+  <!-- HEADER (unchanged) -->
+  <header style="background: #ff0000; height: 56px; flex-shrink: 0; box-sizing: border-box; padding: 0 16px; display: flex; align-items: center; justify-content: center; position: relative; border-radius: 0 0 14px 14px">
+    <h1 style="margin: 0; font-size: 16px; font-weight: 700; color: #ffffff">Pre-emergencia</h1>
+    <a href="Main.dc.html" aria-label="Volver al panel" style="position: absolute; left: 8px; top: 6px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>
+    </a>
+  </header>
+
+  <!-- BODY -->
+  <main style="flex: 1; min-height: 0; overflow-y: auto; box-sizing: border-box; padding: 24px 16px; display: flex; flex-direction: column; gap: 24px">
+
+    <!-- SECTION 1: PERMISSION CARD -->
+    <section role="note" aria-labelledby="perm-title" style="background: #facc15; border-radius: 14px; padding: 20px 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; color: #3a2e00">
+      <svg aria-hidden="true" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#3a2e00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+      <p id="perm-title" style="margin: 0; font-size: 16px; font-weight: 700; line-height: 1.4; color: #3a2e00">Debes autorizar todos los permisos de ubicación</p>
+    </section>
+
+    <!-- SECTION 2: PHONE INPUT -->
+    <section style="display: flex; flex-direction: column; gap: 8px">
+      <label for="tlf" style="font-size: 14px; font-weight: 600; color: #3b3f58">Indique su número de teléfono</label>
+      <input id="tlf" name="tlf" type="tel" inputmode="tel" autocomplete="tel" placeholder="Ej. 0412 000 0000" style="box-sizing: border-box; width: 100%; height: 52px; padding: 0 14px; border: 1.5px solid #3b3f58; border-radius: 12px; font-size: 16px; color: #3b3f58; background: #ffffff">
+    </section>
+  </main>
+
+  <!-- FOOTER: EMERGENCIA ONLY -->
+  <footer style="background: #f5f5f7; flex-shrink: 0; box-sizing: border-box; padding: 16px">
+    <button style="width: 100%; height: 78px; background: #ff0000; border: 0; border-radius: 12px; color: #ffffff; font-size: 14px; font-weight: 700; text-transform: uppercase; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px">
+      <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"><path d="M12 3v18M4.2 7.5l15.6 9M19.8 7.5l-15.6 9"></path></svg>
+      Emergencia
+    </button>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":800}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

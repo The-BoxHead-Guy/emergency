@@ -20,25 +20,26 @@ returns an unsubscribe function.
 
 Important state fields:
 
-| Field                    | Meaning                                                           |
-| ------------------------ | ----------------------------------------------------------------- |
-| `phase`                  | Current lifecycle phase, see below.                               |
-| `panelOpen`              | Whether the overlay is visible.                                   |
-| `sessionReady`           | The BFF session exists and CSRF is available.                     |
-| `resumeAvailable`        | An active emergency was detected and not dismissed.               |
-| `snapshot`               | The active or simulated emergency.                                |
-| `responders`             | Flattened responder list with delivery status.                    |
-| `failures`               | Contacts the BFF could not notify.                                |
-| `messages`               | Message rows derived from the snapshot.                           |
-| `lastError`              | Last typed error.                                                 |
-| `geolocation`            | Last coordinates.                                                 |
-| `geolocationError`       | Last geolocation error.                                           |
-| `realtimeStatus`         | `idle`, `connecting`, `connected`, `disconnected`, `unavailable`. |
-| `abortResult`            | Result of the last abort attempt.                                 |
-| `simulationResult`       | Result of the last simulation attempt.                            |
-| `abortConfirmation`      | Whether the abort confirmation is open.                           |
-| `simulationConfirmation` | Whether the simulation confirmation is open.                      |
-| `destroyed`              | Whether `destroy()` ran.                                          |
+| Field                    | Meaning                                                            |
+| ------------------------ | ------------------------------------------------------------------ |
+| `phase`                  | Current lifecycle phase, see below.                                |
+| `panelOpen`              | Whether the overlay is visible.                                    |
+| `sessionReady`           | The BFF session exists and CSRF is available.                      |
+| `resumeAvailable`        | An active emergency was detected and not dismissed.                |
+| `snapshot`               | The active or simulated emergency.                                 |
+| `responders`             | Flattened responder list with delivery status.                     |
+| `failures`               | Contacts the BFF could not notify.                                 |
+| `messages`               | Message rows derived from the snapshot.                            |
+| `lastError`              | Last typed error.                                                  |
+| `geolocation`            | Last coordinates.                                                  |
+| `geolocationError`       | Last geolocation error.                                            |
+| `contactPhone`           | Phone captured by the pre-emergency screen for this panel session. |
+| `realtimeStatus`         | `idle`, `connecting`, `connected`, `disconnected`, `unavailable`.  |
+| `abortResult`            | Result of the last abort attempt.                                  |
+| `simulationResult`       | Result of the last simulation attempt.                             |
+| `abortConfirmation`      | Whether the abort confirmation is open.                            |
+| `simulationConfirmation` | Whether the simulation confirmation is open.                       |
+| `destroyed`              | Whether `destroy()` ran.                                           |
 
 ### Phases
 
@@ -72,6 +73,19 @@ client.dismissResume(): void
   clears the resume notification.
 - `dismissResume()` hides the resume notification without changing the
   emergency. The notification appears again on the next page load.
+
+## Pre-emergency methods
+
+```ts
+client.setContactPhone(phone: string | null): void
+```
+
+- `setContactPhone()` stores the E.164 phone captured by the pre-emergency
+  screen. The primary screen skips the phone step while this value is set.
+- `close()` and `destroy()` clear the value, so the phone is only remembered for
+  the current panel session.
+- The value is not sent to the BFF yet; `POST /activate` still receives only the
+  geolocation coordinates.
 
 ## Emergency methods
 

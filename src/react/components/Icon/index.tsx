@@ -16,7 +16,8 @@ export type IconName =
   | 'info'
   | 'arrow-left'
   | 'emergency'
-  | 'credit-card-plus';
+  | 'credit-card-plus'
+  | 'map-pin';
 
 interface IconProps {
   readonly name: IconName;
@@ -108,6 +109,12 @@ const paths: Readonly<Record<IconName, ReactNode>> = {
     <>
       <path d="M19 12H5" />
       <path d="m12 19-7-7 7-7" />
+    </>
+  ),
+  'map-pin': (
+    <>
+      <path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" />
+      <circle cx="12" cy="10" r="2.5" />
     </>
   ),
   'credit-card-plus': (

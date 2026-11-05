@@ -76,6 +76,10 @@ export function PackageCard({ pkg, selected, onSelect }: PackageCardProps) {
         </div>
       </div>
 
+      <p className={cls('emergency-pricing__package-footnote')}>
+        {pricingCopy.footnote}
+      </p>
+
       <button
         type="button"
         className={cls('emergency-pricing__select')}

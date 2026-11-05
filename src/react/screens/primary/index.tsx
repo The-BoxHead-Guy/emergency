@@ -7,6 +7,12 @@ import type { EmergencyScreenProps } from '@/react/screens/types';
 
 export function PrimaryScreen(props: EmergencyScreenProps) {
   const { navigate } = useScreenNavigation();
+  const idle =
+    !props.active &&
+    !props.loading &&
+    !props.feedbackVisible &&
+    props.error === null;
+  const needsContactPhone = props.contactPhone === null;
 
   return (
     <EmergencyScreenLayout
@@ -15,6 +21,7 @@ export function PrimaryScreen(props: EmergencyScreenProps) {
       header={
         <EmergencyHeader
           titleId={props.titleId}
+          variant={idle ? 'close-only' : 'default'}
           onClose={() => props.onClose('close')}
         />
       }
@@ -24,7 +31,11 @@ export function PrimaryScreen(props: EmergencyScreenProps) {
           busy={props.busy}
           aborting={props.aborting}
           feedbackVisible={props.feedbackVisible}
-          onActivate={props.onActivate}
+          onActivate={
+            needsContactPhone
+              ? () => navigate('pre-emergency')
+              : props.onActivate
+          }
           onRequestAbort={props.onRequestAbort}
           onRequestSimulation={props.onRequestSimulation}
         />

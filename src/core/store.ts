@@ -17,6 +17,7 @@ export function createEmergencyStore(config: EmergencyConfig): EmergencyStore {
     lastError: null,
     geolocation: null,
     geolocationError: null,
+    contactPhone: null,
     realtimeStatus: 'idle',
     abortResult: null,
     simulationResult: null,

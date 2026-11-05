@@ -7,6 +7,8 @@ export interface EmergencyFooterProps {
   busy: boolean;
   aborting: boolean;
   feedbackVisible: boolean;
+  showSimulation?: boolean;
+  emergencyDisabled?: boolean;
   onActivate: () => void;
   onRequestAbort: () => void;
   onRequestSimulation: () => void;
@@ -18,6 +20,8 @@ export function EmergencyFooter(props: EmergencyFooterProps) {
     busy,
     aborting,
     feedbackVisible,
+    showSimulation = true,
+    emergencyDisabled = false,
     onActivate,
     onRequestAbort,
     onRequestSimulation,
@@ -41,7 +45,12 @@ export function EmergencyFooter(props: EmergencyFooterProps) {
   }
 
   return (
-    <footer className={cls('emergency-panel__footer')}>
+    <footer
+      className={cls(
+        'emergency-panel__footer',
+        !showSimulation && 'emergency-panel__footer--single',
+      )}
+    >
       <button
         type="button"
         className={cls(
@@ -49,26 +58,28 @@ export function EmergencyFooter(props: EmergencyFooterProps) {
           'emergency-panel__button--emergency',
         )}
         aria-label={copy.emergencyAria}
-        disabled={busy || feedbackVisible}
+        disabled={busy || feedbackVisible || emergencyDisabled}
         onClick={onActivate}
       >
         {copy.emergency}
         <Icon name="emergency" />
       </button>
 
-      <button
-        type="button"
-        className={cls(
-          'emergency-panel__button',
-          'emergency-panel__button--simulation',
-        )}
-        aria-label={copy.testAria}
-        disabled={busy || feedbackVisible}
-        onClick={onRequestSimulation}
-      >
-        {copy.test}
-        <Icon name="list-check" />
-      </button>
+      {showSimulation ? (
+        <button
+          type="button"
+          className={cls(
+            'emergency-panel__button',
+            'emergency-panel__button--simulation',
+          )}
+          aria-label={copy.testAria}
+          disabled={busy || feedbackVisible}
+          onClick={onRequestSimulation}
+        >
+          {copy.test}
+          <Icon name="list-check" />
+        </button>
+      ) : null}
     </footer>
   );
 }

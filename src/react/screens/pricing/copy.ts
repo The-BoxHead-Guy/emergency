@@ -7,7 +7,7 @@ export const pricingCopy = {
   chosen: 'Seleccionado',
   whatsapp: 'de WhatsApp',
   rounds: 'rondas de alerta',
-  perMessage: 'por mensaje + IVA',
+  perMessage: 'IVA Incluido',
   footnote:
     'Rondas calculadas con 3 contactos de emergencia. Válidas para pruebas y emergencias.',
 } as const;

@@ -44,6 +44,7 @@ function createFailedClient(error: EmergencyError): EmergencyClient {
     lastError: error,
     geolocation: null,
     geolocationError: null,
+    contactPhone: null,
     realtimeStatus: 'idle',
     abortResult: null,
     simulationResult: null,
@@ -75,6 +76,7 @@ function createFailedClient(error: EmergencyError): EmergencyClient {
     requestSimulationConfirmation: noop,
     cancelSimulationConfirmation: noop,
     dismissFeedback: noop,
+    setContactPhone: noop,
   };
 }
 
@@ -196,7 +198,6 @@ export function mount(options: EmergencyMountOptions): EmergencyClient {
           // The subscription loses the per-event generic signature, so the
           // payload must be restored through an assertion to forward it to the
           // host listener unchanged.
-          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
           options.onEvent?.(name as EmergencyEventName, payload as never);
         }),
       )
@@ -246,6 +247,7 @@ export function mount(options: EmergencyMountOptions): EmergencyClient {
     requestSimulationConfirmation: () => client.requestSimulationConfirmation(),
     cancelSimulationConfirmation: () => client.cancelSimulationConfirmation(),
     dismissFeedback: () => client.dismissFeedback(),
+    setContactPhone: (phone) => client.setContactPhone(phone),
     destroy,
   };
 }

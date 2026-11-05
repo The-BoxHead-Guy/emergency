@@ -68,7 +68,13 @@ describe('pricing screen', () => {
     expect(within(pricing).getByText('100 alertas')).toBeInTheDocument();
     expect(within(pricing).getByText('PAQUETE 2')).toBeInTheDocument();
     expect(within(pricing).getByText('200 alertas')).toBeInTheDocument();
-    expect(within(pricing).getByText(pricingCopy.footnote)).toBeInTheDocument();
+    const footnotes = within(pricing).getAllByText(pricingCopy.footnote);
+
+    expect(footnotes).toHaveLength(2);
+
+    for (const footnote of footnotes) {
+      expect(footnote.nextElementSibling).toHaveTextContent(pricingCopy.choose);
+    }
   });
 
   it('shows the best-value badge only on the highlighted package', async () => {

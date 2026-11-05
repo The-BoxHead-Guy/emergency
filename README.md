@@ -211,7 +211,7 @@ every rule carries a literal fallback:
   --de-emergency-white: #fff;
   --de-emergency-white-soft: #f7f7f7;
   --de-emergency-gray: #555;
-  --de-emergency-radius: 0.5rem;
+  --de-emergency-radius: 0.75rem;
   --de-emergency-font: 'Poppins', ui-sans-serif, system-ui, sans-serif;
 }
 ```

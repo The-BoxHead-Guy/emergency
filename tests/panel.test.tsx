@@ -62,12 +62,26 @@ describe('emergency panel visual contract', () => {
     const dialog = await open(controller);
 
     expect(byClass(dialog, 'emergency-panel')).toBe(true);
+    const header = dialog.querySelector('[class*="emergency-panel__header"]');
+
+    if (!header) {
+      throw new Error('Expected the primary header to be rendered.');
+    }
+
+    expect(byClass(header, 'emergency-panel__header--close-only')).toBe(true);
     expect(
-      dialog.querySelector('[class*="emergency-panel__header"]'),
-    ).not.toBeNull();
+      screen.getByRole('button', { name: copy.close }),
+    ).toBeInTheDocument();
     expect(
-      dialog.querySelector('[class*="emergency-panel__title"]'),
+      screen.queryByRole('button', { name: copy.back }),
+    ).not.toBeInTheDocument();
+    expect(
+      dialog.querySelector('[class*="emergency-panel__sr-only"]'),
     ).toHaveTextContent(copy.panelLabel);
+    expect(dialog).toHaveAccessibleName(copy.panelLabel);
+    expect(
+      dialog.querySelector('[class*="emergency-panel__divider"]'),
+    ).not.toBeNull();
     expect(
       dialog.querySelector('[class*="emergency-panel__body-title"]'),
     ).toHaveTextContent(copy.question);
@@ -91,7 +105,62 @@ describe('emergency panel visual contract', () => {
     ).toBeInTheDocument();
   });
 
-  it('closes with Escape and the header button', async () => {
+  it('restores the default header when an emergency is active', async () => {
+    const { controller } = setup();
+    const dialog = await open(controller);
+
+    await act(async () => {
+      await controller.client.activate();
+    });
+
+    const header = dialog.querySelector('[class*="emergency-panel__header"]');
+
+    if (!header) {
+      throw new Error('Expected the primary header to be rendered.');
+    }
+
+    expect(byClass(header, 'emergency-panel__header--close-only')).toBe(false);
+    expect(
+      dialog.querySelector('[class*="emergency-panel__sr-only"]'),
+    ).toBeNull();
+    expect(
+      screen.getByRole('heading', { level: 2, name: copy.panelLabel }),
+    ).toBeInTheDocument();
+  });
+
+  it('restores the default header when feedback is visible', async () => {
+    const controller = createTestController({
+      geolocation: {
+        getCurrentPosition: async () => {
+          throw Object.assign(new Error('denied'), {
+            emergencyError: createEmergencyError(
+              'geolocation_denied',
+              'Permission denied.',
+            ),
+          });
+        },
+      },
+    });
+    setup(controller);
+    const dialog = await open(controller);
+
+    await act(async () => {
+      await controller.client.activate();
+    });
+
+    const header = dialog.querySelector('[class*="emergency-panel__header"]');
+
+    if (!header) {
+      throw new Error('Expected the primary header to be rendered.');
+    }
+
+    expect(byClass(header, 'emergency-panel__header--close-only')).toBe(false);
+    expect(
+      dialog.querySelector('[class*="emergency-panel__sr-only"]'),
+    ).toBeNull();
+  });
+
+  it('closes the primary screen with Escape and the header button', async () => {
     const user = userEvent.setup();
     const { controller } = setup();
     await open(controller);

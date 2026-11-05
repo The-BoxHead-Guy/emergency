@@ -4,6 +4,43 @@ All notable changes to `@dataemergencia/emergency` are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+## [0.5.0] - 2026-11-05
+
+### Added
+
+- `pre-emergency` screen shown the first time the primary screen's emergency
+  button is pressed during a panel session. It asks for a Venezuelan mobile
+  phone number with a fixed `+58` prefix, formats the national number, validates
+  it as `4xx + 7 digits`, and enables the emergency action only when the number
+  is valid.
+- `contactPhone` client state and `setContactPhone()`, cleared by `close()` and
+  `destroy()`. The captured phone is kept client-side for the current panel
+  session and is not sent to the BFF yet.
+
+### Changed
+
+- All screen body areas now use a uniform `0.75rem` padding.
+- While the primary screen is idle, its header shows only a dark close button on
+  a transparent background; the panel title stays available to assistive
+  technology but is visually hidden. Activation, loading and feedback states
+  keep the original opaque header.
+- The idle primary body splits the space evenly: the administrative
+  availability block and the emergency prompt take half each, with the red rule
+  keeping its natural height between them.
+- The resume notification now uses the emergency palette tokens instead of
+  hardcoded orange values, and its action button follows the shared emergency
+  button convention.
+- Pricing package cards now show the rounds footnote above their select button
+  on a subtly darker background, replacing the single footnote below the
+  catalog.
+- The per-message copy reads "IVA Incluido" and the package labels are
+  corrected to `$0.07` and `$0.06`, dropping the extra package-2 price note.
+- The border radius defaults to `0.75rem` instead of `0.5rem`, and panel
+  corners now reference the `--de-emergency-radius` token instead of repeating
+  the literal value.
+
 ## [0.4.0] - 2026-11-04
 
 ### Added

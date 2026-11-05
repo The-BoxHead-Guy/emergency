@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEmergencyError } from '@/core/errors';
-import type { EmergencyEventName, EmergencyEventMap } from '@/core/types';
+import type { EmergencyEventName } from '@/core/types';
 import type { EmergencyResultPayload } from '@/core/bff-types';
 import {
   activeEmergency,
@@ -309,20 +309,13 @@ describe('emergency controller', () => {
   it('emits typed events through its own emitter', async () => {
     const controller = createTestController();
     const seen: EmergencyEventName[] = [];
-    const listener = <T extends EmergencyEventName>(
-      name: T,
-      _payload: EmergencyEventMap[T],
-    ) => seen.push(name);
+    const listener = <T extends EmergencyEventName>(name: T) => seen.push(name);
 
-    controller.client.on('session:ready', (payload) =>
-      listener('session:ready', payload),
+    controller.client.on('session:ready', () => listener('session:ready'));
+    controller.client.on('emergency:activated', () =>
+      listener('emergency:activated'),
     );
-    controller.client.on('emergency:activated', (payload) =>
-      listener('emergency:activated', payload),
-    );
-    controller.client.on('panel:opened', (payload) =>
-      listener('panel:opened', payload),
-    );
+    controller.client.on('panel:opened', () => listener('panel:opened'));
 
     await controller.client.activate();
 
@@ -331,6 +324,29 @@ describe('emergency controller', () => {
       'session:ready',
       'emergency:activated',
     ]);
+  });
+
+  it('keeps the contact phone for the current panel session and clears it on close', () => {
+    const controller = createTestController();
+    controller.client.open();
+
+    controller.client.setContactPhone('+584121301234');
+
+    expect(controller.client.getState().contactPhone).toBe('+584121301234');
+
+    controller.client.close();
+
+    expect(controller.client.getState().contactPhone).toBeNull();
+  });
+
+  it('clears the contact phone on destroy', async () => {
+    const controller = createTestController();
+    await controller.client.activate();
+    controller.client.setContactPhone('+584121301234');
+
+    controller.client.destroy();
+
+    expect(controller.client.getState().contactPhone).toBeNull();
   });
 
   it('tears down requests, realtime and state on destroy', async () => {
