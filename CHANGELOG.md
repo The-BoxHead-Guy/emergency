@@ -41,6 +41,13 @@ and [Semantic Versioning](https://semver.org/).
   corners now reference the `--de-emergency-radius` token instead of repeating
   the literal value.
 
+### Fixed
+
+- `pnpm check` now runs the package lint configuration, so local, monorepo and
+  split-repository validation report the same lint errors.
+- Removed redundant event payload assertions and typed React CSS custom
+  properties so `consistent-type-assertions` passes without disabling it.
+
 ## [0.4.0] - 2026-11-04
 
 ### Added

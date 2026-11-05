@@ -10,7 +10,6 @@ import type {
   EmergencyClient,
   EmergencyClientState,
   EmergencyError,
-  EmergencyEventName,
   EmergencyMountOptions,
   EmergencyTrigger,
 } from '@/core/types';
@@ -195,10 +194,7 @@ export function mount(options: EmergencyMountOptions): EmergencyClient {
   const unsubscribers = options.onEvent
     ? EMERGENCY_EVENT_NAMES.map((name) =>
         controller.events.on(name, (payload) => {
-          // The subscription loses the per-event generic signature, so the
-          // payload must be restored through an assertion to forward it to the
-          // host listener unchanged.
-          options.onEvent?.(name as EmergencyEventName, payload as never);
+          options.onEvent?.(name, payload);
         }),
       )
     : [];

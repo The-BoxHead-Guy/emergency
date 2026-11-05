@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useId, useRef } from 'react';
-import type { CSSProperties } from 'react';
 import { themeToCssVariables } from '@/core/mappers';
 import type {
   AbortResult,
@@ -170,8 +169,7 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
     <div
       ref={dialogRef}
       className={cls('emergency-panel', !open && 'emergency-panel--hidden')}
-      // React types do not model custom `--*` properties without an assertion.
-      style={themeToCssVariables(theme) as CSSProperties}
+      style={themeToCssVariables(theme)}
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
