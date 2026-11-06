@@ -41,6 +41,7 @@ export interface FailurePayload {
 export interface EmergencyResultPayload {
   readonly emergency_id: string | null;
   readonly simulated: boolean;
+  readonly reporter_phone?: string | null;
   readonly responders: readonly ResponderPayload[];
   readonly failures: readonly FailurePayload[];
   readonly partial_failure?: boolean;
@@ -62,6 +63,7 @@ export interface GeolocationRequest {
 
 export interface ActivateRequest {
   readonly geolocation?: GeolocationRequest;
+  readonly reporter_phone?: string;
 }
 
 export interface RefreshResponse {

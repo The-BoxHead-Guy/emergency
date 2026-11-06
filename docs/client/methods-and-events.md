@@ -84,8 +84,9 @@ client.setContactPhone(phone: string | null): void
   screen. The primary screen skips the phone step while this value is set.
 - `close()` and `destroy()` clear the value, so the phone is only remembered for
   the current panel session.
-- The value is not sent to the BFF yet; `POST /activate` still receives only the
-  geolocation coordinates.
+- When set, `activate()` sends it as `reporter_phone` in the `POST /activate`
+  body so the API can store the reporter's contact number. When it is `null`,
+  the field is omitted from the request.
 
 ## Emergency methods
 
@@ -97,8 +98,9 @@ client.abort(): Promise<void>
 ```
 
 - `activate()` requests geolocation, opens the panel, ensures the session and
-  sends `POST /activate`. It does not throw; failures arrive as
-  `emergency:failed` and in `lastError`.
+  sends `POST /activate` with the geolocation and, when captured, the reporter
+  phone. It does not throw; failures arrive as `emergency:failed` and in
+  `lastError`.
 - `simulate()` sends a test message to the emergency contacts without creating
   an emergency. It is a no-op while a real emergency is active.
 - `refresh()` reconciles the active emergency with `GET /current`. It is
@@ -188,6 +190,7 @@ type EmergencySnapshot = {
   code: string;
   active: boolean;
   simulated: boolean;
+  reporterPhone: string | null;
   responders: readonly Responder[];
   createdAt: string | null;
   updatedAt: string | null;

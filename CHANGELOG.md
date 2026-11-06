@@ -6,6 +6,18 @@ and [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-11-06
+
+### Added
+
+- `activate()` now sends the captured `contactPhone` as `reporter_phone`, and
+  `EmergencySnapshot.reporterPhone` exposes the phone returned by the BFF.
+
+### Changed
+
+- The panel header, title and pre-emergency selectors are scoped under
+  `.emergency-panel` so host styles are less likely to override their colors.
+
 ## [0.6.1] - 2026-11-06
 
 ### Added

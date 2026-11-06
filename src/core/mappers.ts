@@ -70,6 +70,7 @@ export function resultToSnapshot(
     code,
     active: true,
     simulated: result.simulated,
+    reporterPhone: result.reporter_phone ?? null,
     responders: result.responders.map(toResponder),
     createdAt: null,
     updatedAt: null,
@@ -129,6 +130,7 @@ export function payloadToSnapshot(
       options.simulated ??
       readBoolean(raw, ['is_simulated', 'simulated']) ??
       false,
+    reporterPhone: readString(raw, ['reporter_phone']),
     responders,
     createdAt: readString(raw, ['created_at', 'createdAt']),
     updatedAt: readString(raw, ['updated_at', 'updatedAt']),

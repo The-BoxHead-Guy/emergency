@@ -391,11 +391,20 @@ export function createEmergencyController(
     }
 
     try {
-      const result = await bff.activate({ geolocation: position });
+      const contactPhone = get().contactPhone;
+      const result = await bff.activate(
+        contactPhone === null
+          ? { geolocation: position }
+          : { geolocation: position, reporter_phone: contactPhone },
+      );
       const snapshot = resultToSnapshot(result, config.code);
       const responders = result.responders.map(toResponder);
       const failures = result.failures.map(toFailure);
-      const hydrated: EmergencySnapshot = { ...snapshot, responders };
+      const hydrated: EmergencySnapshot = {
+        ...snapshot,
+        responders,
+        reporterPhone: result.reporter_phone ?? get().contactPhone,
+      };
 
       patch({
         snapshot: hydrated,

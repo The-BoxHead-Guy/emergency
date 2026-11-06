@@ -94,6 +94,73 @@ describe('emergency controller', () => {
     ]);
   });
 
+  it('sends the captured contact phone as reporter_phone on activation', async () => {
+    const controller = createTestController();
+    controller.client.open();
+    controller.client.setContactPhone('+584121301234');
+
+    await controller.client.activate();
+
+    expect(controller.bff.activate).toHaveBeenCalledWith({
+      geolocation: { latitude: 4.711, longitude: -74.0721 },
+      reporter_phone: '+584121301234',
+    });
+  });
+
+  it('omits reporter_phone when no contact phone was captured', async () => {
+    const controller = createTestController();
+
+    await controller.client.activate();
+
+    expect(controller.bff.activate.mock.calls[0]?.[0]).toEqual({
+      geolocation: { latitude: 4.711, longitude: -74.0721 },
+    });
+  });
+
+  it('exposes the reporter phone from a resumed emergency', async () => {
+    const bff = createFakeBff({
+      current: vi.fn(async () => ({
+        active: true,
+        emergency: { ...activeEmergency, reporter_phone: '+584121301234' },
+      })),
+    });
+    const controller = createTestController({ bff });
+
+    await controller.client.resume();
+
+    expect(controller.client.getState().snapshot?.reporterPhone).toBe(
+      '+584121301234',
+    );
+  });
+
+  it('updates the reporter phone on refresh', async () => {
+    const bff = createFakeBff({
+      refresh: vi.fn(async () => ({
+        emergency: { ...activeEmergency, reporter_phone: '+584121301234' },
+      })),
+    });
+    const controller = createTestController({ bff });
+
+    await controller.client.activate();
+    await controller.client.refresh();
+
+    expect(controller.client.getState().snapshot?.reporterPhone).toBe(
+      '+584121301234',
+    );
+  });
+
+  it('falls back to the captured contact phone when activation omits it', async () => {
+    const controller = createTestController();
+    controller.client.open();
+    controller.client.setContactPhone('+584121301234');
+
+    await controller.client.activate();
+
+    expect(controller.client.getState().snapshot?.reporterPhone).toBe(
+      '+584121301234',
+    );
+  });
+
   it('ignores a second activation while one is in flight', async () => {
     let resolveActivation: (value: EmergencyResultPayload) => void = () =>
       undefined;

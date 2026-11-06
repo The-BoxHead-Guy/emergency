@@ -190,6 +190,7 @@ export interface EmergencySnapshot {
   readonly code: string | null;
   readonly active: boolean;
   readonly simulated: boolean;
+  readonly reporterPhone: string | null;
   readonly responders: readonly Responder[];
   readonly createdAt: string | null;
   readonly updatedAt: string | null;
