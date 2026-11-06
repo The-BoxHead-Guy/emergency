@@ -62,16 +62,23 @@ describe('emergency panel visual contract', () => {
     const dialog = await open(controller);
 
     expect(byClass(dialog, 'emergency-panel')).toBe(true);
-    const header = dialog.querySelector('[class*="emergency-panel__header"]');
+    expect(
+      dialog.querySelector('[class*="emergency-panel__header"]'),
+    ).toBeNull();
 
-    if (!header) {
-      throw new Error('Expected the primary header to be rendered.');
+    const prompt = dialog.querySelector(
+      '[class*="emergency-panel__prompt-region"]',
+    );
+
+    if (!prompt) {
+      throw new Error('Expected the primary prompt region to be rendered.');
     }
 
-    expect(byClass(header, 'emergency-panel__header--close-only')).toBe(true);
-    expect(
-      screen.getByRole('button', { name: copy.close }),
-    ).toBeInTheDocument();
+    expect(byClass(prompt, 'emergency-panel__prompt-region--idle')).toBe(true);
+
+    const closeButton = screen.getByRole('button', { name: copy.close });
+
+    expect(prompt.contains(closeButton)).toBe(true);
     expect(
       screen.queryByRole('button', { name: copy.back }),
     ).not.toBeInTheDocument();
@@ -81,16 +88,20 @@ describe('emergency panel visual contract', () => {
     expect(dialog).toHaveAccessibleName(copy.panelLabel);
     expect(
       dialog.querySelector('[class*="emergency-panel__divider"]'),
-    ).not.toBeNull();
+    ).toBeNull();
     expect(
       dialog.querySelector('[class*="emergency-panel__body-title"]'),
     ).toHaveTextContent(copy.question);
     expect(
       dialog.querySelector('[class*="sos-img__container"]'),
     ).not.toBeNull();
-    expect(
-      dialog.querySelector('[class*="emergency-panel__footer"]'),
-    ).not.toBeNull();
+    const footer = dialog.querySelector('[class*="emergency-panel__footer"]');
+
+    if (!footer) {
+      throw new Error('Expected the primary footer to be rendered.');
+    }
+
+    expect(byClass(footer, 'emergency-panel__footer--square')).toBe(true);
     expect(
       dialog.querySelector('[class*="emergency-panel__button--emergency"]'),
     ).not.toBeNull();
@@ -119,13 +130,22 @@ describe('emergency panel visual contract', () => {
       throw new Error('Expected the primary header to be rendered.');
     }
 
-    expect(byClass(header, 'emergency-panel__header--close-only')).toBe(false);
+    expect(
+      dialog.querySelector('[class*="emergency-panel__prompt-region--idle"]'),
+    ).toBeNull();
     expect(
       dialog.querySelector('[class*="emergency-panel__sr-only"]'),
     ).toBeNull();
     expect(
       screen.getByRole('heading', { level: 2, name: copy.panelLabel }),
     ).toBeInTheDocument();
+    const footer = dialog.querySelector('[class*="emergency-panel__footer"]');
+
+    if (!footer) {
+      throw new Error('Expected the primary footer to be rendered.');
+    }
+
+    expect(byClass(footer, 'emergency-panel__footer--square')).toBe(false);
   });
 
   it('restores the default header when feedback is visible', async () => {
@@ -154,7 +174,6 @@ describe('emergency panel visual contract', () => {
       throw new Error('Expected the primary header to be rendered.');
     }
 
-    expect(byClass(header, 'emergency-panel__header--close-only')).toBe(false);
     expect(
       dialog.querySelector('[class*="emergency-panel__sr-only"]'),
     ).toBeNull();

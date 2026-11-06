@@ -32,6 +32,45 @@ export function formatShortTime(
   return `${hour}:${minute}${normalizePeriod(dayPeriod)}`;
 }
 
+/**
+ * Formats a timestamp as `dd/mm/yyyy hh:mm` in local time, using 24-hour time
+ * and zero-padded parts. Missing or invalid input collapses to an empty string.
+ */
+export function formatDateTime(
+  value: string | number | Date | null,
+  locale = 'es',
+): string {
+  if (value === null) {
+    return '';
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  const parts = new Intl.DateTimeFormat(locale, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(date);
+  const day = parts.find((part) => part.type === 'day')?.value;
+  const month = parts.find((part) => part.type === 'month')?.value;
+  const year = parts.find((part) => part.type === 'year')?.value;
+  const hour = parts.find((part) => part.type === 'hour')?.value;
+  const minute = parts.find((part) => part.type === 'minute')?.value;
+
+  if (!day || !month || !year || !hour || !minute) {
+    return '';
+  }
+
+  return `${day}/${month}/${year} ${hour}:${minute}`;
+}
+
 function normalizePeriod(dayPeriod: string | undefined): string {
   if (!dayPeriod) {
     return '';

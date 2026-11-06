@@ -9,6 +9,7 @@ export interface EmergencyFooterProps {
   feedbackVisible: boolean;
   showSimulation?: boolean;
   emergencyDisabled?: boolean;
+  square?: boolean;
   onActivate: () => void;
   onRequestAbort: () => void;
   onRequestSimulation: () => void;
@@ -22,6 +23,7 @@ export function EmergencyFooter(props: EmergencyFooterProps) {
     feedbackVisible,
     showSimulation = true,
     emergencyDisabled = false,
+    square = false,
     onActivate,
     onRequestAbort,
     onRequestSimulation,
@@ -29,7 +31,12 @@ export function EmergencyFooter(props: EmergencyFooterProps) {
 
   if (active) {
     return (
-      <footer className={cls('emergency-panel__footer')}>
+      <footer
+        className={cls(
+          'emergency-panel__footer',
+          square && 'emergency-panel__footer--square',
+        )}
+      >
         <button
           type="button"
           className={cls('emergency-status__abort-btn')}
@@ -49,6 +56,7 @@ export function EmergencyFooter(props: EmergencyFooterProps) {
       className={cls(
         'emergency-panel__footer',
         !showSimulation && 'emergency-panel__footer--single',
+        square && 'emergency-panel__footer--square',
       )}
     >
       <button

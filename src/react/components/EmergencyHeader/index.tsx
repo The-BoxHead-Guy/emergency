@@ -7,7 +7,6 @@ interface EmergencyHeaderProps {
   readonly onClose: () => void;
   readonly title?: string;
   readonly onBack?: () => void;
-  readonly variant?: 'default' | 'close-only';
 }
 
 export function EmergencyHeader({
@@ -15,18 +14,10 @@ export function EmergencyHeader({
   onClose,
   title = copy.panelLabel,
   onBack,
-  variant = 'default',
 }: EmergencyHeaderProps) {
-  const closeOnly = variant === 'close-only';
-
   return (
-    <header
-      className={cls(
-        'emergency-panel__header',
-        closeOnly && 'emergency-panel__header--close-only',
-      )}
-    >
-      {onBack && !closeOnly ? (
+    <header className={cls('emergency-panel__header')}>
+      {onBack ? (
         <button
           type="button"
           className={cls('emergency-panel__close-button')}
@@ -39,14 +30,7 @@ export function EmergencyHeader({
           />
         </button>
       ) : null}
-      <h2
-        className={cls(
-          'emergency-panel__title',
-          closeOnly && 'emergency-panel__sr-only',
-        )}
-        id={titleId}
-        tabIndex={-1}
-      >
+      <h2 className={cls('emergency-panel__title')} id={titleId} tabIndex={-1}>
         {title}
       </h2>
       <button

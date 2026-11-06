@@ -6,6 +6,22 @@ and [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-06
+
+### Added
+
+- Alert details, history and message detail screens with a mocked alert domain:
+  the details screen shows the remaining-alert summary and a two-entry
+  preview, the history screen reveals the full list through "Ver más", and
+  each row opens a read-only message detail.
+
+### Changed
+
+- The idle primary screen no longer renders a header. The close control now
+  sits in the top-right of the prompt region, which adopts the footer
+  background, round top corners and a squared footer so both surfaces join
+  into one continuous block below the availability card.
+
 ## [0.5.0] - 2026-11-05
 
 ### Added

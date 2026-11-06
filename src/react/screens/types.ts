@@ -11,7 +11,14 @@ export type EmergencyScreenId =
   | 'primary'
   | 'pre-emergency'
   | 'pricing'
-  | 'details';
+  | 'details'
+  | 'history'
+  | 'message-detail';
+
+/** Optional per-screen data carried through navigation. */
+export interface EmergencyScreenParams {
+  readonly messageId?: string;
+}
 
 /** Props every screen receives from the panel shell. */
 export interface EmergencyScreenProps {

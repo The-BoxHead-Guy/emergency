@@ -10,6 +10,7 @@ import { EmergencyError as EmergencyErrorBlock } from '@/react/components/Emerge
 import { EmergencyFeedback } from '@/react/components/EmergencyFeedback';
 import { EmergencyLoading } from '@/react/components/EmergencyLoading';
 import { EmergencyStatusPanel } from '@/react/components/EmergencyStatusPanel';
+import { Icon } from '@/react/components/Icon';
 import { cls } from '@/react/classnames';
 import { Availability } from '@/react/screens/primary/Availability';
 
@@ -29,6 +30,7 @@ export interface EmergencyBodyProps {
   onDismissFeedback: () => void;
   onRecharge: () => void;
   onDetails: () => void;
+  onClose: () => void;
 }
 
 export function EmergencyBody(props: EmergencyBodyProps) {
@@ -48,6 +50,7 @@ export function EmergencyBody(props: EmergencyBodyProps) {
     onDismissFeedback,
     onRecharge,
     onDetails,
+    onClose,
   } = props;
 
   const showingFeedback =
@@ -65,15 +68,31 @@ export function EmergencyBody(props: EmergencyBodyProps) {
       )}
     >
       {idle ? (
-        <>
-          <div className={cls('emergency-panel__availability-region')}>
-            <Availability onRecharge={onRecharge} onDetails={onDetails} />
-          </div>
-          <hr className={cls('emergency-panel__divider')} aria-hidden="true" />
-        </>
+        <div className={cls('emergency-panel__availability-region')}>
+          <Availability onRecharge={onRecharge} onDetails={onDetails} />
+        </div>
       ) : null}
 
-      <div className={cls('emergency-panel__prompt-region')}>
+      <div
+        className={cls(
+          'emergency-panel__prompt-region',
+          idle && 'emergency-panel__prompt-region--idle',
+        )}
+      >
+        {idle ? (
+          <button
+            type="button"
+            className={cls(
+              'emergency-panel__close-button',
+              'emergency-panel__close-button--prompt',
+            )}
+            aria-label={copy.close}
+            onClick={onClose}
+          >
+            <Icon name="close" className={cls('emergency-panel__close-icon')} />
+          </button>
+        ) : null}
+
         {!loading && !showingFeedback ? (
           <div className={cls('sos-img__container')} id="sos-img__container">
             <ParamedicalMark

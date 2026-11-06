@@ -1,5 +1,5 @@
 /** Demo quota constants. Replace these with API data in a later change. */
-export const DEMO_AVAILABLE_MESSAGES = 100;
+export const DEMO_AVAILABLE_MESSAGES = 27;
 export const DEMO_DESIGNATED_RESPONDERS = 3;
 
 /**

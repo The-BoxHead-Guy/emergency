@@ -1,4 +1,6 @@
 import { DetailsScreen } from '@/react/screens/details';
+import { HistoryScreen } from '@/react/screens/history';
+import { MessageDetailScreen } from '@/react/screens/message-detail';
 import { PreEmergencyScreen } from '@/react/screens/pre-emergency';
 import { PrimaryScreen } from '@/react/screens/primary';
 import { PricingScreen } from '@/react/screens/pricing';
@@ -15,4 +17,6 @@ export const screenRegistry: Readonly<
   'pre-emergency': PreEmergencyScreen,
   pricing: PricingScreen,
   details: DetailsScreen,
+  history: HistoryScreen,
+  'message-detail': MessageDetailScreen,
 };

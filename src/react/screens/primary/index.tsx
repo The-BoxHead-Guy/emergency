@@ -1,6 +1,8 @@
+import { copy } from '@/core/copy';
 import { EmergencyBody } from '@/react/components/EmergencyBody';
 import { EmergencyFooter } from '@/react/components/EmergencyFooter';
 import { EmergencyHeader } from '@/react/components/EmergencyHeader';
+import { cls } from '@/react/classnames';
 import { useScreenNavigation } from '@/react/screens/context';
 import { EmergencyScreenLayout } from '@/react/screens/layout';
 import type { EmergencyScreenProps } from '@/react/screens/types';
@@ -18,12 +20,14 @@ export function PrimaryScreen(props: EmergencyScreenProps) {
     <EmergencyScreenLayout
       screen="primary"
       titleId={props.titleId}
+      bodyClassName={idle ? 'emergency-panel__body--primary' : undefined}
       header={
-        <EmergencyHeader
-          titleId={props.titleId}
-          variant={idle ? 'close-only' : 'default'}
-          onClose={() => props.onClose('close')}
-        />
+        idle ? null : (
+          <EmergencyHeader
+            titleId={props.titleId}
+            onClose={() => props.onClose('close')}
+          />
+        )
       }
       footer={
         <EmergencyFooter
@@ -31,6 +35,7 @@ export function PrimaryScreen(props: EmergencyScreenProps) {
           busy={props.busy}
           aborting={props.aborting}
           feedbackVisible={props.feedbackVisible}
+          square={idle}
           onActivate={
             needsContactPhone
               ? () => navigate('pre-emergency')
@@ -41,6 +46,15 @@ export function PrimaryScreen(props: EmergencyScreenProps) {
         />
       }
     >
+      {idle ? (
+        <h2
+          className={cls('emergency-panel__sr-only')}
+          id={props.titleId}
+          tabIndex={-1}
+        >
+          {copy.panelLabel}
+        </h2>
+      ) : null}
       <EmergencyBody
         active={props.active}
         responders={props.responders}
@@ -57,6 +71,7 @@ export function PrimaryScreen(props: EmergencyScreenProps) {
         onDismissFeedback={props.onDismissFeedback}
         onRecharge={() => navigate('pricing')}
         onDetails={() => navigate('details')}
+        onClose={() => props.onClose('close')}
       />
     </EmergencyScreenLayout>
   );
