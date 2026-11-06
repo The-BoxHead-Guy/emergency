@@ -6,6 +6,7 @@ import { cls } from '@/react/classnames';
 export interface EmergencyConfirmationProps {
   abortConfirmation: boolean;
   simulationConfirmation: boolean;
+  loading: boolean;
   onCancelAbort: () => void;
   onCancelSimulation: () => void;
   onConfirmAbort: () => void;
@@ -16,6 +17,7 @@ export function EmergencyConfirmation(props: EmergencyConfirmationProps) {
   const {
     abortConfirmation,
     simulationConfirmation,
+    loading,
     onCancelAbort,
     onCancelSimulation,
     onConfirmAbort,
@@ -25,6 +27,7 @@ export function EmergencyConfirmation(props: EmergencyConfirmationProps) {
   const titleId = useId();
   const danger = abortConfirmation;
   const open = abortConfirmation || simulationConfirmation;
+  const pending = open && loading;
 
   useEffect(() => {
     if (open) {
@@ -46,8 +49,16 @@ export function EmergencyConfirmation(props: EmergencyConfirmationProps) {
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
+      aria-busy={pending}
     >
       <div ref={cardRef} className={cls('emergency-confirmation__card')}>
+        <span
+          className={cls('emergency-panel__sr-only')}
+          role="status"
+          aria-live="polite"
+        >
+          {pending ? copy.loading : ''}
+        </span>
         <div className={cls('emergency-confirmation__body')}>
           <div
             className={cls(
@@ -69,6 +80,7 @@ export function EmergencyConfirmation(props: EmergencyConfirmationProps) {
               'emergency-confirmation__button',
               'emergency-confirmation__button--cancel',
             )}
+            disabled={pending}
             onClick={danger ? onCancelAbort : onCancelSimulation}
           >
             {danger ? copy.abortCancel : copy.simulateCancel}
@@ -81,9 +93,17 @@ export function EmergencyConfirmation(props: EmergencyConfirmationProps) {
                 ? 'emergency-confirmation__button--danger'
                 : 'emergency-confirmation__button--confirm',
             )}
+            aria-busy={pending}
+            disabled={pending}
             onClick={danger ? onConfirmAbort : onConfirmSimulation}
           >
-            {danger ? copy.abortConfirm : copy.simulateConfirm}
+            {pending ? (
+              <span
+                className={cls('emergency-confirmation__spinner')}
+                aria-hidden="true"
+              />
+            ) : null}
+            <span>{danger ? copy.abortConfirm : copy.simulateConfirm}</span>
           </button>
         </div>
       </div>

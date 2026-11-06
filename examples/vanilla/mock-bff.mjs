@@ -18,6 +18,7 @@ const scenarios = new Set([
   'active-mixed',
   'active-delivered-read',
   'active-failed',
+  'active-slow',
   'simulacrum-success',
   'simulacrum-error',
   'activate-error',
@@ -355,6 +356,10 @@ const server = createServer(async (request, response) => {
   }
 
   if (request.method === 'DELETE' && /^\/[^/]+$/.test(route)) {
+    if (scenario === 'active-slow') {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    }
+
     if (scenario === 'abort-error') {
       error(response, 500, 'upstream_error', 'Abort failed.');
       return;

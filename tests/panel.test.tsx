@@ -1,7 +1,11 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ResponderPayload } from '@/core/bff-types';
+import type {
+  AbortResponse,
+  EmergencyResultPayload,
+  ResponderPayload,
+} from '@/core/bff-types';
 import { copy } from '@/core/copy';
 import { createEmergencyError } from '@/core/errors';
 import {
@@ -312,6 +316,65 @@ describe('emergency panel visual contract', () => {
     expect(screen.getByRole('button', { name: copy.testAria })).toBeDisabled();
   });
 
+  it('shows a pending state in the abort confirmation while aborting', async () => {
+    const user = userEvent.setup();
+    let resolveAbort: ((value: AbortResponse) => void) | null = null;
+    const bff = createFakeBff({
+      abort: vi.fn(
+        () =>
+          new Promise<AbortResponse>((resolve) => {
+            resolveAbort = resolve;
+          }),
+      ),
+    });
+    const { controller } = setup(createTestController({ bff }));
+
+    await act(async () => {
+      await controller.client.activate();
+    });
+
+    await user.click(screen.getByRole('button', { name: copy.abort }));
+    await user.click(screen.getByRole('button', { name: copy.abortConfirm }));
+
+    const confirmation = screen.getByRole('dialog', {
+      name: copy.abortConfirmTitle,
+    });
+    const confirmButton = screen.getByRole('button', {
+      name: copy.abortConfirm,
+    });
+
+    await waitFor(() =>
+      expect(controller.client.getState().phase.kind).toBe('aborting'),
+    );
+
+    expect(confirmation).toHaveAttribute('aria-busy', 'true');
+    expect(confirmButton).toBeDisabled();
+    expect(confirmButton).toHaveAttribute('aria-busy', 'true');
+    expect(
+      screen.getByRole('button', { name: copy.abortCancel }),
+    ).toBeDisabled();
+    expect(
+      confirmation.querySelector('[class*="emergency-confirmation__spinner"]'),
+    ).not.toBeNull();
+
+    await user.click(confirmButton);
+    expect(bff.abort).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      resolveAbort?.({
+        emergency_id: 'emg-1',
+        deleted: true,
+        simulated: false,
+        responders,
+        failures: [],
+        partial_failure: false,
+        total_failure: false,
+      });
+    });
+
+    expect(await screen.findByText(copy.abortSuccessTitle)).toBeInTheDocument();
+  });
+
   it('disables the abort action while abort feedback is displayed', async () => {
     const user = userEvent.setup();
     const bff = createFakeBff({
@@ -394,6 +457,67 @@ describe('emergency panel visual contract', () => {
     expect(
       screen.getByRole('button', { name: copy.testAria }),
     ).not.toBeDisabled();
+  });
+
+  it('shows a pending state in the simulation confirmation while simulating', async () => {
+    const user = userEvent.setup();
+    let resolveSimulation: ((value: EmergencyResultPayload) => void) | null =
+      null;
+    const bff = createFakeBff({
+      simulacrum: vi.fn(
+        () =>
+          new Promise<EmergencyResultPayload>((resolve) => {
+            resolveSimulation = resolve;
+          }),
+      ),
+    });
+    const { controller } = setup(createTestController({ bff }));
+
+    await open(controller);
+
+    await user.click(screen.getByRole('button', { name: copy.testAria }));
+    await user.click(
+      screen.getByRole('button', { name: copy.simulateConfirm }),
+    );
+
+    const confirmation = screen.getByRole('dialog', {
+      name: copy.simulateConfirmTitle,
+    });
+    const confirmButton = screen.getByRole('button', {
+      name: copy.simulateConfirm,
+    });
+
+    await waitFor(() =>
+      expect(controller.client.getState().phase.kind).toBe('simulating'),
+    );
+
+    expect(confirmation).toHaveAttribute('aria-busy', 'true');
+    expect(confirmButton).toBeDisabled();
+    expect(confirmButton).toHaveAttribute('aria-busy', 'true');
+    expect(
+      screen.getByRole('button', { name: copy.simulateCancel }),
+    ).toBeDisabled();
+    expect(
+      confirmation.querySelector('[class*="emergency-confirmation__spinner"]'),
+    ).not.toBeNull();
+
+    await user.click(confirmButton);
+    expect(bff.simulacrum).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      resolveSimulation?.({
+        emergency_id: null,
+        simulated: true,
+        responders,
+        failures: [],
+        partial_failure: false,
+        total_failure: false,
+      });
+    });
+
+    expect(
+      await screen.findByText(copy.simulateSuccessTitle),
+    ).toBeInTheDocument();
   });
 
   it('shows the simulation error surface', async () => {

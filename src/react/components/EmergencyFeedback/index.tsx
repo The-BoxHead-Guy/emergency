@@ -10,10 +10,10 @@ import { MessageSurface } from '@/react/components/MessageSurface';
 import { cls } from '@/react/classnames';
 
 /** Time the feedback stays on screen before dismissing itself. */
-export const FEEDBACK_AUTO_DISMISS_MS = 3000;
+export const FEEDBACK_AUTO_DISMISS_MS = 12000;
 
 /** Time the geolocation feedback stays on screen before dismissing itself. */
-export const GEOLOCATION_FEEDBACK_AUTO_DISMISS_MS = 5000;
+export const GEOLOCATION_FEEDBACK_AUTO_DISMISS_MS = 12000;
 
 interface EmergencyFeedbackProps {
   readonly abortResult: AbortResult | null;

@@ -25,6 +25,7 @@ export interface EmergencyPanelProps {
   active: boolean;
   busy: boolean;
   aborting: boolean;
+  simulating: boolean;
   loading: boolean;
   locale: string;
   responders: readonly Responder[];
@@ -98,6 +99,7 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
     active,
     busy,
     aborting,
+    simulating,
     loading,
     locale,
     responders,
@@ -187,6 +189,7 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
       <EmergencyConfirmation
         abortConfirmation={abortConfirmation}
         simulationConfirmation={simulationConfirmation}
+        loading={abortConfirmation ? aborting : simulating}
         onCancelAbort={onCancelAbort}
         onCancelSimulation={onCancelSimulation}
         onConfirmAbort={onConfirmAbort}

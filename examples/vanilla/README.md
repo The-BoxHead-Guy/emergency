@@ -29,23 +29,25 @@ Every button calls `POST /de-bff/emergency/__scenario` before driving the
 client, so states are deterministic. The mock also supports the plain default
 flow when no scenario is selected.
 
-| Button                   | Scenario                | What to review                                   |
-| ------------------------ | ----------------------- | ------------------------------------------------ |
-| Idle                     | `default`               | Illustration, question, red/blue action buttons. |
-| Activando                | `slow`                  | Disabled footer, 1.2 s activation window.        |
-| Activa (mixta)           | `active-mixed`          | 4-column grid, sent + delivered, no timestamps.  |
-| Recibido y leído         | `active-delivered-read` | All cells checked, `h:mmam/pm` timestamps.       |
-| Simulación exitosa       | `simulacrum-success`    | Green success surface and details.               |
-| Simulación fallida       | `simulacrum-error`      | Red error surface.                               |
-| Confirmar aborto         | `active-mixed`          | Destructive confirmation with explicit cancel.   |
-| Aborto exitoso           | `active-mixed`          | Success feedback after abort.                    |
-| Aborto fallido           | `abort-error`           | Error feedback, emergency stays active.          |
-| Geolocalización denegada | `default`               | Error feedback with 5 s auto-dismiss.            |
-| Error al activar         | `activate-error`        | Error block with retry.                          |
-| Error de sesión          | `session-error`         | Reloads with a failing `/session`.               |
-| Emergencia en curso      | `active-mixed`          | Orange resume overlay above the panel.           |
-| Mensajes fallidos        | `active-failed`         | Failed message rows and red sent icon.           |
-| Reiniciar                | `default`               | Clears the fixture and reloads.                  |
+| Button                   | Scenario                | What to review                                     |
+| ------------------------ | ----------------------- | -------------------------------------------------- |
+| Idle                     | `default`               | Illustration, question, red/blue action buttons.   |
+| Activando                | `slow`                  | Disabled footer, 1.2 s activation window.          |
+| Activa (mixta)           | `active-mixed`          | 4-column grid, sent + delivered, no timestamps.    |
+| Recibido y leído         | `active-delivered-read` | All cells checked, `h:mmam/pm` timestamps.         |
+| Simulación exitosa       | `simulacrum-success`    | Green success surface and details.                 |
+| Simulación fallida       | `simulacrum-error`      | Red error surface.                                 |
+| Confirmar aborto         | `active-mixed`          | Destructive confirmation with explicit cancel.     |
+| Aborto en proceso        | `active-slow`           | Spinner and disabled buttons during a 1.5 s abort. |
+| Simulación en proceso    | `slow`                  | Spinner and disabled buttons while simulating.     |
+| Aborto exitoso           | `active-mixed`          | Success feedback after abort.                      |
+| Aborto fallido           | `abort-error`           | Error feedback, emergency stays active.            |
+| Geolocalización denegada | `default`               | Error feedback with 5 s auto-dismiss.              |
+| Error al activar         | `activate-error`        | Error block with retry.                            |
+| Error de sesión          | `session-error`         | Reloads with a failing `/session`.                 |
+| Emergencia en curso      | `active-mixed`          | Orange resume overlay above the panel.             |
+| Mensajes fallidos        | `active-failed`         | Failed message rows and red sent icon.             |
+| Reiniciar                | `default`               | Clears the fixture and reloads.                    |
 
 ## Visual review loop
 

@@ -1418,8 +1418,8 @@ p.emergency-pricing__package-footnote {
   animation: de-emergency-pulse 2s infinite;
 
   & svg {
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 3.5rem;
+    height: 3.5rem;
   }
 }
 
@@ -1576,8 +1576,10 @@ p.emergency-pricing__package-footnote {
 }
 
 .emergency-confirmation__button {
-  flex: 1 1 0;
-  min-width: 8rem;
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
   padding: 0.5rem;
   font-size: 1rem;
   font-weight: 400;
@@ -1589,12 +1591,29 @@ p.emergency-pricing__package-footnote {
   transition: all 0.125s ease-in-out;
 }
 
+.emergency-confirmation__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.emergency-confirmation__spinner {
+  display: inline-block;
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgb(255 255 255 / 45%);
+  border-top-color: currentcolor;
+  border-radius: 50%;
+  animation: de-emergency-spin 1s linear infinite;
+}
+
 .emergency-confirmation__button--cancel {
   color: var(--de-emergency-text, #3d4461);
   border-color: transparent;
+  flex-grow: 1;
 }
 
-.emergency-confirmation__button--cancel:hover {
+.emergency-confirmation__button--cancel:hover:not(:disabled) {
   background: var(--de-emergency-background, #f5f5f5);
 }
 
@@ -1602,15 +1621,17 @@ p.emergency-pricing__package-footnote {
   color: var(--de-emergency-on-red, #fff);
   background: var(--de-emergency-information, #3fabf3);
   border-color: var(--de-emergency-information, #3fabf3);
+  flex-grow: 3;
 }
 
 .emergency-confirmation__button--danger {
   color: var(--de-emergency-on-red, #fff);
   background: var(--de-emergency-red, #ff0000);
   border-color: var(--de-emergency-red, #ff0000);
+  flex-grow: 10;
 }
 
-.emergency-confirmation__button--danger:hover {
+.emergency-confirmation__button--danger:hover:not(:disabled) {
   background: var(--de-emergency-red-pressed, #e33327);
   border-color: var(--de-emergency-red-pressed, #e33327);
 }
@@ -1906,7 +1927,8 @@ p.emergency-pricing__package-footnote {
     animation: none;
   }
 
-  .emergency-status__spinner {
+  .emergency-status__spinner,
+  .emergency-confirmation__spinner {
     animation-duration: 3s;
   }
 }

@@ -94,6 +94,14 @@
       <button type="button" data-run="abort-confirm">
         <strong>Confirmar aborto</strong><span>diálogo destructivo</span>
       </button>
+      <button type="button" data-run="abort-pending">
+        <strong>Aborto en proceso</strong
+        ><span>confirma para ver el spinner</span>
+      </button>
+      <button type="button" data-run="simulation-pending">
+        <strong>Simulación en proceso</strong
+        ><span>confirma para ver el spinner</span>
+      </button>
       <button type="button" data-run="abort-success">
         <strong>Aborto exitoso</strong><span>feedback de éxito</span>
       </button>
@@ -218,6 +226,17 @@
         'abort-confirm': async () => {
           await openWithSnapshot('active-mixed');
           client.requestAbortConfirmation();
+        },
+        'abort-pending': async () => {
+          await openWithSnapshot('active-slow');
+          client.requestAbortConfirmation();
+        },
+        'simulation-pending': async () => {
+          await setScenario('slow');
+          await client.resume();
+          client.dismissFeedback();
+          client.open('manual');
+          client.requestSimulationConfirmation();
         },
         'abort-success': async () => {
           await openWithSnapshot('active-mixed');

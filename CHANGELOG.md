@@ -6,6 +6,19 @@ and [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-11-06
+
+### Added
+
+- The abort and simulation confirmation dialogs now show a spinner and disable
+  both buttons while the request is in flight, preventing duplicate submissions.
+  The vanilla lab exposes both pending states through dedicated cards.
+
+### Changed
+
+- Feedback dismiss time for `simulacrum` and `emergency` feedback augmented both to 12 seconds
+- Feedback component now renders 3.5rem svg instead of 1.5rem
+
 ## [0.6.0] - 2026-11-06
 
 ### Added
