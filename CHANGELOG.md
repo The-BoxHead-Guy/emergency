@@ -6,6 +6,16 @@ and [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-09
+
+### Added
+
+- `simulate()` now captures geolocation and sends it in the `POST /simulacrum`
+  body, following the activation fallback path when the capture fails.
+- New `emergency:location` event emitted after a successful geolocation capture,
+  and the captured position is included in `emergency:activated` and
+  `emergency:simulated`.
+
 ## [0.6.2] - 2026-11-06
 
 ### Added

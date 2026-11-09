@@ -1,6 +1,6 @@
 {
   "name": "@dataemergencia/emergency",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "description": "Framework-agnostic emergency client for DataEmergencia, with a mountable React panel and an IIFE build.",
   "license": "MIT",
   "type": "module",

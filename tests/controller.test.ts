@@ -267,11 +267,99 @@ describe('emergency controller', () => {
 
     const state = controller.client.getState();
     expect(controller.bff.simulacrum).toHaveBeenCalledTimes(1);
+    expect(controller.bff.simulacrum).toHaveBeenCalledWith({
+      geolocation: { latitude: 4.711, longitude: -74.0721 },
+    });
     expect(controller.bff.activate).not.toHaveBeenCalled();
     expect(state.snapshot).toBeNull();
     expect(state.phase.kind).toBe('ready');
+    expect(state.geolocation).toEqual({
+      latitude: 4.711,
+      longitude: -74.0721,
+    });
     expect(state.simulationResult?.ok).toBe(true);
-    expect(simulated).toHaveBeenCalledTimes(1);
+    expect(simulated).toHaveBeenCalledWith({
+      responders: expect.any(Array),
+      failures: [],
+      geolocation: { latitude: 4.711, longitude: -74.0721 },
+    });
+  });
+
+  it('emits emergency:location after capturing geolocation', async () => {
+    const controller = createTestController();
+    const located = vi.fn();
+    const activated = vi.fn();
+    controller.client.on('emergency:location', located);
+    controller.client.on('emergency:activated', activated);
+
+    await controller.client.activate();
+
+    expect(located).toHaveBeenCalledWith({
+      geolocation: { latitude: 4.711, longitude: -74.0721 },
+    });
+    expect(activated).toHaveBeenCalledWith({
+      snapshot: expect.objectContaining({ emergencyId: 'emg-1' }),
+      geolocation: { latitude: 4.711, longitude: -74.0721 },
+    });
+  });
+
+  it('does not simulate when geolocation fails and surfaces the fallback', async () => {
+    const fallback = vi.fn();
+    const failed = vi.fn();
+    const geolocation = {
+      getCurrentPosition: vi.fn(async () => {
+        throw Object.assign(new Error('denied'), {
+          emergencyError: createEmergencyError(
+            'geolocation_denied',
+            'Permission denied.',
+          ),
+        });
+      }),
+    };
+    const controller = createTestController({ geolocation });
+    controller.client.on('emergency:fallback', fallback);
+    controller.client.on('emergency:failed', failed);
+
+    await controller.client.simulate();
+
+    const state = controller.client.getState();
+    expect(controller.bff.simulacrum).not.toHaveBeenCalled();
+    expect(state.geolocation).toBeNull();
+    expect(state.geolocationError?.code).toBe('geolocation_denied');
+    expect(state.phase.kind).toBe('ready');
+    expect(failed).toHaveBeenCalledWith({
+      error: expect.objectContaining({ code: 'geolocation_denied' }),
+      operation: 'geolocation',
+    });
+    expect(fallback).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores a second simulation while one is in flight', async () => {
+    let resolveSimulation: (value: EmergencyResultPayload) => void = () =>
+      undefined;
+    const bff = createFakeBff({
+      simulacrum: vi.fn((): Promise<EmergencyResultPayload> => {
+        return new Promise((resolve) => {
+          resolveSimulation = resolve;
+        });
+      }),
+    });
+    const controller = createTestController({ bff });
+
+    const first = controller.client.simulate();
+    await vi.waitFor(() => expect(bff.simulacrum).toHaveBeenCalledTimes(1));
+
+    await controller.client.simulate();
+    expect(bff.simulacrum).toHaveBeenCalledTimes(1);
+
+    resolveSimulation({
+      emergency_id: null,
+      simulated: true,
+      responders,
+      failures: [],
+    });
+    await first;
+    expect(controller.client.getState().phase.kind).toBe('ready');
   });
 
   it('dismisses a failed simulation without keeping its error surface', async () => {

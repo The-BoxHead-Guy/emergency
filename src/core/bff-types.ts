@@ -66,6 +66,10 @@ export interface ActivateRequest {
   readonly reporter_phone?: string;
 }
 
+export interface SimulacrumRequest {
+  readonly geolocation?: GeolocationRequest;
+}
+
 export interface RefreshResponse {
   readonly emergency: EmergencyPayload;
 }
@@ -102,6 +106,7 @@ export interface BffClient {
     idempotencyKey?: string,
   ): Promise<EmergencyResultPayload>;
   simulacrum(
+    request: SimulacrumRequest,
     signal?: AbortSignal,
     idempotencyKey?: string,
   ): Promise<EmergencyResultPayload>;

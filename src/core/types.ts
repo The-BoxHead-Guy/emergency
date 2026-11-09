@@ -218,10 +218,17 @@ export type PanelCloseReason =
 
 export interface EmergencyEventMap {
   'session:ready': { readonly code: string; readonly expiresIn: number };
-  'emergency:activated': { readonly snapshot: EmergencySnapshot };
+  'emergency:location': {
+    readonly geolocation: EmergencyGeolocation;
+  };
+  'emergency:activated': {
+    readonly snapshot: EmergencySnapshot;
+    readonly geolocation: EmergencyGeolocation;
+  };
   'emergency:simulated': {
     readonly responders: readonly Responder[];
     readonly failures: readonly EmergencyFailure[];
+    readonly geolocation: EmergencyGeolocation;
   };
   'emergency:resumed': { readonly snapshot: EmergencySnapshot };
   'emergency:updated': { readonly snapshot: EmergencySnapshot };

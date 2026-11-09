@@ -12,6 +12,7 @@ type StoredHandler = (payload: never) => void;
  */
 export const EMERGENCY_EVENT_NAMES: readonly EmergencyEventName[] = [
   'session:ready',
+  'emergency:location',
   'emergency:activated',
   'emergency:simulated',
   'emergency:resumed',

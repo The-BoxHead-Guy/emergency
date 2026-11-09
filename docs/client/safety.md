@@ -22,6 +22,13 @@ The API exposes `simulate()` for programmatic use. Unlike `abort()`, it does not
 require a confirmation flag; the confirmation is a panel interaction. If you
 call it from your own UI, show your own confirmation first.
 
+`simulate()` requests geolocation before calling the BFF, exactly like
+activation. If the browser denies, times out, is unavailable or unsupported, the
+client emits `emergency:failed` with operation `geolocation` and
+`emergency:fallback`, shows the same dismissable error feedback card, and does
+not send `POST /simulacrum`. A failed capture therefore never reports a test
+message as sent.
+
 ## Resume notification
 
 If an emergency was started earlier and is still active, a reload does not
@@ -54,10 +61,11 @@ emergency active; it does not pretend the cancellation succeeded.
 Aborting a simulated result is a no-op with an informational message, because
 there is no real emergency to cancel.
 
-## Geolocation is required for activation
+## Geolocation is required for activation and simulation
 
-The client requests high-accuracy geolocation before `POST /activate`. If the
-browser denies, times out, is unavailable or unsupported, the client:
+The client requests high-accuracy geolocation before `POST /activate` and before
+`POST /simulacrum`. If the browser denies, times out, is unavailable or
+unsupported, the client:
 
 1. emits `emergency:failed` with operation `geolocation`,
 2. emits `emergency:fallback`,

@@ -161,6 +161,71 @@ describe('createBffClient', () => {
     );
   });
 
+  it('sends geolocation and the idempotency key on /simulacrum', async () => {
+    const { instance, calls } = createInstance((config) =>
+      response(
+        config,
+        {
+          emergency_id: null,
+          simulated: true,
+          responders: [],
+          failures: [],
+        },
+        201,
+      ),
+    );
+
+    const client = createBffClient({
+      bffBaseUrl: 'https://example.test',
+      axiosInstance: instance,
+      generateIdempotencyKey: () => 'idem-2',
+    });
+
+    const result = await client.simulacrum({
+      geolocation: {
+        latitude: 4.711,
+        longitude: -74.0721,
+        accuracy: 12,
+      },
+    });
+
+    expect(calls[0]?.url).toBe('/simulacrum');
+    expect(calls[0]?.headers.get('Idempotency-Key')).toBe('idem-2');
+    expect(calls[0]?.data).toBe(
+      JSON.stringify({
+        geolocation: { latitude: 4.711, longitude: -74.0721, accuracy: 12 },
+      }),
+    );
+    expect(result.simulated).toBe(true);
+    expect(result.emergency_id).toBeNull();
+  });
+
+  it('sends an empty body when /simulacrum has no geolocation', async () => {
+    const { instance, calls } = createInstance((config) =>
+      response(
+        config,
+        {
+          emergency_id: null,
+          simulated: true,
+          responders: [],
+          failures: [],
+        },
+        201,
+      ),
+    );
+
+    const client = createBffClient({
+      bffBaseUrl: 'https://example.test',
+      axiosInstance: instance,
+      generateIdempotencyKey: () => 'idem-3',
+    });
+
+    await client.simulacrum({});
+
+    expect(calls[0]?.headers.get('Idempotency-Key')).toBe('idem-3');
+    expect(calls[0]?.data).toBe(JSON.stringify({}));
+  });
+
   it('rejects calls after destroy', async () => {
     const { instance } = createInstance((config) =>
       response(config, { active: false, emergency: null, realtime }),

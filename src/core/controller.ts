@@ -377,6 +377,7 @@ export function createEmergencyController(
         config.geolocationTimeoutMs ?? 8000,
       );
       patch({ geolocation: position });
+      events.emit('emergency:location', { geolocation: position });
     } catch (error) {
       const normalized = geolocationFailure(error);
       patch({ geolocation: null, geolocationError: normalized });
@@ -422,7 +423,10 @@ export function createEmergencyController(
         failures.length > 0 ? 'warning' : 'success',
         failures.length > 0 ? copy.partialFailure : copy.activeBanner,
       );
-      events.emit('emergency:activated', { snapshot: hydrated });
+      events.emit('emergency:activated', {
+        snapshot: hydrated,
+        geolocation: position,
+      });
       startRealtime(responders);
     } catch (error) {
       const normalized = toEmergencyError(error, 'network');
@@ -462,10 +466,35 @@ export function createEmergencyController(
       return;
     }
 
-    patch({ lastError: null, simulationResult: null });
+    patch({
+      lastError: null,
+      simulationResult: null,
+      geolocationError: null,
+    });
+
+    let position;
 
     try {
-      const result = await bff.simulacrum();
+      position = await geolocation.getCurrentPosition(
+        config.geolocationTimeoutMs ?? 8000,
+      );
+      patch({ geolocation: position });
+      events.emit('emergency:location', { geolocation: position });
+    } catch (error) {
+      const normalized = geolocationFailure(error);
+      patch({ geolocation: null, geolocationError: normalized });
+      transition({ kind: 'ready' });
+      events.emit('emergency:failed', {
+        error: normalized,
+        operation: 'geolocation',
+      });
+      emitFallback(normalized);
+
+      return;
+    }
+
+    try {
+      const result = await bff.simulacrum({ geolocation: position });
       const responders = result.responders.map(toResponder);
       const failures = result.failures.map(toFailure);
       const simulationResult: SimulationResult = {
@@ -486,7 +515,11 @@ export function createEmergencyController(
         failures.length > 0 ? 'warning' : 'success',
         simulationResult.message,
       );
-      events.emit('emergency:simulated', { responders, failures });
+      events.emit('emergency:simulated', {
+        responders,
+        failures,
+        geolocation: position,
+      });
     } catch (error) {
       const normalized = toEmergencyError(error, 'network');
       const simulationResult: SimulationResult = {

@@ -132,7 +132,7 @@ client.close(reason?)    // Closes the panel
 client.ensureSession()   // POST /session once; safe to repeat
 client.resume()          // GET /current and exposes resumeAvailable
 client.activate()        // Requests geolocation, then POST /activate
-client.simulate()        // POST /simulacrum; never creates an emergency
+client.simulate()        // Requests geolocation, then POST /simulacrum
 client.refresh()         // POST /{id}/refresh
 client.abort()           // DELETE /{id} after confirmation
 client.getState()
@@ -146,6 +146,12 @@ success after the BFF confirms. If geolocation is denied, unavailable, times out
 or is unsupported, the client shows a dismissable error feedback card for five
 seconds and never implies that an emergency was sent without a location.
 
+Simulation also requests geolocation before `POST /simulacrum`. If the capture
+fails, it follows the same fallback path as activation and does not call the
+BFF. A successful capture is announced through `emergency:location`, and both
+`emergency:activated` and `emergency:simulated` include the captured
+coordinates.
+
 Abort requires confirmation: `requestAbortConfirmation()` sets the state that
 the UI uses for the "keep active / cancel emergency" step, and `abort()` acts on
 it.
@@ -154,9 +160,10 @@ Simulation is disabled while a real emergency is active.
 
 ## Events
 
-`session:ready`, `emergency:activated`, `emergency:simulated`,
-`emergency:resumed`, `emergency:updated`, `emergency:aborted`,
-`emergency:failed`, `emergency:fallback`, `panel:opened`, `panel:closed`.
+`session:ready`, `emergency:location`, `emergency:activated`,
+`emergency:simulated`, `emergency:resumed`, `emergency:updated`,
+`emergency:aborted`, `emergency:failed`, `emergency:fallback`, `panel:opened`,
+`panel:closed`.
 
 Events are typed in `EmergencyEventMap` (`src/core/types.ts`) and emitted by the
 client's own emitter, not DOM custom events.
@@ -166,15 +173,15 @@ client's own emitter, not DOM custom events.
 The client expects the emergency BFF documented in
 `packages/emergency-bff`:
 
-| Method   | Route           | Purpose                                     |
-| -------- | --------------- | ------------------------------------------- |
-| `GET`    | `/config`       | Initial CSRF token.                         |
-| `POST`   | `/session`      | `{ code }` → session + rotated CSRF token.  |
-| `GET`    | `/current`      | Active emergency for the session, if any.   |
-| `POST`   | `/activate`     | `{ geolocation: { latitude, longitude } }`. |
-| `POST`   | `/simulacrum`   | Test message, no emergency created.         |
-| `POST`   | `/{id}/refresh` | Reconcile snapshot and responder statuses.  |
-| `DELETE` | `/{id}`         | Abort and notify contacts.                  |
+| Method   | Route           | Purpose                                                           |
+| -------- | --------------- | ----------------------------------------------------------------- |
+| `GET`    | `/config`       | Initial CSRF token.                                               |
+| `POST`   | `/session`      | `{ code }` → session + rotated CSRF token.                        |
+| `GET`    | `/current`      | Active emergency for the session, if any.                         |
+| `POST`   | `/activate`     | `{ geolocation: { latitude, longitude } }`.                       |
+| `POST`   | `/simulacrum`   | `{ geolocation: { latitude, longitude } }`, no emergency created. |
+| `POST`   | `/{id}/refresh` | Reconcile snapshot and responder statuses.                        |
+| `DELETE` | `/{id}`         | Abort and notify contacts.                                        |
 
 Every mutating request sends the CSRF token in `X-CSRF-Token`. The default
 strategy keeps the token in memory and updates it from `/config` and `/session`.

@@ -31,7 +31,7 @@ Important state fields:
 | `failures`               | Contacts the BFF could not notify.                                 |
 | `messages`               | Message rows derived from the snapshot.                            |
 | `lastError`              | Last typed error.                                                  |
-| `geolocation`            | Last coordinates.                                                  |
+| `geolocation`            | Last coordinates captured by activation or simulation.             |
 | `geolocationError`       | Last geolocation error.                                            |
 | `contactPhone`           | Phone captured by the pre-emergency screen for this panel session. |
 | `realtimeStatus`         | `idle`, `connecting`, `connected`, `disconnected`, `unavailable`.  |
@@ -101,8 +101,10 @@ client.abort(): Promise<void>
   sends `POST /activate` with the geolocation and, when captured, the reporter
   phone. It does not throw; failures arrive as `emergency:failed` and in
   `lastError`.
-- `simulate()` sends a test message to the emergency contacts without creating
-  an emergency. It is a no-op while a real emergency is active.
+- `simulate()` requests geolocation and sends `POST /simulacrum` with it to
+  deliver a test message to the emergency contacts without creating an
+  emergency. If geolocation fails it follows the activation fallback path and
+  does not call the BFF. It is a no-op while a real emergency is active.
 - `refresh()` reconciles the active emergency with `GET /current`. It is
   throttled to one call per 1500 ms and is triggered automatically by realtime
   events, window focus, `online` and visibility changes.
@@ -141,18 +143,24 @@ client.off('emergency:activated', handler);
 Events are delivered synchronously. A throwing handler is caught and logged; it
 does not break the client.
 
-| Event                 | Payload                       |
-| --------------------- | ----------------------------- |
-| `session:ready`       | `{ code, expiresIn }`         |
-| `emergency:activated` | `{ snapshot }`                |
-| `emergency:simulated` | `{ responders, failures }`    |
-| `emergency:resumed`   | `{ snapshot }`                |
-| `emergency:updated`   | `{ snapshot }`                |
-| `emergency:aborted`   | `{ emergencyId, responders }` |
-| `emergency:failed`    | `{ error, operation }`        |
-| `emergency:fallback`  | `{ error, fallback }`         |
-| `panel:opened`        | `{ reason }`                  |
-| `panel:closed`        | `{ reason }`                  |
+| Event                 | Payload                                 |
+| --------------------- | --------------------------------------- |
+| `session:ready`       | `{ code, expiresIn }`                   |
+| `emergency:location`  | `{ geolocation }`                       |
+| `emergency:activated` | `{ snapshot, geolocation }`             |
+| `emergency:simulated` | `{ responders, failures, geolocation }` |
+| `emergency:resumed`   | `{ snapshot }`                          |
+| `emergency:updated`   | `{ snapshot }`                          |
+| `emergency:aborted`   | `{ emergencyId, responders }`           |
+| `emergency:failed`    | `{ error, operation }`                  |
+| `emergency:fallback`  | `{ error, fallback }`                   |
+| `panel:opened`        | `{ reason }`                            |
+| `panel:closed`        | `{ reason }`                            |
+
+`emergency:location` fires right after a successful capture in both activation
+and simulation. The same coordinates are included in the lifecycle event that
+follows (`emergency:activated` or `emergency:simulated`), so you can read them
+from whichever event you already handle.
 
 `operation` is one of `mount`, `session`, `resume`, `activate`, `simulate`,
 `refresh`, `abort`, `geolocation`, `realtime`.

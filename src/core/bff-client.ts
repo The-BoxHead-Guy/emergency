@@ -12,6 +12,7 @@ import type {
   EmergencyResultPayload,
   RefreshResponse,
   SessionResponse,
+  SimulacrumRequest,
 } from '@/core/bff-types';
 import { createEmergencyError, isEmergencyErrorCode } from '@/core/errors';
 import { isRecord } from '@/core/guards';
@@ -433,6 +434,7 @@ export function createBffClient(options: BffClientOptions): BffClient {
     },
 
     async simulacrum(
+      request: SimulacrumRequest,
       signal?: AbortSignal,
       key?: string,
     ): Promise<EmergencyResultPayload> {
@@ -440,6 +442,7 @@ export function createBffClient(options: BffClientOptions): BffClient {
         {
           method: 'POST',
           url: '/simulacrum',
+          data: request,
           headers: { 'Idempotency-Key': idempotencyKey(key) },
         },
         isEmergencyResultPayload,
