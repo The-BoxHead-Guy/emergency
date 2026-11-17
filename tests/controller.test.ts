@@ -258,6 +258,52 @@ describe('emergency controller', () => {
     expect(fallback).toHaveBeenCalledTimes(1);
   });
 
+  it('handles insufficient credits on activation with dedicated copy and fallback', async () => {
+    const bff = createFakeBff({
+      activate: vi.fn(async () => {
+        throw createEmergencyError(
+          'insufficient_credits',
+          'The account has no credits.',
+        );
+      }),
+    });
+    const controller = createTestController({ bff });
+    const fallback = vi.fn();
+    controller.client.on('emergency:fallback', fallback);
+
+    await controller.client.activate();
+
+    const state = controller.client.getState();
+    expect(state.phase.kind).toBe('ready');
+    expect(state.lastError?.code).toBe('insufficient_credits');
+    expect(fallback).toHaveBeenCalledTimes(1);
+    expect(fallback).toHaveBeenCalledWith({
+      error: expect.objectContaining({ code: 'insufficient_credits' }),
+      fallback: { phone: '+57 300 123 4567', label: 'Línea de emergencia' },
+    });
+  });
+
+  it('renders insufficient credit copy on simulation without the fallback', async () => {
+    const bff = createFakeBff({
+      simulacrum: vi.fn(async () => {
+        throw createEmergencyError(
+          'insufficient_credits',
+          'The account has no credits.',
+        );
+      }),
+    });
+    const controller = createTestController({ bff });
+    const fallback = vi.fn();
+    controller.client.on('emergency:fallback', fallback);
+
+    await controller.client.simulate();
+
+    const state = controller.client.getState();
+    expect(state.phase.kind).toBe('ready');
+    expect(state.simulationResult?.ok).toBe(false);
+    expect(fallback).not.toHaveBeenCalled();
+  });
+
   it('simulates without creating an emergency', async () => {
     const controller = createTestController();
     const simulated = vi.fn();

@@ -6,6 +6,21 @@ and [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-11-17
+
+### Added
+
+- Recognizes the BFF `insufficient_credits` error: activation renders dedicated
+  Spanish copy, returns to the `ready` phase and emits `emergency:fallback` so
+  the host can offer the hotline; `simulate()` renders the same copy without the
+  emergency fallback.
+
+### Changed
+
+- `insufficient_credits` is a new `EmergencyErrorCode` union member. Consumers
+  with exhaustive `switch` statements over error codes need a new branch; this
+  is a minor bump under the pre-1.0 policy.
+
 ## [0.7.0] - 2026-11-09
 
 ### Added

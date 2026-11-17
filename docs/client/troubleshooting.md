@@ -94,6 +94,17 @@ created.
 Partial failures (`Algunos contactos no pudieron ser notificados`) still create
 the emergency and show which contacts failed.
 
+## Activation fails with `insufficient_credits`
+
+The account has no credits left for the billed template send. The BFF stops the
+fan-out, deletes the emergency it created and returns `402 insufficient_credits`.
+
+- Activation shows dedicated Spanish copy, returns to the ready phase and emits
+  `emergency:fallback` so the host can offer the hotline.
+- `simulate()` shows the same copy without the emergency fallback.
+- Top up the account before retrying; the failure is not a delivery problem, so
+  fixing contact data will not help.
+
 ## No realtime updates
 
 - Pass a `realtime` mount option with the public Pusher `key` and `cluster`, and

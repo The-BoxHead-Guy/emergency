@@ -92,6 +92,7 @@ export const EMERGENCY_ERROR_CODES = [
   'missing_emergency_contacts',
   'missing_medical_profile',
   'whatsapp_delivery_failed',
+  'insufficient_credits',
   'upstream_error',
   'internal_error',
   'emergency_error',

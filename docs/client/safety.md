@@ -100,6 +100,11 @@ If every contact fails, the BFF returns `whatsapp_delivery_failed` and the
 client reports the failure. Reconcile with **Actualizar** or start the
 emergency again after fixing the upstream issue.
 
+If the account has no credits for the billed template send, the BFF returns
+`insufficient_credits`. The client shows a dedicated message, returns to the
+ready phase and, for a real activation, emits `emergency:fallback`. Treat it as
+a reason to offer the direct-call path, not as a successful notification.
+
 ## Status is live but not authoritative
 
 With the public `realtime` mount option configured, delivery status updates

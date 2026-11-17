@@ -80,5 +80,7 @@ export const copy = {
   activeBanner: 'Emergencia activa. Tus contactos fueron notificados.',
   emergencyActiveError:
     'Ya tienes una emergencia activa. Revisa el estado antes de continuar.',
+  insufficientCredits:
+    'No hay créditos suficientes para enviar la alerta de emergencia. Comunícate directamente con la línea de emergencia.',
   respondersEmpty: 'Aún no hay contactos notificados.',
 } as const;

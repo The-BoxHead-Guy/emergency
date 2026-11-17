@@ -438,6 +438,16 @@ export function createEmergencyController(
         return;
       }
 
+      if (normalized.code === 'insufficient_credits') {
+        fail(normalized, 'activate', {
+          phase: { kind: 'ready' },
+          message: copy.insufficientCredits,
+        });
+        emitFallback(normalized);
+
+        return;
+      }
+
       fail(normalized, 'activate', { phase: { kind: 'ready' } });
       emitFallback(normalized);
     }
@@ -522,15 +532,21 @@ export function createEmergencyController(
       });
     } catch (error) {
       const normalized = toEmergencyError(error, 'network');
+      const insufficientCredits = normalized.code === 'insufficient_credits';
       const simulationResult: SimulationResult = {
         ok: false,
-        message: copy.simulateResultFail,
+        message: insufficientCredits
+          ? copy.insufficientCredits
+          : copy.simulateResultFail,
         at: Date.now(),
       };
 
       patch({ simulationResult });
       transition({ kind: 'ready' });
-      fail(normalized, 'simulate', { phase: null });
+      fail(normalized, 'simulate', {
+        phase: null,
+        message: insufficientCredits ? copy.insufficientCredits : undefined,
+      });
     }
   }
 

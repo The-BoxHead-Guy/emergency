@@ -120,6 +120,45 @@ describe('createBffClient', () => {
     });
   });
 
+  it('passes an insufficient_credits envelope with bounded details through', async () => {
+    const error = new AxiosError('Payment Required', 'ERR_BAD_REQUEST');
+    error.response = {
+      data: {
+        error: {
+          code: 'insufficient_credits',
+          message: 'The account has no credits for this send.',
+          details: {
+            code: 'DABC12',
+            upstream_status: 402,
+            upstream_code: 'INSUFFICIENT_CREDITS',
+          },
+          request_id: 'req-10',
+        },
+      },
+      status: 402,
+      statusText: 'Payment Required',
+      headers: new AxiosHeaders({ 'x-request-id': 'req-header' }),
+      config: { headers: new AxiosHeaders() },
+    };
+
+    const { instance } = createInstance(() => Promise.reject(error));
+    const client = createBffClient({
+      bffBaseUrl: 'https://example.test',
+      axiosInstance: instance,
+    });
+
+    await expect(client.activate({})).rejects.toMatchObject({
+      code: 'insufficient_credits',
+      status: 402,
+      requestId: 'req-10',
+      details: {
+        code: 'DABC12',
+        upstream_status: 402,
+        upstream_code: 'INSUFFICIENT_CREDITS',
+      },
+    });
+  });
+
   it('maps a transport failure to a network error', async () => {
     const error = new AxiosError('Network Error', 'ERR_NETWORK');
     const { instance } = createInstance(() => Promise.reject(error));
