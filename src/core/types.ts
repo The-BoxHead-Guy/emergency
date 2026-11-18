@@ -272,6 +272,11 @@ export interface SimulationResult {
   readonly ok: boolean;
   readonly message: string;
   readonly at: number;
+
+  /** Upstream error code when the simulation failed. */
+  readonly code?: EmergencyErrorCode;
+  /** Whether only some contacts were notified. */
+  readonly partial?: boolean;
 }
 
 export interface EmergencyClientState {

@@ -32,7 +32,7 @@ export function Availability({ onRecharge, onDetails }: AvailabilityProps) {
         className={cls('emergency-availability__recharge')}
         onClick={onRecharge}
       >
-        <Icon name="credit-card-plus" />
+        <Icon name="return-on-investment" size="1.75rem" />
         {primaryCopy.recharge}
       </button>
 

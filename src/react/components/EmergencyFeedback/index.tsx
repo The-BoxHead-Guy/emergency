@@ -5,8 +5,8 @@ import type {
   EmergencyError,
   SimulationResult,
 } from '@/core/types';
-import type { MessageDetail } from '@/react/components/MessageSurface';
 import { MessageSurface } from '@/react/components/MessageSurface';
+import { resolveFeedbackMessage } from '@/react/support/messages';
 import { cls } from '@/react/classnames';
 
 /** Time the feedback stays on screen before dismissing itself. */
@@ -23,27 +23,6 @@ interface EmergencyFeedbackProps {
   readonly onDismiss: () => void;
 }
 
-interface FeedbackSurfaceProps {
-  readonly result: AbortResult | SimulationResult | null;
-  readonly aborting: boolean;
-  readonly geolocationError: EmergencyError | null;
-  readonly activationError?: EmergencyError | null;
-  readonly onDismiss: () => void;
-}
-
-function geolocationText(error: EmergencyError): string {
-  switch (error.code) {
-    case 'geolocation_denied':
-      return copy.geolocationDenied;
-    case 'geolocation_timeout':
-      return copy.geolocationTimeout;
-    case 'geolocation_unsupported':
-      return copy.geolocationUnsupported;
-    default:
-      return copy.geolocationUnavailable;
-  }
-}
-
 export function EmergencyFeedback({
   abortResult,
   simulationResult,
@@ -51,82 +30,48 @@ export function EmergencyFeedback({
   activationError,
   onDismiss,
 }: EmergencyFeedbackProps) {
-  const result = abortResult ?? simulationResult;
-  const feedbackActivationError = result ? null : (activationError ?? null);
-  const feedbackGeolocationError =
-    result || feedbackActivationError ? null : geolocationError;
-
-  if (!result && !feedbackActivationError && !feedbackGeolocationError) {
-    return null;
-  }
-
-  return (
-    <FeedbackSurface
-      result={result}
-      aborting={abortResult !== null}
-      geolocationError={feedbackGeolocationError}
-      activationError={feedbackActivationError}
-      onDismiss={onDismiss}
-    />
-  );
-}
-
-function FeedbackSurface({
-  result,
-  aborting,
-  geolocationError,
-  activationError,
-  onDismiss,
-}: FeedbackSurfaceProps) {
+  const message = resolveFeedbackMessage({
+    abortResult,
+    simulationResult,
+    geolocationError,
+    activationError,
+  });
   const dismissRef = useRef(onDismiss);
+  const autoDismissMs =
+    geolocationError || activationError
+      ? GEOLOCATION_FEEDBACK_AUTO_DISMISS_MS
+      : FEEDBACK_AUTO_DISMISS_MS;
+  const feedbackKey =
+    abortResult?.at ??
+    simulationResult?.at ??
+    geolocationError?.code ??
+    activationError?.code ??
+    null;
 
   useEffect(() => {
     dismissRef.current = onDismiss;
   }, [onDismiss]);
 
   useEffect(() => {
-    const timeout = setTimeout(
-      () => dismissRef.current(),
-      geolocationError || activationError
-        ? GEOLOCATION_FEEDBACK_AUTO_DISMISS_MS
-        : FEEDBACK_AUTO_DISMISS_MS,
-    );
+    if (feedbackKey === null) {
+      return;
+    }
+
+    const timeout = setTimeout(() => dismissRef.current(), autoDismissMs);
 
     return () => clearTimeout(timeout);
-  }, [result?.at, geolocationError, activationError]);
+  }, [autoDismissMs, feedbackKey]);
 
-  const success = result?.ok === true;
-  const title = success
-    ? aborting
-      ? copy.abortSuccessTitle
-      : copy.simulateSuccessTitle
-    : copy.errorTitle;
-  const text = success
-    ? (result?.message ?? '')
-    : geolocationError
-      ? geolocationText(geolocationError)
-      : activationError
-        ? activationError.message || copy.errorText
-        : (result?.message ?? copy.errorText);
-  const details: readonly MessageDetail[] = success
-    ? aborting
-      ? [{ icon: 'message', text: copy.abortSuccessDetails }]
-      : [
-          { icon: 'message', text: copy.simulateSuccessDetails },
-          { icon: 'clock', text: copy.simulateSuccessCompleted },
-        ]
-    : [
-        { icon: 'info', text: copy.errorDetailInfo },
-        { icon: 'arrow-left', text: copy.errorDetailRetry },
-      ];
+  if (!message) {
+    return null;
+  }
 
   return (
     <MessageSurface
-      variant={success ? 'success' : 'error'}
-      icon={success ? 'check-circle' : 'alert-triangle'}
-      title={title}
-      text={text}
-      details={details}
+      variant={message.variant}
+      icon={message.icon}
+      title={message.title}
+      text={message.text}
       className={cls('emergency-feedback')}
     >
       <button

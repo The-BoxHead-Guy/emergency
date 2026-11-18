@@ -4,6 +4,7 @@ import {
   formatVenezuelanPhone,
   isValidVenezuelanPhone,
   normalizeVenezuelanPhone,
+  sanitizeVenezuelanPhoneInput,
   toVenezuelanE164,
 } from '@/core/phone';
 import { EmergencyFooter } from '@/react/components/EmergencyFooter';
@@ -22,13 +23,12 @@ export function PreEmergencyScreen(props: EmergencyScreenProps) {
   const permissionId = `${phoneId}-permission`;
   const [digits, setDigits] = useState('');
   const [touched, setTouched] = useState(false);
-  const valid = isValidVenezuelanPhone(digits);
-  const invalid = touched && digits.length > 0 && !valid;
+  const nationalDigits = normalizeVenezuelanPhone(digits);
+  const valid = isValidVenezuelanPhone(nationalDigits);
+  const invalid = touched && nationalDigits.length > 0 && !valid;
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const next = normalizeVenezuelanPhone(event.target.value).slice(0, 10);
-
-    setDigits(next);
+    setDigits(sanitizeVenezuelanPhoneInput(event.target.value));
   };
 
   const handleSubmit = () => {
@@ -113,38 +113,24 @@ export function PreEmergencyScreen(props: EmergencyScreenProps) {
           >
             {preEmergencyCopy.phoneLabel}
           </label>
-          <div className={cls('emergency-pre-emergency__phone-row')}>
-            <input
-              type="tel"
-              aria-label={preEmergencyCopy.areaCodeLabel}
-              className={cls(
-                'emergency-pre-emergency__input',
-                'emergency-pre-emergency__input--area-code',
-                valid && 'emergency-pre-emergency__input--valid',
-              )}
-              value={preEmergencyCopy.areaCode}
-              disabled
-              readOnly
-            />
-            <input
-              id={phoneId}
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel-national"
-              placeholder={preEmergencyCopy.phonePlaceholder}
-              className={cls(
-                'emergency-pre-emergency__input',
-                'emergency-pre-emergency__input--number',
-                valid && 'emergency-pre-emergency__input--valid',
-                invalid && 'emergency-pre-emergency__input--invalid',
-              )}
-              value={formatVenezuelanPhone(digits)}
-              aria-invalid={invalid}
-              aria-describedby={invalid ? errorId : undefined}
-              onChange={handleChange}
-              onBlur={() => setTouched(true)}
-            />
-          </div>
+          <input
+            id={phoneId}
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel-national"
+            placeholder={preEmergencyCopy.phonePlaceholder}
+            className={cls(
+              'emergency-pre-emergency__input',
+              'emergency-pre-emergency__input--number',
+              valid && 'emergency-pre-emergency__input--valid',
+              invalid && 'emergency-pre-emergency__input--invalid',
+            )}
+            value={formatVenezuelanPhone(digits)}
+            aria-invalid={invalid}
+            aria-describedby={invalid ? errorId : undefined}
+            onChange={handleChange}
+            onBlur={() => setTouched(true)}
+          />
           {invalid ? (
             <p
               id={errorId}

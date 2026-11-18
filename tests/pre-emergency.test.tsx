@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { copy } from '@/core/copy';
 import { createEmergencyError } from '@/core/errors';
 import { preEmergencyCopy } from '@/react/screens/pre-emergency/copy';
-import { createTestController } from '@/test/fakes';
+import { createFakeBff, createTestController } from '@/test/fakes';
 import { renderEmergency } from '@tests/render';
 
 const mounted: Array<ReturnType<typeof createTestController>> = [];
@@ -72,14 +72,14 @@ describe('pre-emergency screen', () => {
     ).not.toBeNull();
   });
 
-  it('keeps the area code fixed at +58', async () => {
+  it('renders a single phone input without the fixed area code', async () => {
     const { controller } = setup();
     await openPreEmergency(controller);
 
-    const areaCode = screen.getByLabelText(preEmergencyCopy.areaCodeLabel);
-
-    expect(areaCode).toHaveValue('+58');
-    expect(areaCode).toBeDisabled();
+    expect(screen.getAllByLabelText(preEmergencyCopy.phoneLabel)).toHaveLength(
+      1,
+    );
+    expect(screen.getAllByRole('textbox')).toHaveLength(1);
   });
 
   it('disables the emergency action until the phone is valid', async () => {
@@ -101,28 +101,54 @@ describe('pre-emergency screen', () => {
     expect(submit).toBeEnabled();
   });
 
-  it('marks both inputs valid when the number is complete', async () => {
+  it('marks the phone input valid when the number is complete', async () => {
     const { controller } = setup();
     const user = await openPreEmergency(controller);
-    const areaCode = screen.getByLabelText(preEmergencyCopy.areaCodeLabel);
     const phone = screen.getByLabelText(preEmergencyCopy.phoneLabel);
 
     await user.type(phone, '412 1301234');
 
-    expect(areaCode.className).toContain(
-      'emergency-pre-emergency__input--valid',
-    );
     expect(phone.className).toContain('emergency-pre-emergency__input--valid');
   });
 
-  it('normalizes a phone typed with a leading zero', async () => {
+  it('keeps the typed leading zero visible while processing it without it', async () => {
     const { controller } = setup();
     const user = await openPreEmergency(controller);
     const phone = screen.getByLabelText(preEmergencyCopy.phoneLabel);
 
     await user.type(phone, '0412 1301234');
 
+    expect(phone).toHaveValue('0412 1301234');
+    expect(phone.className).toContain('emergency-pre-emergency__input--valid');
+
+    await user.click(screen.getByRole('button', { name: copy.emergencyAria }));
+
+    await waitFor(() =>
+      expect(controller.bff.activate).toHaveBeenCalledTimes(1),
+    );
+    expect(controller.client.getState().contactPhone).toBe('+584121301234');
+  });
+
+  it('strips a typed +58 dialling code from the input', async () => {
+    const { controller } = setup();
+    const user = await openPreEmergency(controller);
+    const phone = screen.getByLabelText(preEmergencyCopy.phoneLabel);
+
+    await user.type(phone, '+58 412 1301234');
+
     expect(phone).toHaveValue('412 1301234');
+    expect(phone.className).toContain('emergency-pre-emergency__input--valid');
+  });
+
+  it('strips a typed 58 dialling code from the input', async () => {
+    const { controller } = setup();
+    const user = await openPreEmergency(controller);
+    const phone = screen.getByLabelText(preEmergencyCopy.phoneLabel);
+
+    await user.type(phone, '58 412 1301234');
+
+    expect(phone).toHaveValue('412 1301234');
+    expect(phone.className).toContain('emergency-pre-emergency__input--valid');
   });
 
   it('shows an error for an invalid phone after blur', async () => {
@@ -212,7 +238,7 @@ describe('pre-emergency screen', () => {
       '412 1301234',
     );
     await user.click(screen.getByRole('button', { name: copy.emergencyAria }));
-    await screen.findByText(copy.geolocationDenied);
+    await screen.findByText(copy.geolocationDeniedText);
     await user.click(
       screen.getByRole('button', { name: copy.feedbackDismiss }),
     );
@@ -229,6 +255,83 @@ describe('pre-emergency screen', () => {
     await user.click(screen.getByRole('button', { name: copy.emergencyAria }));
 
     expect(screenById('pre-emergency')).not.toBeNull();
+  });
+
+  it('hides the simulation action while phone-form feedback is visible', async () => {
+    const controller = createTestController({
+      geolocation: {
+        getCurrentPosition: async () => {
+          throw Object.assign(new Error('denied'), {
+            emergencyError: createEmergencyError(
+              'geolocation_denied',
+              'Permission denied.',
+            ),
+          });
+        },
+      },
+    });
+    const { controller: mountedController } = setup(controller);
+    const user = await openPreEmergency(mountedController);
+
+    await user.type(
+      screen.getByLabelText(preEmergencyCopy.phoneLabel),
+      '412 1301234',
+    );
+    await user.click(screen.getByRole('button', { name: copy.emergencyAria }));
+    await screen.findByText(copy.geolocationDeniedText);
+
+    expect(
+      screen.queryByRole('button', { name: copy.testAria }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: copy.emergencyAria }),
+    ).toBeDisabled();
+
+    await user.click(
+      screen.getByRole('button', { name: copy.feedbackDismiss }),
+    );
+
+    expect(
+      screen.getByRole('button', { name: copy.emergencyAria }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: copy.testAria }),
+    ).toBeInTheDocument();
+  });
+
+  it('hides the simulation action while activation feedback from the phone form is visible', async () => {
+    const bff = createFakeBff({
+      activate: vi.fn(async () => {
+        throw createEmergencyError('upstream_error', 'Activation failed.');
+      }),
+    });
+    const { controller } = setup(createTestController({ bff }));
+    const user = await openPreEmergency(controller);
+
+    await user.type(
+      screen.getByLabelText(preEmergencyCopy.phoneLabel),
+      '412 1301234',
+    );
+    await user.click(screen.getByRole('button', { name: copy.emergencyAria }));
+    await screen.findByText(copy.activationErrorText);
+
+    expect(
+      screen.queryByRole('button', { name: copy.testAria }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: copy.emergencyAria }),
+    ).toBeDisabled();
+
+    await user.click(
+      screen.getByRole('button', { name: copy.feedbackDismiss }),
+    );
+
+    expect(
+      screen.getByRole('button', { name: copy.emergencyAria }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: copy.testAria }),
+    ).toBeInTheDocument();
   });
 
   it('skips the phone screen when activation fails while the panel stays open', async () => {
@@ -253,7 +356,7 @@ describe('pre-emergency screen', () => {
       '412 1301234',
     );
     await user.click(screen.getByRole('button', { name: copy.emergencyAria }));
-    await screen.findByText(copy.geolocationDenied);
+    await screen.findByText(copy.geolocationDeniedText);
     await user.click(
       screen.getByRole('button', { name: copy.feedbackDismiss }),
     );

@@ -37,6 +37,7 @@ export interface EmergencyScreenProps {
   readonly abortResult: AbortResult | null;
   readonly simulationResult: SimulationResult | null;
   readonly feedbackVisible: boolean;
+  readonly feedbackOriginScreen: EmergencyScreenId | null;
   readonly onClose: (reason: PanelCloseReason) => void;
   readonly onActivate: () => void;
   readonly onRefresh: () => void;

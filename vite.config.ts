@@ -159,6 +159,7 @@ export default defineConfig({
       },
     ],
   },
+  server: { host: true, strictPort: true },
   fmt: {
     printWidth: 80,
     tabWidth: 2,

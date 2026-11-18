@@ -35,6 +35,7 @@ export function PrimaryScreen(props: EmergencyScreenProps) {
           busy={props.busy}
           aborting={props.aborting}
           feedbackVisible={props.feedbackVisible}
+          showSimulation={props.feedbackOriginScreen !== 'pre-emergency'}
           square={idle}
           onActivate={
             needsContactPhone

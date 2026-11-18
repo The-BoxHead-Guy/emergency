@@ -1,4 +1,4 @@
-import { act, cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { copy } from '@/core/copy';
 import { createEmergencyError } from '@/core/errors';
@@ -13,8 +13,8 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('emergency feedback', () => {
-  it('auto-dismisses a success message after the timeout', () => {
+describe('emergency feedback auto-dismiss', () => {
+  it('dismisses a result after the feedback timeout', () => {
     vi.useFakeTimers();
     const onDismiss = vi.fn();
 
@@ -28,39 +28,20 @@ describe('emergency feedback', () => {
       />,
     );
 
-    expect(screen.getByText(copy.abortSuccessTitle)).toBeInTheDocument();
+    act(() => {
+      vi.advanceTimersByTime(FEEDBACK_AUTO_DISMISS_MS - 1);
+    });
+
+    expect(onDismiss).not.toHaveBeenCalled();
 
     act(() => {
-      vi.advanceTimersByTime(FEEDBACK_AUTO_DISMISS_MS);
+      vi.advanceTimersByTime(1);
     });
 
     expect(onDismiss).toHaveBeenCalledTimes(1);
   });
 
-  it('auto-dismisses an error message after the timeout', () => {
-    vi.useFakeTimers();
-    const onDismiss = vi.fn();
-
-    render(
-      <EmergencyFeedback
-        abortResult={{ ok: false, message: copy.abortResultFail, at: 1 }}
-        simulationResult={null}
-        geolocationError={null}
-        activationError={null}
-        onDismiss={onDismiss}
-      />,
-    );
-
-    expect(screen.getByText(copy.errorTitle)).toBeInTheDocument();
-
-    act(() => {
-      vi.advanceTimersByTime(FEEDBACK_AUTO_DISMISS_MS);
-    });
-
-    expect(onDismiss).toHaveBeenCalledTimes(1);
-  });
-
-  it('shows geolocation errors as dismissable feedback after five seconds', () => {
+  it('dismisses a geolocation error with the geolocation timeout', () => {
     vi.useFakeTimers();
     const onDismiss = vi.fn();
 
@@ -77,9 +58,6 @@ describe('emergency feedback', () => {
       />,
     );
 
-    expect(screen.getByRole('alert')).toHaveTextContent(copy.errorTitle);
-    expect(screen.getByText(copy.geolocationDenied)).toBeInTheDocument();
-
     act(() => {
       vi.advanceTimersByTime(GEOLOCATION_FEEDBACK_AUTO_DISMISS_MS - 1);
     });
@@ -93,7 +71,7 @@ describe('emergency feedback', () => {
     expect(onDismiss).toHaveBeenCalledTimes(1);
   });
 
-  it('shows activation errors as dismissable feedback after five seconds', () => {
+  it('dismisses an activation error with the geolocation timeout', () => {
     vi.useFakeTimers();
     const onDismiss = vi.fn();
 
@@ -110,9 +88,6 @@ describe('emergency feedback', () => {
       />,
     );
 
-    expect(screen.getByRole('alert')).toHaveTextContent(copy.errorTitle);
-    expect(screen.getByText('Activation failed.')).toBeInTheDocument();
-
     act(() => {
       vi.advanceTimersByTime(GEOLOCATION_FEEDBACK_AUTO_DISMISS_MS - 1);
     });
@@ -121,6 +96,47 @@ describe('emergency feedback', () => {
 
     act(() => {
       vi.advanceTimersByTime(1);
+    });
+
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
+
+  it('restarts the timeout when a new result arrives', () => {
+    vi.useFakeTimers();
+    const onDismiss = vi.fn();
+
+    const { rerender } = render(
+      <EmergencyFeedback
+        abortResult={{ ok: true, message: copy.abortResultOk, at: 1 }}
+        simulationResult={null}
+        geolocationError={null}
+        activationError={null}
+        onDismiss={onDismiss}
+      />,
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(FEEDBACK_AUTO_DISMISS_MS / 2);
+    });
+
+    rerender(
+      <EmergencyFeedback
+        abortResult={{ ok: true, message: copy.abortResultOk, at: 2 }}
+        simulationResult={null}
+        geolocationError={null}
+        activationError={null}
+        onDismiss={onDismiss}
+      />,
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(FEEDBACK_AUTO_DISMISS_MS / 2);
+    });
+
+    expect(onDismiss).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(FEEDBACK_AUTO_DISMISS_MS / 2);
     });
 
     expect(onDismiss).toHaveBeenCalledTimes(1);

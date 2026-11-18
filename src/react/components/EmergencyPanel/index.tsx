@@ -11,6 +11,7 @@ import type {
 import { EmergencyConfirmation } from '@/react/components/EmergencyConfirmation';
 import { cls } from '@/react/classnames';
 import { useEscapeKey } from '@/react/hooks/useEscapeKey';
+import { useFeedbackOrigin } from '@/react/hooks/useFeedbackOrigin';
 import { useFocusTrap } from '@/react/hooks/useFocusTrap';
 import {
   EmergencyScreenProvider,
@@ -53,7 +54,7 @@ export interface EmergencyPanelProps {
 }
 
 interface ActiveScreenProps {
-  readonly screenProps: EmergencyScreenProps;
+  readonly screenProps: Omit<EmergencyScreenProps, 'feedbackOriginScreen'>;
   readonly open: boolean;
   readonly forcePrimary: boolean;
 }
@@ -64,6 +65,12 @@ function ActiveScreen({ screenProps, open, forcePrimary }: ActiveScreenProps) {
   const effectiveScreen = shouldReset ? 'primary' : screen;
   const previousOpen = useRef(open);
   const previousScreen = useRef(effectiveScreen);
+  const feedbackOriginScreen = useFeedbackOrigin(
+    open,
+    forcePrimary,
+    screen,
+    screenProps.feedbackVisible,
+  );
 
   useEffect(() => {
     if (shouldReset) {
@@ -89,7 +96,9 @@ function ActiveScreen({ screenProps, open, forcePrimary }: ActiveScreenProps) {
 
   const Screen = screenRegistry[effectiveScreen];
 
-  return <Screen {...screenProps} />;
+  return (
+    <Screen {...screenProps} feedbackOriginScreen={feedbackOriginScreen} />
+  );
 }
 
 export function EmergencyPanel(props: EmergencyPanelProps) {
@@ -141,7 +150,7 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
   useFocusTrap(dialogRef, open);
   useEscapeKey(open, closeOnEscape);
 
-  const screenProps: EmergencyScreenProps = {
+  const screenProps: Omit<EmergencyScreenProps, 'feedbackOriginScreen'> = {
     titleId,
     active,
     busy,

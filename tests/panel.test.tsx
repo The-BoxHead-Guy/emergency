@@ -393,7 +393,7 @@ describe('emergency panel visual contract', () => {
     await user.click(screen.getByRole('button', { name: copy.abort }));
     await user.click(screen.getByRole('button', { name: copy.abortConfirm }));
 
-    expect(await screen.findByText(copy.abortResultFail)).toBeInTheDocument();
+    expect(await screen.findByText(copy.abortErrorText)).toBeInTheDocument();
     expect(dialog.querySelector('[class*="sos-img__container"]')).toBeNull();
     expect(
       dialog.querySelector('[class*="emergency-panel__body-title"]'),
@@ -430,12 +430,18 @@ describe('emergency panel visual contract', () => {
     expect(
       await screen.findByText(copy.simulateSuccessTitle),
     ).toBeInTheDocument();
-    expect(screen.getByText(copy.simulateResultOk)).toBeInTheDocument();
+    expect(screen.getByText(copy.simulateSuccessText)).toBeInTheDocument();
     expect(controller.bff.simulacrum).toHaveBeenCalledTimes(1);
     expect(dialog.querySelector('[class*="sos-img__container"]')).toBeNull();
     expect(
       dialog.querySelector('[class*="emergency-panel__body-title"]'),
     ).toBeNull();
+    expect(
+      screen.getByRole('button', { name: copy.emergencyAria }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: copy.testAria }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: copy.emergencyAria }),
     ).toBeDisabled();
@@ -535,9 +541,7 @@ describe('emergency panel visual contract', () => {
       screen.getByRole('button', { name: copy.simulateConfirm }),
     );
 
-    expect(
-      await screen.findByText(copy.simulateResultFail),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(copy.simulateErrorText)).toBeInTheDocument();
     expect(
       document.querySelector('[class*="emergency-error-message"]'),
     ).not.toBeNull();
@@ -557,13 +561,13 @@ describe('emergency panel visual contract', () => {
     await user.click(
       screen.getByRole('button', { name: copy.simulateConfirm }),
     );
-    await screen.findByText(copy.simulateResultFail);
+    await screen.findByText(copy.simulateErrorText);
 
     await user.click(
       screen.getByRole('button', { name: copy.feedbackDismiss }),
     );
 
-    expect(screen.queryByText(copy.simulateResultFail)).not.toBeInTheDocument();
+    expect(screen.queryByText(copy.simulateErrorText)).not.toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: copy.retry }),
     ).not.toBeInTheDocument();
@@ -618,8 +622,10 @@ describe('emergency panel visual contract', () => {
       await controller.client.activate();
     });
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(copy.errorTitle);
-    expect(screen.getByText(copy.geolocationDenied)).toBeInTheDocument();
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      copy.geolocationDeniedTitle,
+    );
+    expect(screen.getByText(copy.geolocationDeniedText)).toBeInTheDocument();
     expect(document.querySelector('[class*="emergency-fallback"]')).toBeNull();
     expect(controller.bff.activate).not.toHaveBeenCalled();
     expect(screen.queryByText(copy.activeBanner)).not.toBeInTheDocument();
@@ -648,8 +654,10 @@ describe('emergency panel visual contract', () => {
 
     const dialog = screen.getByRole('dialog', { name: copy.panelLabel });
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(copy.errorTitle);
-    expect(screen.getByText('No message could be sent.')).toBeInTheDocument();
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      copy.activationWhatsappTitle,
+    );
+    expect(screen.getByText(copy.activationWhatsappText)).toBeInTheDocument();
     expect(dialog.querySelector('[class*="sos-img__container"]')).toBeNull();
     expect(
       dialog.querySelector('[class*="emergency-panel__body-title"]'),
@@ -681,7 +689,10 @@ describe('emergency panel visual contract', () => {
       controller.client.open();
     });
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(copy.errorTitle);
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      copy.errorInactiveCodeTitle,
+    );
+    expect(screen.getByText(copy.errorInactiveCodeText)).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: copy.retry }),
     ).toBeInTheDocument();

@@ -512,6 +512,7 @@ export function createEmergencyController(
         message:
           failures.length > 0 ? copy.partialFailure : copy.simulateResultOk,
         at: Date.now(),
+        partial: failures.length > 0,
       };
 
       patch({
@@ -539,6 +540,7 @@ export function createEmergencyController(
           ? copy.insufficientCredits
           : copy.simulateResultFail,
         at: Date.now(),
+        code: normalized.code,
       };
 
       patch({ simulationResult });

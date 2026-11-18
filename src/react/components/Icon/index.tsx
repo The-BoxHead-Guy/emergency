@@ -17,21 +17,27 @@ export type IconName =
   | 'arrow-left'
   | 'emergency'
   | 'credit-card-plus'
-  | 'map-pin';
+  | 'map-pin'
+  | 'return-on-investment';
 
 interface IconProps {
   readonly name: IconName;
   readonly className?: string;
   readonly title?: string;
+  readonly size?: number | string;
 }
 
 /** Icons whose artwork does not fit the default 24x24 grid need their own canvas. */
 const viewBoxes: Readonly<Partial<Record<IconName, string>>> = {
   emergency: '0 0 640 640',
+  'return-on-investment': '0 0 512 512',
 };
 
 /** Icons rendered as a solid shape instead of a stroked outline. */
-const filledIcons: ReadonlySet<IconName> = new Set<IconName>(['emergency']);
+const filledIcons: ReadonlySet<IconName> = new Set<IconName>([
+  'emergency',
+  'return-on-investment',
+]);
 
 const paths: Readonly<Record<IconName, ReactNode>> = {
   close: <path d="M6 6l12 12M18 6L6 18" />,
@@ -132,17 +138,24 @@ const paths: Readonly<Record<IconName, ReactNode>> = {
       <path d="M272.5 96C272.5 78.3 286.8 64 304.5 64L336.5 64C354.2 64 368.5 78.3 368.5 96L368.5 236.9L490.5 166.5C505.8 157.7 525.4 162.9 534.2 178.2L550.2 205.9C559 221.2 553.8 240.8 538.5 249.6L416.5 320L538.5 390.4C553.8 399.2 559.1 418.8 550.2 434.1L534.2 461.8C525.4 477.1 505.8 482.4 490.5 473.5L368.5 403.1L368.5 544C368.5 561.7 354.2 576 336.5 576L304.5 576C286.8 576 272.5 561.7 272.5 544L272.5 403.1L150.5 473.5C135.2 482.3 115.6 477.1 106.8 461.8L90.8 434.1C82 418.8 87.2 399.2 102.5 390.4L224.5 320L102.5 249.6C87.2 240.8 82 221.2 90.8 205.9L106.8 178.2C115.6 162.9 135.2 157.7 150.5 166.5L272.5 236.9L272.5 96z" />
     </>
   ),
+  'return-on-investment': (
+    <g transform="translate(0 512) scale(0.1 -0.1)">
+      <path d="M2365 5014 c-591 -63 -1093 -285 -1481 -656 l-92 -88 -4 136 -3 136 -33 29 c-44 40 -93 40 -133 0 l-29 -29 0 -295 0 -294 25 -25 c14 -14 39 -28 56 -32 41 -8 497 -8 538 0 80 16 109 108 52 165 l-29 29 -161 0 c-89 0 -161 4 -161 9 0 16 190 189 285 261 814 612 1916 612 2730 0 497 -374 828 -969 885 -1595 71 -770 -271 -1543 -885 -2005 -888 -667 -2108 -600 -2918 160 -468 440 -732 1088 -704 1725 4 77 10 165 13 196 6 52 5 58 -24 90 -25 28 -37 34 -72 34 -35 0 -47 -6 -70 -32 -37 -41 -45 -117 -44 -393 0 -240 17 -372 74 -596 113 -442 343 -834 682 -1159 372 -358 830 -581 1358 -662 160 -24 520 -24 680 0 459 71 857 244 1205 524 125 101 319 300 412 424 255 340 414 719 480 1149 24 160 24 520 0 680 -66 429 -225 809 -479 1148 -89 118 -264 301 -388 404 -337 283 -779 479 -1220 543 -110 16 -458 28 -545 19z" />
+      <path d="M2429 4040 c-193 -18 -344 -61 -524 -149 -153 -75 -274 -161 -394 -281 -120 -120 -206 -241 -282 -395 -92 -190 -130 -328 -149 -539 -23 -264 26 -517 150 -771 320 -659 1079 -982 1785 -759 115 36 306 132 409 205 311 222 535 581 601 964 23 132 23 357 1 490 -36 210 -138 452 -263 627 -119 167 -312 335 -494 432 -265 141 -558 203 -840 176z m178 -500 c37 -22 53 -67 53 -151 0 -57 0 -57 34 -63 56 -11 172 -74 205 -112 63 -71 23 -167 -69 -167 -18 0 -48 13 -75 32 -60 43 -118 62 -192 63 -241 2 -374 -227 -227 -391 58 -65 116 -89 246 -100 160 -14 261 -61 354 -164 212 -234 99 -601 -214 -697 l-57 -18 -5 -82 c-4 -71 -8 -84 -29 -101 -38 -31 -70 -34 -110 -13 -42 22 -60 63 -60 141 l-1 51 -56 18 c-67 21 -154 76 -218 136 -41 39 -46 50 -46 87 0 34 6 49 29 72 46 46 84 40 162 -22 92 -74 138 -93 229 -93 98 0 164 28 224 95 91 101 81 231 -23 321 -51 43 -116 65 -221 73 -149 12 -259 62 -353 164 -154 165 -150 404 9 571 59 62 162 123 230 136 l34 6 0 80 c0 89 8 111 48 132 37 20 61 20 99 -4z" />
+    </g>
+  ),
 };
 
-export function Icon({ name, className, title }: IconProps) {
+export function Icon({ name, className, title, size = '1rem' }: IconProps) {
   const stroked = !filledIcons.has(name);
+  const dimension = typeof size === 'number' ? `${size}px` : size;
 
   return (
     <svg
       className={className}
       viewBox={viewBoxes[name] ?? '0 0 24 24'}
-      width="1rem"
-      height="1rem"
+      width={dimension}
+      height={dimension}
       fill={stroked ? 'none' : 'currentColor'}
       stroke={stroked ? 'currentColor' : 'none'}
       strokeWidth={stroked ? 2 : undefined}

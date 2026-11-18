@@ -6,6 +6,41 @@ and [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-18
+
+### Added
+
+- New matrix pixelated based background tokens
+- `Icon` accepts a `size` prop to override the default `1rem` size; numbers are
+  treated as pixels and strings accept any CSS length.
+
+### Changed
+
+- `SimulationResult` now carries the upstream `code` on failures and a
+  `partial` flag on successes, so feedback copy is resolved from structured
+  data instead of comparing the translated message string.
+- Emergency feedback now explains the situation in a contextual title and
+  action-oriented text resolved from an error-code map, drops the redundant
+  details block, and hides the `Prueba` footer action when the feedback started
+  in the pre-emergency screen. The standalone `EmergencyError` surface resolves
+  its copy from the error code and no longer renders details.
+- Pre-emergency phone input no longer renders the fixed `+58` field: the
+  dialling code is implicit, a typed `+58`/`58` prefix is stripped, and the
+  national leading zero stays visible while the delivered E.164 value omits it.
+- Pre-emergency width and legibility: the phone input fills the available space
+  with larger digits, and the permission notice gains vertical block padding.
+- Prompt Region Close button styling
+- Prompt Region and Footer's background, and colors
+- Size of prompt region's close button's icon to 1.5rem
+- The primary availability recharge action now renders the new
+  `return-on-investment` icon, sized `1.35em` to match the button label.
+
+### Removed
+
+- Unused internal `copy` keys: `errorTitle`, `errorText`, `errorDetailInfo`,
+  `errorDetailRetry`, `geolocationTitle`, and the previous geolocation strings.
+  `copy` is not exported from the package entry point, so this is internal only.
+
 ## [0.7.1] - 2026-11-17
 
 ### Added

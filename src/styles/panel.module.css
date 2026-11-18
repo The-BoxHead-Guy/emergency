@@ -128,13 +128,15 @@
   top: 1rem;
   right: 1rem;
   z-index: 1;
-  color: var(--de-emergency-red, #ff0000);
+  color: var(--de-emergency-on-red);
+  background: var(--de-emergency-red);
+  border-radius: var(--de-emergency-radius-small);
 }
 
 .emergency-panel__close-icon {
-  width: 1.25rem;
-  height: 1.25rem;
-  font-size: 1.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 1.5rem;
 }
 
 .emergency-panel__body {
@@ -211,12 +213,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: var(--de-emergency-margin-generic);
   min-height: 0;
+  margin-inline: auto;
 }
 
 .emergency-panel__body--primary .emergency-panel__availability-region {
-  padding: 1.5rem 0.75rem;
+  padding: 1rem 0;
 }
 
 .emergency-panel__sr-only {
@@ -237,16 +240,20 @@
   gap: 0.75rem;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: var(--de-emergency-margin-generic);
   min-height: 0;
   overflow-y: auto;
+  margin-inline: auto;
 }
 
 .emergency-panel__prompt-region--idle {
   position: relative;
   padding: 3rem 0;
-  background: var(--de-emergency-white-soft, #f7f7f7);
-  border-radius: 1.5rem 1.5rem 0 0;
+  background-color: var(--de-emergencia-background);
+  background-image: var(--de-emergencia-pattern);
+  background-size: var(--de-emergencia-size);
+  image-rendering: pixelated;
+  border-radius: var(--de-emergency-radius) var(--de-emergency-radius) 0 0;
   outline: 1px solid var(--de-emergency-gray-progress-bar);
 }
 
@@ -258,7 +265,7 @@
   gap: 0.75rem;
   align-items: stretch;
   justify-content: center;
-  width: min(100%, 28rem);
+  width: min(100%, 32rem);
   text-align: start;
 }
 
@@ -643,7 +650,8 @@
   flex-direction: column;
   gap: 0.625rem;
   align-items: center;
-  padding: 1.25rem 1rem;
+  padding-block: 3rem;
+  padding-inline: 2rem;
   color: var(--de-emergency-text, #3d4461);
   text-align: center;
   background: var(--de-emergency-scaem-yellow, #ffd700);
@@ -675,13 +683,6 @@
   color: var(--de-emergency-text, #3d4461);
 }
 
-.emergency-panel .emergency-pre-emergency__phone-row {
-  display: flex;
-  gap: 0.5rem;
-  align-items: stretch;
-  width: 100%;
-}
-
 .emergency-panel .emergency-pre-emergency__input {
   box-sizing: border-box;
   width: 100%;
@@ -708,25 +709,18 @@
 }
 
 .emergency-panel .emergency-pre-emergency__input:focus-visible {
-  outline: 1px solid var(--de-emergency-blue, #00adf6);
-}
-
-.emergency-panel .emergency-pre-emergency__input--area-code {
-  flex: 0 0 5.5rem;
-  width: 5.5rem;
-  padding-inline: 0.75rem;
-  color: var(--de-emergency-gray, #555);
-  text-align: center;
-  cursor: not-allowed;
-  background: var(--de-emergency-white-pearl, #f1f1f1);
+  border: 2px solid var(--de-emergency-blue, #00adf6);
 }
 
 .emergency-panel .emergency-pre-emergency__input--number {
-  flex: 1 1 auto;
-  min-width: 0;
+  font-size: 1.25rem;
 }
 
 .emergency-panel .emergency-pre-emergency__input--valid {
+  border-color: var(--de-emergency-success, #4cd03a);
+}
+
+.emergency-panel .emergency-pre-emergency__input--valid:focus-visible {
   border-color: var(--de-emergency-success, #4cd03a);
 }
 
@@ -1030,8 +1024,14 @@ p.emergency-pricing__package-footnote {
   justify-content: center;
   min-height: 6rem;
   padding: 0.5rem;
-  background: var(--de-emergency-white-soft, #f7f7f7);
+  background-color: var(--de-emergencia-background);
+  background-image: var(--de-emergencia-pattern);
+  background-size: var(--de-emergencia-size);
+  image-rendering: pixelated;
   border-radius: var(--de-emergency-radius) var(--de-emergency-radius) 0 0;
+  outline: 1px solid var(--de-emergency-gray-progress-bar);
+  width: var(--de-emergency-margin-generic);
+  margin-inline: auto;
 }
 
 .emergency-panel__footer--single {
@@ -1468,31 +1468,6 @@ p.emergency-pricing__package-footnote {
   text-align: center;
   opacity: 0.95;
   text-wrap: pretty;
-}
-
-.simulacrum-success-message__details,
-.emergency-error-message__details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin-block-start: 1.75rem;
-}
-
-.simulacrum-success-message__detail,
-.emergency-error-message__detail {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--de-emergency-font-small, clamp(0.875rem, 2vw, 0.9rem));
-  color: var(--de-emergency-gray, #555);
-  opacity: 0.75;
-}
-
-.simulacrum-success-message__detail svg,
-.emergency-error-message__detail svg {
-  width: 1rem;
-  height: 1rem;
 }
 
 /* Confirmation surfaces */
