@@ -60,10 +60,14 @@
 
     <script src="./emergency.global.js"></script>
     <script>
+      const params = new URLSearchParams(window.location.search);
+      const bffBaseUrl =
+        params.get('bff') ?? 'http://localhost:8787/de-bff/emergency';
+      const code = params.get('code') ?? 'DABC12';
       const client = window.DataEmergenciaEmergency.mount({
         root: '#emergency-root',
-        bffBaseUrl: 'http://localhost:8787/de-bff/emergency',
-        code: 'DABC12',
+        bffBaseUrl,
+        code,
         trigger: '#sos',
         fallback: { phone: '+57 300 123 4567', label: 'Línea de emergencia' },
         realtime: { key: 'demo-key', cluster: 'us2' },

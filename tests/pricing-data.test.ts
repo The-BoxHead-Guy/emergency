@@ -1,10 +1,18 @@
 import { describe, expect, it } from 'vitest';
+import { calculateRounds } from '@/react/screens/primary/data';
 import { packageRounds, PRICING_PACKAGES } from '@/react/screens/pricing/data';
 
 describe('pricing catalog', () => {
   it('derives the alert rounds for both packages', () => {
     expect(packageRounds(PRICING_PACKAGES[0])).toBe(33);
     expect(packageRounds(PRICING_PACKAGES[1])).toBe(66);
+  });
+
+  it('keeps the fixed 3-contact projection independent of user credits', () => {
+    expect(packageRounds(PRICING_PACKAGES[0])).toBe(33);
+    expect(packageRounds(PRICING_PACKAGES[0])).toBe(
+      calculateRounds(PRICING_PACKAGES[0].messages, 3),
+    );
   });
 
   it('uses unique package ids', () => {

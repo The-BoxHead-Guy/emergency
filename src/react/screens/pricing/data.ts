@@ -1,7 +1,4 @@
-import {
-  calculateRounds,
-  DEMO_DESIGNATED_RESPONDERS,
-} from '@/react/screens/primary/data';
+import { calculateRounds } from '@/react/screens/primary/data';
 
 export type PricingPackageId = 'package-1' | 'package-2';
 
@@ -16,6 +13,9 @@ export interface PricingPackage {
   readonly highlighted: boolean;
   readonly badge?: string;
 }
+
+/** Contacts used by the fixed pricing projection. */
+const PRICING_RESPONDER_COUNT = 3;
 
 /**
  * Local demo catalog. Prices and per-message labels are literal values from the
@@ -43,7 +43,7 @@ export const PRICING_PACKAGES = [
   },
 ] as const satisfies readonly PricingPackage[];
 
-/** Derives the alert rounds a package provides for the demo responder count. */
+/** Derives the alert rounds a package provides for the fixed 3-contact plan. */
 export function packageRounds(pkg: PricingPackage): number {
-  return calculateRounds(pkg.messages, DEMO_DESIGNATED_RESPONDERS);
+  return calculateRounds(pkg.messages, PRICING_RESPONDER_COUNT);
 }

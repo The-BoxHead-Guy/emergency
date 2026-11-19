@@ -62,6 +62,7 @@ export function PrimaryScreen(props: EmergencyScreenProps) {
         refreshing={props.refreshing}
         loading={props.loading}
         locale={props.locale}
+        credits={props.credits}
         geolocationError={props.geolocationError}
         activationError={props.activationError}
         error={props.error}

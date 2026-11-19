@@ -21,6 +21,7 @@ export function EmergencyRoot() {
   const resumeAvailable = useEmergencyStore((state) => state.resumeAvailable);
   const geolocationError = useEmergencyStore((state) => state.geolocationError);
   const contactPhone = useEmergencyStore((state) => state.contactPhone);
+  const credits = useEmergencyStore((state) => state.credits);
   const lastError = useEmergencyStore((state) => state.lastError);
   const abortResult = useEmergencyStore((state) => state.abortResult);
   const simulationResult = useEmergencyStore((state) => state.simulationResult);
@@ -61,6 +62,7 @@ export function EmergencyRoot() {
         locale={config.locale ?? 'es'}
         responders={responders}
         refreshing={phase.kind === 'refreshing'}
+        credits={credits}
         geolocationError={geolocationError}
         contactPhone={contactPhone}
         activationError={activationError}

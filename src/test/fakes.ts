@@ -3,6 +3,8 @@ import type {
   AbortResponse,
   BffClient,
   ConfigResponse,
+  CreditHistoryResponse,
+  CreditSummaryResponse,
   CurrentResponse,
   EmergencyResultPayload,
   RefreshResponse,
@@ -63,6 +65,53 @@ export const activeEmergency = {
   updated_at: '2026-10-28T10:01:00Z',
 };
 
+export const creditSummaryResponse: CreditSummaryResponse = {
+  credit: {
+    code: 'DABC12',
+    domain: 'emergency',
+    balance: 173,
+    contacts_count: 3,
+    rounds: 57,
+    extra_alerts: 2,
+    rounds_label: '57 rounds',
+  },
+};
+
+export const creditHistoryResponse: CreditHistoryResponse = {
+  items: [
+    {
+      id: 1,
+      type: 'recharge',
+      amount: 173,
+      balance_after: 173,
+      contacts_count: 3,
+      rounds: 57,
+      extra_alerts: 2,
+      emergency_id: null,
+      reference: 'recharge:DEMO0001',
+      created_at: '2026-11-16T09:30:00+00:00',
+    },
+    {
+      id: 2,
+      type: 'emergency',
+      amount: -3,
+      balance_after: 170,
+      contacts_count: 3,
+      rounds: 56,
+      extra_alerts: 2,
+      emergency_id: 501,
+      reference: 'emergency:EMG000501',
+      created_at: '2026-11-15T18:10:00+00:00',
+    },
+  ],
+  pagination: {
+    total: 2,
+    per_page: 15,
+    current_page: 1,
+    last_page: 1,
+  },
+};
+
 export const config: EmergencyConfig = {
   bffBaseUrl: 'https://example.test/de-bff/emergency',
   code: 'DABC12',
@@ -75,6 +124,8 @@ export interface FakeBff extends BffClient {
   config: ReturnType<typeof vi.fn<BffClient['config']>>;
   session: ReturnType<typeof vi.fn<BffClient['session']>>;
   current: ReturnType<typeof vi.fn<BffClient['current']>>;
+  credits: ReturnType<typeof vi.fn<BffClient['credits']>>;
+  creditHistory: ReturnType<typeof vi.fn<BffClient['creditHistory']>>;
   activate: ReturnType<typeof vi.fn<BffClient['activate']>>;
   simulacrum: ReturnType<typeof vi.fn<BffClient['simulacrum']>>;
   refresh: ReturnType<typeof vi.fn<BffClient['refresh']>>;
@@ -100,6 +151,12 @@ export function createFakeBff(overrides: Partial<BffClient> = {}): FakeBff {
         active: false,
         emergency: null,
       }),
+    ),
+    credits: vi.fn<BffClient['credits']>(
+      async (): Promise<CreditSummaryResponse> => creditSummaryResponse,
+    ),
+    creditHistory: vi.fn<BffClient['creditHistory']>(
+      async (): Promise<CreditHistoryResponse> => creditHistoryResponse,
     ),
     activate: vi.fn<BffClient['activate']>(
       async (): Promise<EmergencyResultPayload> => ({

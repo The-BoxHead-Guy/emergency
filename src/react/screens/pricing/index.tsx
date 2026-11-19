@@ -24,6 +24,7 @@ export function PricingScreen(props: EmergencyScreenProps) {
         <EmergencyHeader
           titleId={props.titleId}
           title={pricingCopy.title}
+          variant="administrative"
           onClose={() => props.onClose('close')}
           onBack={back}
         />

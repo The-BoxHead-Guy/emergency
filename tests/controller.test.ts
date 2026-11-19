@@ -563,4 +563,134 @@ describe('emergency controller', () => {
     expect(state.snapshot).toBeNull();
     expect(state.messages).toEqual([]);
   });
+
+  it('loads credits and history once the session becomes ready', async () => {
+    const controller = createTestController();
+
+    await controller.client.ensureSession();
+    await vi.waitFor(() =>
+      expect(controller.client.getState().credits.summaryStatus).toBe('ready'),
+    );
+    await vi.waitFor(() =>
+      expect(controller.client.getState().credits.historyStatus).toBe('ready'),
+    );
+
+    const state = controller.client.getState();
+    expect(controller.bff.credits).toHaveBeenCalledTimes(1);
+    expect(controller.bff.creditHistory).toHaveBeenCalledWith({
+      page: 1,
+      perPage: undefined,
+    });
+    expect(state.credits.credit?.balance).toBe(173);
+    expect(state.credits.credit?.rounds).toBe(57);
+    expect(state.credits.credit?.extraAlerts).toBe(2);
+    expect(state.credits.history).toHaveLength(2);
+    expect(state.credits.history[0]?.rounds).toBe(57);
+    expect(state.credits.pagination?.total).toBe(2);
+    expect(state.credits.summaryStatus).toBe('ready');
+    expect(state.credits.historyStatus).toBe('ready');
+  });
+
+  it('refreshes the credit summary when the panel opens', async () => {
+    const controller = createTestController();
+
+    await controller.client.ensureSession();
+    controller.bff.credits.mockClear();
+
+    controller.client.open();
+
+    await vi.waitFor(() =>
+      expect(controller.bff.credits).toHaveBeenCalledTimes(1),
+    );
+    expect(controller.client.getState().credits.summaryStatus).toBe('ready');
+  });
+
+  it('refreshes the credit summary after activate and abort', async () => {
+    const controller = createTestController();
+
+    await controller.client.activate();
+    expect(controller.bff.credits).toHaveBeenCalledTimes(2);
+
+    await controller.client.abort();
+    await controller.client.abort();
+    expect(controller.bff.credits).toHaveBeenCalledTimes(3);
+  });
+
+  it('refreshes the credit summary after a successful simulation', async () => {
+    const controller = createTestController();
+
+    await controller.client.simulate();
+
+    expect(controller.bff.credits).toHaveBeenCalledTimes(2);
+  });
+
+  it('stores the requested history page and pagination', async () => {
+    const bff = createFakeBff({
+      creditHistory: vi.fn(async () => ({
+        items: [],
+        pagination: {
+          total: 30,
+          per_page: 5,
+          current_page: 2,
+          last_page: 6,
+        },
+      })),
+    });
+    const controller = createTestController({ bff });
+
+    await controller.client.ensureSession();
+    await controller.client.loadCreditHistory(2, 5);
+
+    const state = controller.client.getState();
+    expect(bff.creditHistory).toHaveBeenLastCalledWith({
+      page: 2,
+      perPage: 5,
+    });
+    expect(state.credits.pagination).toEqual({
+      total: 30,
+      perPage: 5,
+      currentPage: 2,
+      lastPage: 6,
+    });
+  });
+
+  it('keeps credit failures out of the emergency phase and feedback', async () => {
+    const bff = createFakeBff({
+      credits: vi.fn(async () => {
+        throw createEmergencyError('network', 'Offline');
+      }),
+      creditHistory: vi.fn(async () => {
+        throw createEmergencyError('network', 'Offline');
+      }),
+    });
+    const controller = createTestController({ bff });
+
+    await controller.client.ensureSession();
+    await controller.client.refreshCredits();
+
+    const state = controller.client.getState();
+    expect(state.phase.kind).toBe('ready');
+    expect(state.sessionReady).toBe(true);
+    expect(state.lastError).toBeNull();
+    expect(state.messages).toEqual([]);
+    expect(state.credits.summaryStatus).toBe('error');
+    expect(state.credits.historyStatus).toBe('error');
+    expect(state.credits.error?.code).toBe('network');
+    expect(state.credits.credit).toBeNull();
+  });
+
+  it('clears credit state on destroy', async () => {
+    const controller = createTestController();
+
+    await controller.client.ensureSession();
+    controller.client.destroy();
+
+    const state = controller.client.getState();
+    expect(state.credits.credit).toBeNull();
+    expect(state.credits.history).toEqual([]);
+    expect(state.credits.pagination).toBeNull();
+    expect(state.credits.summaryStatus).toBe('idle');
+    expect(state.credits.historyStatus).toBe('idle');
+    expect(state.credits.error).toBeNull();
+  });
 });

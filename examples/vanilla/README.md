@@ -3,7 +3,9 @@
 Two entry points share the mock BFF on `http://localhost:8787`:
 
 - `index.html` — the IIFE demo: it loads `emergency.global.js` from this
-  directory.
+  directory. Optional query parameters `bff` (full BFF route prefix) and `code`
+  (identity code) point it at another BFF; both default to the local mock and
+  `DABC12`.
 - `lab.html` — the Vite lab: it imports `src/mount.tsx` directly, so every edit
   hot-reloads. It is the reference page for visual parity reviews.
 
@@ -47,6 +49,9 @@ flow when no scenario is selected.
 | Error de sesión          | `session-error`         | Reloads with a failing `/session`.                 |
 | Emergencia en curso      | `active-mixed`          | Orange resume overlay above the panel.             |
 | Mensajes fallidos        | `active-failed`         | Failed message rows and red sent icon.             |
+| Saldo en cero            | `credits-zero`          | Zero rounds, zero messages, zero extra alerts.     |
+| Historial vacío          | `credits-empty`         | Empty history state on details and history.        |
+| Créditos no disponibles  | `credits-error`         | Unavailable credit states without breaking SOS.    |
 | Reiniciar                | `default`               | Clears the fixture and reloads.                    |
 
 ## Visual review loop

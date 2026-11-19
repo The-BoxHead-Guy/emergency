@@ -1,5 +1,6 @@
 import { ParamedicalMark } from '@/react/components/icons/paramedical-mark';
 import { copy } from '@/core/copy';
+import type { CreditsState } from '@/core/credits';
 import type {
   AbortResult,
   EmergencyError,
@@ -20,6 +21,7 @@ export interface EmergencyBodyProps {
   refreshing: boolean;
   loading: boolean;
   locale: string;
+  credits: CreditsState;
   geolocationError: EmergencyError | null;
   activationError?: EmergencyError | null;
   error: EmergencyError | null;
@@ -40,6 +42,7 @@ export function EmergencyBody(props: EmergencyBodyProps) {
     refreshing,
     loading,
     locale,
+    credits,
     geolocationError,
     activationError,
     error,
@@ -69,7 +72,11 @@ export function EmergencyBody(props: EmergencyBodyProps) {
     >
       {idle ? (
         <div className={cls('emergency-panel__availability-region')}>
-          <Availability onRecharge={onRecharge} onDetails={onDetails} />
+          <Availability
+            credits={credits}
+            onRecharge={onRecharge}
+            onDetails={onDetails}
+          />
         </div>
       ) : null}
 

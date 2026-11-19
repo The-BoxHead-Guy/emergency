@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react';
+import type { CreditsState } from '@/core/credits';
 import type {
   AbortResult,
   EmergencyError,
@@ -30,6 +31,7 @@ export interface EmergencyScreenProps {
   readonly locale: string;
   readonly responders: readonly Responder[];
   readonly refreshing: boolean;
+  readonly credits: CreditsState;
   readonly geolocationError: EmergencyError | null;
   readonly contactPhone: string | null;
   readonly activationError?: EmergencyError | null;

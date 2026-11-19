@@ -25,6 +25,9 @@ const scenarios = new Set([
   'abort-error',
   'session-error',
   'slow',
+  'credits-zero',
+  'credits-empty',
+  'credits-error',
 ]);
 
 let scenario = 'default';
@@ -176,6 +179,77 @@ async function body(request) {
   }
 }
 
+function creditSummary() {
+  if (scenario === 'credits-zero') {
+    return {
+      code: CODE,
+      domain: 'emergency',
+      balance: 0,
+      contacts_count: 3,
+      rounds: 0,
+      extra_alerts: 0,
+      rounds_label: '0 rounds',
+    };
+  }
+
+  return {
+    code: CODE,
+    domain: 'emergency',
+    balance: 173,
+    contacts_count: 3,
+    rounds: 57,
+    extra_alerts: 2,
+    rounds_label: '57 rounds',
+  };
+}
+
+function creditHistoryItems() {
+  if (scenario === 'credits-empty') {
+    return [];
+  }
+
+  if (scenario === 'credits-zero') {
+    return [
+      {
+        id: 2,
+        type: 'emergency',
+        amount: -173,
+        balance_after: 0,
+        contacts_count: 3,
+        rounds: 0,
+        extra_alerts: 0,
+        emergency_id: 501,
+        reference: 'emergency:EMG000501',
+        created_at: '2026-11-16T09:30:00+00:00',
+      },
+    ];
+  }
+
+  return [
+    {
+      id: 1,
+      type: 'recharge',
+      amount: 173,
+      balance_after: 173,
+      contacts_count: 3,
+      rounds: 57,
+      extra_alerts: 2,
+      emergency_id: null,
+      reference: 'recharge:DEMO0001',
+      created_at: '2026-11-16T09:30:00+00:00',
+    },
+  ];
+}
+
+function paginationFor(total, perPage, page) {
+  return {
+    total,
+    per_page: perPage,
+    current_page: page,
+    last_page: Math.max(1, Math.ceil(total / perPage)),
+  };
+}
+
 function emergencyPayload() {
   return {
     emergency_id: activeEmergency.id,
@@ -272,6 +346,40 @@ const server = createServer(async (request, response) => {
     json(response, 200, {
       active: true,
       emergency: emergencyPayload(),
+    });
+    return;
+  }
+
+  if (request.method === 'GET' && route === '/credits') {
+    if (scenario === 'credits-error') {
+      error(response, 502, 'upstream_error', 'Credit read failed.');
+      return;
+    }
+
+    json(response, 200, { credit: creditSummary() });
+    return;
+  }
+
+  if (request.method === 'GET' && route === '/credits/history') {
+    if (scenario === 'credits-error') {
+      error(response, 502, 'upstream_error', 'Credit read failed.');
+      return;
+    }
+
+    const parsedPerPage = Number(url.searchParams.get('per_page') ?? 15);
+    const parsedPage = Number(url.searchParams.get('page') ?? 1);
+    const perPage =
+      Number.isInteger(parsedPerPage) && parsedPerPage > 0
+        ? Math.min(parsedPerPage, 100)
+        : 15;
+    const page =
+      Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+    const all = creditHistoryItems();
+    const start = (page - 1) * perPage;
+
+    json(response, 200, {
+      items: all.slice(start, start + perPage),
+      pagination: paginationFor(all.length, perPage, page),
     });
     return;
   }

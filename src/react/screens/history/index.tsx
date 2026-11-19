@@ -1,7 +1,9 @@
 import { useId, useState } from 'react';
 import { EmergencyHeader } from '@/react/components/EmergencyHeader';
+import { EmptyState } from '@/react/components/EmptyState';
 import { cls } from '@/react/classnames';
 import { useScreenNavigation } from '@/react/screens/context';
+import { creditResourceView } from '@/react/screens/credits-view';
 import { AlertHistoryRow } from '@/react/screens/history/AlertHistoryRow';
 import { historyCopy } from '@/react/screens/history/copy';
 import {
@@ -14,17 +16,19 @@ import type { EmergencyScreenProps } from '@/react/screens/types';
 export function HistoryScreen({
   titleId,
   locale,
+  credits,
   onClose,
 }: EmergencyScreenProps) {
   const { back, navigate } = useScreenNavigation();
   const listId = useId();
   const [expanded, setExpanded] = useState(false);
-  const entries = sortedHistoryEntries();
+  const entries = sortedHistoryEntries(credits.history);
   const hiddenCount = Math.max(0, entries.length - HISTORY_PREVIEW_SIZE);
   const visibleEntries = expanded
     ? entries
     : entries.slice(0, HISTORY_PREVIEW_SIZE);
   const showMore = hiddenCount > 0 && !expanded;
+  const view = creditResourceView(credits.historyStatus, entries.length > 0);
 
   return (
     <EmergencyScreenLayout
@@ -35,6 +39,7 @@ export function HistoryScreen({
         <EmergencyHeader
           titleId={titleId}
           title={historyCopy.title}
+          variant="administrative"
           onClose={() => onClose('close')}
           onBack={back}
         />
@@ -79,7 +84,15 @@ export function HistoryScreen({
             ) : null}
           </>
         ) : (
-          <p className={cls('emergency-history__empty')}>{historyCopy.empty}</p>
+          <EmptyState
+            message={
+              view === 'loading'
+                ? historyCopy.loading
+                : view === 'error'
+                  ? historyCopy.unavailable
+                  : historyCopy.empty
+            }
+          />
         )}
       </div>
     </EmergencyScreenLayout>

@@ -124,6 +124,16 @@
       <button type="button" data-run="failed-messages">
         <strong>Mensajes fallidos</strong><span>filas rojas</span>
       </button>
+      <button type="button" data-run="credits-zero">
+        <strong>Saldo en cero</strong><span>0 rondas y 0 mensajes</span>
+      </button>
+      <button type="button" data-run="credits-empty">
+        <strong>Historial vacío</strong><span>sin movimientos</span>
+      </button>
+      <button type="button" data-run="credits-error">
+        <strong>Créditos no disponibles</strong
+        ><span>error al leer el saldo</span>
+      </button>
       <button type="button" data-run="reset">
         <strong>Reiniciar</strong><span>escenario default</span>
       </button>
@@ -190,6 +200,16 @@
         await setScenario(name);
         await client.resume();
         client.dismissFeedback();
+        client.open('manual');
+      }
+
+      async function openCredits(name) {
+        await setScenario(name);
+        await client.resume();
+        await client.refreshCredits();
+        await client.loadCreditHistory();
+        client.dismissFeedback();
+        client.close('manual');
         client.open('manual');
       }
 
@@ -275,6 +295,9 @@
           await client.resume();
         },
         'failed-messages': () => openWithSnapshot('active-failed'),
+        'credits-zero': () => openCredits('credits-zero'),
+        'credits-empty': () => openCredits('credits-empty'),
+        'credits-error': () => openCredits('credits-error'),
         reset: async () => {
           await setScenario('default');
           location.reload();

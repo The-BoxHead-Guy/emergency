@@ -1,15 +1,18 @@
-import type { AlertHistoryKind } from '@/react/screens/history/data';
+import type { CreditHistoryKind } from '@/core/credits';
 
 export const historyCopy = {
   title: 'Historial de alertas',
   subtitle: 'Consulta tus alertas, pruebas y recargas.',
   empty: 'Todavía no tienes alertas en tu historial.',
+  loading: 'Cargando tu historial…',
+  unavailable: 'No pudimos cargar tu historial.',
   showMore: 'Ver más',
   kindLabels: {
-    emergency: 'Emergencia',
-    test: 'Prueba',
+    emergency: 'Alerta',
     recharge: 'Recarga',
-  } satisfies Record<AlertHistoryKind, string>,
+    refund: 'Reembolso',
+    other: 'Otro movimiento',
+  } satisfies Record<CreditHistoryKind, string>,
 } as const;
 
 export function formatContacts(count: number): string {

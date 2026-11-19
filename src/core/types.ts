@@ -1,3 +1,5 @@
+import type { CreditsState } from '@/core/credits';
+
 export type EmergencyPhaseName =
   | 'idle'
   | 'initializing'
@@ -289,6 +291,7 @@ export interface EmergencyClientState {
   readonly responders: readonly Responder[];
   readonly failures: readonly EmergencyFailure[];
   readonly messages: readonly Message[];
+  readonly credits: CreditsState;
   readonly lastError: EmergencyError | null;
   readonly geolocation: EmergencyGeolocation | null;
   readonly geolocationError: EmergencyError | null;
@@ -317,6 +320,8 @@ export interface EmergencyClient {
   ): void;
   ensureSession(): Promise<void>;
   resume(): Promise<void>;
+  refreshCredits(): Promise<void>;
+  loadCreditHistory(page?: number, perPage?: number): Promise<void>;
   dismissResume(): void;
   activate(): Promise<void>;
   simulate(): Promise<void>;

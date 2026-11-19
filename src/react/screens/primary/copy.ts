@@ -4,6 +4,8 @@ export const primaryCopy = {
   details: 'Detalles',
   roundSingular: 'ronda disponible',
   roundPlural: 'rondas disponibles',
+  loading: 'Cargando alertas…',
+  unavailable: 'Alertas no disponibles',
 } as const;
 
 /** Singular/plural label for the remaining rounds. */

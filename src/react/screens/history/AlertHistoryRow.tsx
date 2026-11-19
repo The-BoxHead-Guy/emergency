@@ -1,4 +1,5 @@
 import { formatDateTime } from '@/core/date';
+import type { CreditHistoryEntry } from '@/core/credits';
 import { cls } from '@/react/classnames';
 import {
   formatContacts,
@@ -6,13 +7,9 @@ import {
   formatMessages,
   historyCopy,
 } from '@/react/screens/history/copy';
-import {
-  historyEntryRounds,
-  type AlertHistoryEntry,
-} from '@/react/screens/history/data';
 
 export interface AlertHistoryRowProps {
-  readonly entry: AlertHistoryEntry;
+  readonly entry: CreditHistoryEntry;
   readonly locale: string;
   readonly onOpen: (id: string) => void;
 }
@@ -23,14 +20,13 @@ export function AlertHistoryRow({
   locale,
   onOpen,
 }: AlertHistoryRowProps) {
-  const occurredAt = formatDateTime(entry.occurredAt, locale);
-  const rounds = historyEntryRounds(entry);
+  const occurredAt = formatDateTime(entry.createdAt, locale);
   const label = [
     historyCopy.kindLabels[entry.kind],
     occurredAt,
-    formatContacts(entry.responders),
-    `${formatMessages(entry.remainingMessages)} restantes`,
-    `${formatHistoryRounds(rounds)} de avisos`,
+    formatContacts(entry.contactsCount),
+    `${formatMessages(entry.balanceAfter)} restantes`,
+    `${formatHistoryRounds(entry.rounds)} de avisos`,
   ].join(', ');
 
   return (
@@ -44,7 +40,7 @@ export function AlertHistoryRow({
         <span className={cls('emergency-alert-row__top')}>
           <time
             className={cls('emergency-alert-row__time')}
-            dateTime={entry.occurredAt}
+            dateTime={entry.createdAt ?? undefined}
           >
             {occurredAt}
           </time>
@@ -57,13 +53,13 @@ export function AlertHistoryRow({
         </span>
         <span className={cls('emergency-alert-row__stats')}>
           <span className={cls('emergency-alert-row__stat')}>
-            {formatContacts(entry.responders)}
+            {formatContacts(entry.contactsCount)}
           </span>
           <span className={cls('emergency-alert-row__stat')}>
-            {formatMessages(entry.remainingMessages)}
+            {formatMessages(entry.balanceAfter)}
           </span>
           <span className={cls('emergency-alert-row__stat')}>
-            {formatHistoryRounds(rounds)}
+            {formatHistoryRounds(entry.rounds)}
           </span>
         </span>
       </button>

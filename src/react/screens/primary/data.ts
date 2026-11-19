@@ -1,7 +1,3 @@
-/** Demo quota constants. Replace these with API data in a later change. */
-export const DEMO_AVAILABLE_MESSAGES = 27;
-export const DEMO_DESIGNATED_RESPONDERS = 3;
-
 /**
  * Derives the remaining alert rounds from available messages and designated
  * responders. Invalid or non-positive input collapses to the minimum of one

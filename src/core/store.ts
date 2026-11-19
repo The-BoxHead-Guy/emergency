@@ -1,4 +1,5 @@
 import { createStore, type StoreApi } from 'zustand/vanilla';
+import { createCreditsState } from '@/core/credits';
 import type { EmergencyClientState, EmergencyConfig } from '@/core/types';
 
 export type EmergencyStore = StoreApi<EmergencyClientState>;
@@ -14,6 +15,7 @@ export function createEmergencyStore(config: EmergencyConfig): EmergencyStore {
     responders: [],
     failures: [],
     messages: [],
+    credits: createCreditsState(),
     lastError: null,
     geolocation: null,
     geolocationError: null,

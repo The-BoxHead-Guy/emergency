@@ -14,6 +14,12 @@ import {
   toResponder,
 } from '@/core/mappers';
 import {
+  createCreditsState,
+  toCreditHistoryPage,
+  toCreditSummary,
+} from '@/core/credits';
+import type { CreditsState } from '@/core/credits';
+import {
   createPusherRealtimeProvider,
   type RealtimeProvider,
   type RealtimeSubscription,
@@ -99,6 +105,74 @@ export function createEmergencyController(
 
   function patch(partial: Partial<EmergencyClientState>): void {
     store.setState(partial);
+  }
+
+  function patchCredits(partial: Partial<CreditsState>): void {
+    patch({ credits: { ...get().credits, ...partial } });
+  }
+
+  async function fetchCredits(): Promise<void> {
+    if (get().destroyed || !get().sessionReady) {
+      return;
+    }
+
+    patchCredits({ summaryStatus: 'loading', error: null });
+
+    try {
+      const response = await bff.credits();
+
+      if (get().destroyed) {
+        return;
+      }
+
+      patchCredits({
+        credit: toCreditSummary(response.credit),
+        summaryStatus: 'ready',
+        error: null,
+      });
+    } catch (error) {
+      if (get().destroyed) {
+        return;
+      }
+
+      patchCredits({
+        summaryStatus: 'error',
+        error: toEmergencyError(error, 'network'),
+      });
+    }
+  }
+
+  async function fetchCreditHistory(page = 1, perPage?: number): Promise<void> {
+    if (get().destroyed || !get().sessionReady) {
+      return;
+    }
+
+    patchCredits({ historyStatus: 'loading' });
+
+    try {
+      const response = await bff.creditHistory({ page, perPage });
+
+      if (get().destroyed) {
+        return;
+      }
+
+      const history = toCreditHistoryPage(response);
+
+      patchCredits({
+        history: history.entries,
+        pagination: history.pagination,
+        historyStatus: 'ready',
+      });
+    } catch (error) {
+      if (get().destroyed) {
+        return;
+      }
+
+      patchCredits({
+        historyStatus: 'error',
+        error: toEmergencyError(error, 'network'),
+      });
+    }
   }
 
   function transition(next: EmergencyPhase): boolean {
@@ -261,6 +335,8 @@ export function createEmergencyController(
         code: session.code,
         expiresIn: session.expires_in,
       });
+
+      void Promise.all([fetchCredits(), fetchCreditHistory()]);
     } catch (error) {
       const normalized = toEmergencyError(error, 'network');
       patch({ sessionReady: false });
@@ -346,6 +422,7 @@ export function createEmergencyController(
     }
 
     await hydrateCurrent();
+    await fetchCredits();
   }
 
   async function activate(): Promise<void> {
@@ -428,6 +505,7 @@ export function createEmergencyController(
         geolocation: position,
       });
       startRealtime(responders);
+      await fetchCredits();
     } catch (error) {
       const normalized = toEmergencyError(error, 'network');
 
@@ -531,6 +609,7 @@ export function createEmergencyController(
         failures,
         geolocation: position,
       });
+      await fetchCredits();
     } catch (error) {
       const normalized = toEmergencyError(error, 'network');
       const insufficientCredits = normalized.code === 'insufficient_credits';
@@ -676,6 +755,7 @@ export function createEmergencyController(
         emergencyId: snapshot.emergencyId,
         responders,
       });
+      await fetchCredits();
     } catch (error) {
       const normalized = toEmergencyError(error, 'network');
       const abortResult: AbortResult = {
@@ -701,6 +781,7 @@ export function createEmergencyController(
 
     patch({ panelOpen: true, resumeAvailable: false });
     events.emit('panel:opened', { reason });
+    void fetchCredits();
   }
 
   function close(reason: PanelCloseReason = 'close'): void {
@@ -788,6 +869,7 @@ export function createEmergencyController(
       responders: [],
       failures: [],
       messages: [],
+      credits: createCreditsState(),
       lastError: null,
       geolocation: null,
       geolocationError: null,
@@ -812,6 +894,8 @@ export function createEmergencyController(
     off: (event, handler) => events.off(event, handler),
     ensureSession,
     resume,
+    refreshCredits: () => fetchCredits(),
+    loadCreditHistory: (page, perPage) => fetchCreditHistory(page, perPage),
     dismissResume: () => patch({ resumeAvailable: false }),
     activate,
     simulate,

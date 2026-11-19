@@ -78,6 +78,51 @@ export interface AbortResponse extends EmergencyResultPayload {
   readonly deleted: boolean;
 }
 
+export interface CreditSummaryPayload {
+  readonly code: string;
+  readonly domain: string;
+  readonly balance: number;
+  readonly contacts_count: number;
+  readonly rounds: number;
+  readonly extra_alerts: number;
+  readonly rounds_label: string;
+}
+
+export interface CreditSummaryResponse {
+  readonly credit: CreditSummaryPayload;
+}
+
+export interface CreditHistoryItemPayload {
+  readonly id: number;
+  readonly type: string;
+  readonly amount: number;
+  readonly balance_after: number;
+  readonly contacts_count: number;
+  readonly rounds: number;
+  readonly extra_alerts: number;
+  readonly emergency_id: number | null;
+  readonly reference: string | null;
+  readonly created_at: string | null;
+}
+
+export interface CreditHistoryPaginationPayload {
+  readonly total: number;
+  readonly per_page: number;
+  readonly current_page: number;
+  readonly last_page: number;
+}
+
+export interface CreditHistoryResponse {
+  readonly items: readonly CreditHistoryItemPayload[];
+  readonly pagination?: CreditHistoryPaginationPayload;
+}
+
+/** Optional query for `GET /credits/history`. */
+export interface CreditHistoryQuery {
+  readonly page?: number;
+  readonly perPage?: number;
+}
+
 export interface ErrorEnvelope {
   readonly error: {
     readonly code: string;
@@ -90,6 +135,8 @@ export interface ErrorEnvelope {
 export type BffClientMethod =
   | 'session'
   | 'current'
+  | 'credits'
+  | 'creditHistory'
   | 'activate'
   | 'simulacrum'
   | 'refresh'
@@ -100,6 +147,11 @@ export interface BffClient {
   config(signal?: AbortSignal): Promise<ConfigResponse>;
   session(code: string, signal?: AbortSignal): Promise<SessionResponse>;
   current(signal?: AbortSignal): Promise<CurrentResponse>;
+  credits(signal?: AbortSignal): Promise<CreditSummaryResponse>;
+  creditHistory(
+    query?: CreditHistoryQuery,
+    signal?: AbortSignal,
+  ): Promise<CreditHistoryResponse>;
   activate(
     request: ActivateRequest,
     signal?: AbortSignal,

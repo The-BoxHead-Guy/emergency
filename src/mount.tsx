@@ -1,6 +1,7 @@
 import { createRoot, type Root } from 'react-dom/client';
 import { createEmergencyController } from '@/core/controller';
 import { validateConfig } from '@/core/config';
+import { createCreditsState } from '@/core/credits';
 import { createEmergencyError } from '@/core/errors';
 import { EMERGENCY_EVENT_NAMES } from '@/core/events';
 import { installEmergencyFonts } from '@/core/fonts';
@@ -40,6 +41,7 @@ function createFailedClient(error: EmergencyError): EmergencyClient {
     responders: [],
     failures: [],
     messages: [],
+    credits: createCreditsState(),
     lastError: error,
     geolocation: null,
     geolocationError: null,
@@ -65,6 +67,8 @@ function createFailedClient(error: EmergencyError): EmergencyClient {
     off: noop,
     ensureSession: noopAsync,
     resume: noopAsync,
+    refreshCredits: noopAsync,
+    loadCreditHistory: noopAsync,
     dismissResume: noop,
     activate: noopAsync,
     simulate: noopAsync,
@@ -233,6 +237,9 @@ export function mount(options: EmergencyMountOptions): EmergencyClient {
     off: (event, handler) => client.off(event, handler),
     ensureSession: () => client.ensureSession(),
     resume: () => client.resume(),
+    refreshCredits: () => client.refreshCredits(),
+    loadCreditHistory: (page, perPage) =>
+      client.loadCreditHistory(page, perPage),
     dismissResume: () => client.dismissResume(),
     activate: () => client.activate(),
     simulate: () => client.simulate(),

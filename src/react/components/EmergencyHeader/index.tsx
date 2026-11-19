@@ -2,11 +2,14 @@ import { copy } from '@/core/copy';
 import { Icon } from '@/react/components/Icon';
 import { cls } from '@/react/classnames';
 
+export type EmergencyHeaderVariant = 'emergency' | 'administrative';
+
 interface EmergencyHeaderProps {
   readonly titleId: string;
   readonly onClose: () => void;
   readonly title?: string;
   readonly onBack?: () => void;
+  readonly variant?: EmergencyHeaderVariant;
 }
 
 export function EmergencyHeader({
@@ -14,9 +17,10 @@ export function EmergencyHeader({
   onClose,
   title = copy.panelLabel,
   onBack,
+  variant = 'emergency',
 }: EmergencyHeaderProps) {
   return (
-    <header className={cls('emergency-panel__header')}>
+    <header className={cls('emergency-panel__header')} data-variant={variant}>
       {onBack ? (
         <button
           type="button"

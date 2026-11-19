@@ -1,6 +1,8 @@
 import type {
   AbortResponse,
   ConfigResponse,
+  CreditHistoryResponse,
+  CreditSummaryResponse,
   CurrentResponse,
   EmergencyResultPayload,
   ErrorEnvelope,
@@ -108,6 +110,19 @@ export function isCurrentResponse(value: unknown): value is CurrentResponse {
 
 export function isRefreshResponse(value: unknown): value is RefreshResponse {
   return isRecord(value) && isRecord(value['emergency']);
+}
+
+export function isCreditSummaryResponse(
+  value: unknown,
+): value is CreditSummaryResponse {
+  return isRecord(value) && isRecord(value['credit']);
+}
+
+/** Checks the credit history envelope: a record with an items array. */
+export function isCreditHistoryResponse(
+  value: unknown,
+): value is CreditHistoryResponse {
+  return isRecord(value) && Array.isArray(value['items']);
 }
 
 export function isAbortResponse(value: unknown): value is AbortResponse {

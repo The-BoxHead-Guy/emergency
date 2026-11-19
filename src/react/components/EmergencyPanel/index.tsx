@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useRef } from 'react';
 import { themeToCssVariables } from '@/core/mappers';
+import type { CreditsState } from '@/core/credits';
 import type {
   AbortResult,
   EmergencyError,
@@ -31,6 +32,7 @@ export interface EmergencyPanelProps {
   locale: string;
   responders: readonly Responder[];
   refreshing: boolean;
+  credits: CreditsState;
   geolocationError: EmergencyError | null;
   contactPhone: string | null;
   activationError?: EmergencyError | null;
@@ -113,6 +115,7 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
     locale,
     responders,
     refreshing,
+    credits,
     geolocationError,
     contactPhone,
     activationError,
@@ -159,6 +162,7 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
     locale,
     responders,
     refreshing,
+    credits,
     geolocationError,
     activationError,
     error,

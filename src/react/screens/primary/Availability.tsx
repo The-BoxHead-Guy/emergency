@@ -1,26 +1,27 @@
+import type { CreditsState } from '@/core/credits';
 import { Icon } from '@/react/components/Icon';
 import { cls } from '@/react/classnames';
+import { formatExtraAlerts } from '@/react/screens/credits-copy';
+import { creditResourceView } from '@/react/screens/credits-view';
 import {
   formatRounds,
   primaryCopy,
   roundsUnit,
 } from '@/react/screens/primary/copy';
-import {
-  calculateRounds,
-  DEMO_AVAILABLE_MESSAGES,
-  DEMO_DESIGNATED_RESPONDERS,
-} from '@/react/screens/primary/data';
 
 export interface AvailabilityProps {
+  readonly credits: CreditsState;
   readonly onRecharge: () => void;
   readonly onDetails: () => void;
 }
 
-export function Availability({ onRecharge, onDetails }: AvailabilityProps) {
-  const rounds = calculateRounds(
-    DEMO_AVAILABLE_MESSAGES,
-    DEMO_DESIGNATED_RESPONDERS,
-  );
+export function Availability({
+  credits,
+  onRecharge,
+  onDetails,
+}: AvailabilityProps) {
+  const { credit } = credits;
+  const view = creditResourceView(credits.summaryStatus, credit !== null);
 
   return (
     <section
@@ -43,15 +44,30 @@ export function Availability({ onRecharge, onDetails }: AvailabilityProps) {
           </h3>
         </div>
         <div className={cls('emergency-availability__card-body')}>
-          <div
-            className={cls('emergency-availability__rounds-group')}
-            aria-label={formatRounds(rounds)}
-          >
-            <p className={cls('emergency-availability__rounds')}>{rounds}</p>
+          {credit ? (
+            <div
+              className={cls('emergency-availability__rounds-group')}
+              aria-label={formatRounds(credit.rounds)}
+            >
+              <p className={cls('emergency-availability__rounds')}>
+                {credit.rounds}
+              </p>
+              <p className={cls('emergency-availability__label')}>
+                {roundsUnit(credit.rounds)}
+              </p>
+              {credit.extraAlerts > 0 ? (
+                <p className={cls('emergency-availability__label')}>
+                  {formatExtraAlerts(credit.extraAlerts)}
+                </p>
+              ) : null}
+            </div>
+          ) : (
             <p className={cls('emergency-availability__label')}>
-              {roundsUnit(rounds)}
+              {view === 'loading'
+                ? primaryCopy.loading
+                : primaryCopy.unavailable}
             </p>
-          </div>
+          )}
           <button
             type="button"
             className={cls('emergency-availability__details')}

@@ -22,6 +22,11 @@ export {
 export type { EmergencyConfigInput } from '@/core/config';
 export { themeToCssVariables } from '@/core/mappers';
 export {
+  toCreditHistoryEntry,
+  toCreditHistoryPage,
+  toCreditSummary,
+} from '@/core/credits';
+export {
   createEmergencyError,
   isEmergencyError,
   toEmergencyError,
@@ -65,6 +70,12 @@ export type {
   ActivateRequest,
   BffClient,
   ConfigResponse,
+  CreditHistoryItemPayload,
+  CreditHistoryPaginationPayload,
+  CreditHistoryQuery,
+  CreditHistoryResponse,
+  CreditSummaryPayload,
+  CreditSummaryResponse,
   CurrentResponse,
   EmergencyResultPayload,
   FailurePayload,
@@ -72,6 +83,16 @@ export type {
   ResponderPayload,
   SessionResponse,
 } from '@/core/bff-types';
+
+export type {
+  CreditHistoryEntry,
+  CreditHistoryKind,
+  CreditHistoryPage,
+  CreditPagination,
+  CreditsState,
+  CreditsStatus,
+  CreditSummary,
+} from '@/core/credits';
 
 export type { BffClientOptions, CsrfStrategy } from '@/core/bff-client';
 export type {

@@ -8,6 +8,9 @@ import type {
   ActivateRequest,
   BffClient,
   ConfigResponse,
+  CreditHistoryQuery,
+  CreditHistoryResponse,
+  CreditSummaryResponse,
   CurrentResponse,
   EmergencyResultPayload,
   RefreshResponse,
@@ -19,6 +22,8 @@ import { isRecord } from '@/core/guards';
 import {
   isAbortResponse,
   isConfigResponse,
+  isCreditHistoryResponse,
+  isCreditSummaryResponse,
   isCurrentResponse,
   isEmergencyResultPayload,
   isErrorEnvelope,
@@ -412,6 +417,40 @@ export function createBffClient(options: BffClientOptions): BffClient {
       return execute(
         { method: 'GET', url: '/current' },
         isCurrentResponse,
+        signal,
+      );
+    },
+
+    async credits(signal?: AbortSignal): Promise<CreditSummaryResponse> {
+      return execute(
+        { method: 'GET', url: '/credits' },
+        isCreditSummaryResponse,
+        signal,
+      );
+    },
+
+    async creditHistory(
+      query: CreditHistoryQuery = {},
+      signal?: AbortSignal,
+    ): Promise<CreditHistoryResponse> {
+      const search = new URLSearchParams();
+
+      if (query.perPage !== undefined) {
+        search.set('per_page', String(query.perPage));
+      }
+
+      if (query.page !== undefined) {
+        search.set('page', String(query.page));
+      }
+
+      const suffix = search.toString();
+
+      return execute(
+        {
+          method: 'GET',
+          url: `/credits/history${suffix ? `?${suffix}` : ''}`,
+        },
+        isCreditHistoryResponse,
         signal,
       );
     },

@@ -350,4 +350,84 @@ describe('createBffClient', () => {
         : false,
     ).toBe(true);
   });
+
+  it('reads the credit summary from GET /credits', async () => {
+    const { instance, calls } = createInstance((config) =>
+      response(config, {
+        credit: {
+          code: 'DABC12',
+          domain: 'emergency',
+          balance: 173,
+          contacts_count: 3,
+          rounds: 57,
+          extra_alerts: 2,
+          rounds_label: '57 rounds',
+        },
+      }),
+    );
+    const client = createBffClient({
+      bffBaseUrl: 'https://example.test',
+      axiosInstance: instance,
+    });
+
+    const result = await client.credits();
+
+    expect(calls[0]?.method).toBe('get');
+    expect(calls[0]?.url).toBe('/credits');
+    expect(result.credit.rounds).toBe(57);
+    expect(result.credit.extra_alerts).toBe(2);
+  });
+
+  it('forwards per_page and page to GET /credits/history', async () => {
+    const { instance, calls } = createInstance((config) =>
+      response(config, {
+        items: [],
+        pagination: { total: 0, per_page: 5, current_page: 2, last_page: 1 },
+      }),
+    );
+    const client = createBffClient({
+      bffBaseUrl: 'https://example.test',
+      axiosInstance: instance,
+    });
+
+    await client.creditHistory({ perPage: 5, page: 2 });
+    await client.creditHistory();
+
+    expect(calls[0]?.url).toBe('/credits/history?per_page=5&page=2');
+    expect(calls[1]?.url).toBe('/credits/history');
+  });
+
+  it('keeps credit envelopes usable when the API adds or omits fields', async () => {
+    const { instance } = createInstance((config) =>
+      response(config, {
+        credit: { code: 'DABC12', future_field: true },
+        items: [{ id: 1, type: 'recharge', future_field: true }],
+      }),
+    );
+    const client = createBffClient({
+      bffBaseUrl: 'https://example.test',
+      axiosInstance: instance,
+    });
+
+    await expect(client.credits()).resolves.toMatchObject({
+      credit: { code: 'DABC12' },
+    });
+    await expect(client.creditHistory()).resolves.toMatchObject({
+      items: [{ id: 1 }],
+    });
+  });
+
+  it('rejects a credit response without the expected envelope', async () => {
+    const { instance } = createInstance((config) =>
+      response(config, { credit: 'not-an-object' }),
+    );
+    const client = createBffClient({
+      bffBaseUrl: 'https://example.test',
+      axiosInstance: instance,
+    });
+
+    await expect(client.credits()).rejects.toMatchObject({
+      code: 'invalid_response',
+    });
+  });
 });

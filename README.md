@@ -131,6 +131,8 @@ client.open(reason?)     // Opens the panel
 client.close(reason?)    // Closes the panel
 client.ensureSession()   // POST /session once; safe to repeat
 client.resume()          // GET /current and exposes resumeAvailable
+client.refreshCredits()  // GET /credits and stores the balance
+client.loadCreditHistory(page?, perPage?) // GET /credits/history
 client.activate()        // Requests geolocation, then POST /activate
 client.simulate()        // Requests geolocation, then POST /simulacrum
 client.refresh()         // POST /{id}/refresh
@@ -158,6 +160,13 @@ it.
 
 Simulation is disabled while a real emergency is active.
 
+Credits load once the session is ready. The summary refreshes when the panel
+opens and after a successful activate, simulate or abort, while
+`loadCreditHistory(page?, perPage?)` fetches another ledger page. `getState()`
+exposes `credits` (`credit`, `history`, `pagination`, `summaryStatus`,
+`historyStatus` and `error`). Credit failures never move the
+emergency phase to `error` and never render as emergency feedback.
+
 ## Events
 
 `session:ready`, `emergency:location`, `emergency:activated`,
@@ -173,15 +182,17 @@ client's own emitter, not DOM custom events.
 The client expects the emergency BFF documented in
 `packages/emergency-bff`:
 
-| Method   | Route           | Purpose                                                           |
-| -------- | --------------- | ----------------------------------------------------------------- |
-| `GET`    | `/config`       | Initial CSRF token.                                               |
-| `POST`   | `/session`      | `{ code }` → session + rotated CSRF token.                        |
-| `GET`    | `/current`      | Active emergency for the session, if any.                         |
-| `POST`   | `/activate`     | `{ geolocation: { latitude, longitude } }`.                       |
-| `POST`   | `/simulacrum`   | `{ geolocation: { latitude, longitude } }`, no emergency created. |
-| `POST`   | `/{id}/refresh` | Reconcile snapshot and responder statuses.                        |
-| `DELETE` | `/{id}`         | Abort and notify contacts.                                        |
+| Method   | Route              | Purpose                                                           |
+| -------- | ------------------ | ----------------------------------------------------------------- |
+| `GET`    | `/config`          | Initial CSRF token.                                               |
+| `POST`   | `/session`         | `{ code }` → session + rotated CSRF token.                        |
+| `GET`    | `/current`         | Active emergency for the session, if any.                         |
+| `GET`    | `/credits`         | Credit balance for the session identity.                          |
+| `GET`    | `/credits/history` | Paginated credit ledger, newest first.                            |
+| `POST`   | `/activate`        | `{ geolocation: { latitude, longitude } }`.                       |
+| `POST`   | `/simulacrum`      | `{ geolocation: { latitude, longitude } }`, no emergency created. |
+| `POST`   | `/{id}/refresh`    | Reconcile snapshot and responder statuses.                        |
+| `DELETE` | `/{id}`            | Abort and notify contacts.                                        |
 
 Every mutating request sends the CSRF token in `X-CSRF-Token`. The default
 strategy keeps the token in memory and updates it from `/config` and `/session`.

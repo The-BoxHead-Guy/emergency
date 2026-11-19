@@ -6,6 +6,57 @@ and [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-19
+
+### Added
+
+- Credits now render real data from the BFF `GET /credits` and
+  `GET /credits/history` routes: the primary availability card, the details
+  summary and preview, the history screen and the message detail read the
+  controller credit state instead of demo constants. `createBffClient()` exposes
+  `credits()` and `creditHistory()`, and the client adds `refreshCredits()` and
+  `loadCreditHistory(page?, perPage?)`.
+- Extra alerts render as a conditional suffix in the availability card and the
+  balance sentence, and credit loading/unavailable states replace the previous
+  fabricated values.
+- Credit response guards validate the envelope only; the mappers normalize
+  missing, renamed or extra fields so an API change does not discard a usable
+  balance or page.
+- Administrative screens (`pricing`, `details`, `history`, `message-detail`)
+  render a blue header through the new `EmergencyHeader` `variant` prop, while
+  the primary, active emergency and pre-emergency screens keep the red default.
+- The details screen splits history into an `Alertas` section and a `Recargas`
+  section filtered from the same BFF collection, keeping a single
+  `Ver historial` action below both sections.
+
+### Changed
+
+- Details, history and message-detail bodies keep their horizontal padding
+  while gaining `1.25rem` of vertical padding, the details sections spread
+  further apart, and every empty placeholder now renders as a centered card
+  with an inbox icon instead of a bare paragraph. The repeated spacing values
+  live in `tokens.css`.
+- History rows no longer render a list marker and normalize their text to
+  `line-height: 1.5`; text elements inside the panel inherit Poppins without
+  `!important`.
+- The emergency history badge reads `Alerta` while its semantic
+  `data-kind="emergency"` stays unchanged, and card dates still come from the
+  BFF `created_at` values mapped to `createdAt`.
+- `EmergencyClientState` exposes a single `credits` object (`credit`, `history`,
+  `pagination`, `summaryStatus`, `historyStatus` and `error`) instead of separate
+  credit fields.
+- Credit history dates and values come from each BFF entry, with authoritative
+  `rounds` preserved instead of recomputed. History kinds now cover `refund` and
+  an `other` fallback.
+- The pricing round projection keeps its pre-existing fixed 3-contact
+  calculation and does not depend on the signed-in user's credit contacts.
+
+### Removed
+
+- Internal demo constants `DEMO_AVAILABLE_MESSAGES`,
+  `DEMO_DESIGNATED_RESPONDERS` and `DEMO_ALERT_HISTORY`, plus the
+  `currentAlertBalance` and `historyEntryRounds` selectors.
+
 ## [0.8.0] - 2026-11-18
 
 ### Added

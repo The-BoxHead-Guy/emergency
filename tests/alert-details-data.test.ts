@@ -1,17 +1,15 @@
 import { describe, expect, it } from 'vitest';
+import { toCreditHistoryEntry } from '@/core/credits';
 import { formatDateTime } from '@/core/date';
 import { formatAlertBalance } from '@/react/screens/details/copy';
 import {
-  currentAlertBalance,
   historyEntryById,
-  historyEntryRounds,
-  latestHistoryEntry,
+  partitionHistory,
+  sortedHistoryEntries,
 } from '@/react/screens/history/data';
-import {
-  calculateRounds,
-  DEMO_AVAILABLE_MESSAGES,
-  DEMO_DESIGNATED_RESPONDERS,
-} from '@/react/screens/primary/data';
+import { creditHistoryResponse } from '@/test/fakes';
+
+const entries = creditHistoryResponse.items.map(toCreditHistoryEntry);
 
 describe('formatDateTime', () => {
   it('formats a timestamp as dd/mm/yyyy hh:mm', () => {
@@ -35,63 +33,97 @@ describe('formatDateTime', () => {
 });
 
 describe('formatAlertBalance', () => {
-  it('builds the exact stakeholder sentence for 27 messages and 3 contacts', () => {
-    expect(formatAlertBalance(27, 3)).toBe(
+  it('builds the stakeholder sentence from authoritative rounds', () => {
+    expect(formatAlertBalance(27, 3, 9)).toBe(
       'Te quedan 27 mensajes de alerta, dado que tienes 3 contactos de emergencia, te quedan 9 rondas de avisos.',
     );
   });
 
-  it('uses singular units for one message, contact and round', () => {
-    expect(formatAlertBalance(1, 1)).toBe(
-      'Te queda 1 mensaje de alerta, dado que tienes 1 contacto de emergencia, te queda 1 ronda de avisos.',
+  it('appends the extra alert allowance when present', () => {
+    expect(formatAlertBalance(173, 3, 57, 2)).toBe(
+      'Te quedan 173 mensajes de alerta, dado que tienes 3 contactos de emergencia, te quedan 57 rondas de avisos, más 2 alertas extra.',
+    );
+  });
+
+  it('uses singular units for one message, contact, round and extra alert', () => {
+    expect(formatAlertBalance(1, 1, 1, 1)).toBe(
+      'Te queda 1 mensaje de alerta, dado que tienes 1 contacto de emergencia, te queda 1 ronda de avisos, más 1 alerta extra.',
+    );
+  });
+
+  it('accepts a zero balance without recomputing rounds', () => {
+    expect(formatAlertBalance(0, 3, 0)).toBe(
+      'Te quedan 0 mensajes de alerta, dado que tienes 3 contactos de emergencia, te quedan 0 rondas de avisos.',
     );
   });
 
   it('returns an empty string for invalid input', () => {
-    expect(formatAlertBalance(Number.NaN, 3)).toBe('');
-    expect(formatAlertBalance(27, Number.POSITIVE_INFINITY)).toBe('');
-    expect(formatAlertBalance(-1, 3)).toBe('');
+    expect(formatAlertBalance(Number.NaN, 3, 9)).toBe('');
+    expect(formatAlertBalance(27, Number.POSITIVE_INFINITY, 9)).toBe('');
+    expect(formatAlertBalance(27, 3, -1)).toBe('');
+    expect(formatAlertBalance(27, 3, 9, -1)).toBe('');
+    expect(formatAlertBalance(-1, 3, 9)).toBe('');
   });
 });
 
 describe('alert history selectors', () => {
-  it('returns the newest entry and resolves entries by id', () => {
-    expect(latestHistoryEntry()?.id).toBe('alert-2026-10-31');
-    expect(historyEntryById('alert-2026-10-20')?.kind).toBe('recharge');
-    expect(historyEntryById('missing')).toBeNull();
-    expect(historyEntryById(undefined)).toBeNull();
+  it('resolves history entries by id', () => {
+    expect(sortedHistoryEntries(entries)[0]?.id).toBe('1');
+    expect(historyEntryById('2', entries)?.kind).toBe('emergency');
+    expect(historyEntryById('missing', entries)).toBeNull();
+    expect(historyEntryById(undefined, entries)).toBeNull();
   });
 
-  it('derives rounds per entry', () => {
-    const latest = latestHistoryEntry();
-
-    if (!latest) {
-      throw new Error('Expected a demo history entry.');
-    }
-
-    expect(historyEntryRounds(latest)).toBe(9);
+  it('sorts a copy without mutating the input order', () => {
+    expect(sortedHistoryEntries(entries).map((entry) => entry.id)).toEqual([
+      '1',
+      '2',
+    ]);
+    expect(
+      sortedHistoryEntries([...entries].reverse()).map((e) => e.id),
+    ).toEqual(['1', '2']);
+    expect(entries.map((entry) => entry.id)).toEqual(['1', '2']);
   });
 
-  it('derives the current balance from the newest entry', () => {
-    expect(currentAlertBalance()).toEqual({
-      messages: 27,
-      responders: 3,
-      rounds: 9,
-    });
-    expect(currentAlertBalance([])).toBeNull();
+  it('returns an empty list for an empty history', () => {
+    expect(sortedHistoryEntries([])).toEqual([]);
   });
 
-  it('keeps the newest demo entry aligned with the primary demo constants', () => {
-    const latest = latestHistoryEntry();
+  it('keeps the authoritative rounds of each entry', () => {
+    expect(historyEntryById('1', entries)?.rounds).toBe(57);
+    expect(historyEntryById('2', entries)?.rounds).toBe(56);
+  });
+});
 
-    if (!latest) {
-      throw new Error('Expected a demo history entry.');
-    }
+describe('partitionHistory', () => {
+  const movement = (id: string, type: string) =>
+    toCreditHistoryEntry({ id, type });
 
-    expect(latest.remainingMessages).toBe(DEMO_AVAILABLE_MESSAGES);
-    expect(latest.responders).toBe(DEMO_DESIGNATED_RESPONDERS);
-    expect(historyEntryRounds(latest)).toBe(
-      calculateRounds(DEMO_AVAILABLE_MESSAGES, DEMO_DESIGNATED_RESPONDERS),
-    );
+  it('routes alerts and unknown types away from top ups', () => {
+    const partition = partitionHistory([
+      movement('e1', 'emergency'),
+      movement('o1', 'gift'),
+      movement('r1', 'recharge'),
+      movement('f1', 'refund'),
+    ]);
+
+    expect(partition.alerts.map((entry) => entry.id)).toEqual(['e1', 'o1']);
+    expect(partition.topUps.map((entry) => entry.id)).toEqual(['r1', 'f1']);
+  });
+
+  it('preserves the received order in each section', () => {
+    const partition = partitionHistory([
+      movement('r1', 'recharge'),
+      movement('e1', 'emergency'),
+      movement('r2', 'refund'),
+      movement('e2', 'emergency'),
+    ]);
+
+    expect(partition.alerts.map((entry) => entry.id)).toEqual(['e1', 'e2']);
+    expect(partition.topUps.map((entry) => entry.id)).toEqual(['r1', 'r2']);
+  });
+
+  it('returns empty sections for an empty history', () => {
+    expect(partitionHistory([])).toEqual({ alerts: [], topUps: [] });
   });
 });

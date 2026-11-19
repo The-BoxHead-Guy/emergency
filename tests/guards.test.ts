@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   isAbortResponse,
   isConfigResponse,
+  isCreditHistoryResponse,
+  isCreditSummaryResponse,
   isCurrentResponse,
   isEmergencyResultPayload,
   isErrorEnvelope,
@@ -125,5 +127,66 @@ describe('BFF response guards', () => {
       }),
     ).toBe(true);
     expect(isErrorEnvelope({ error: { code: 'inactive_code' } })).toBe(false);
+  });
+
+  it('accepts the credit summary envelope without enforcing its fields', () => {
+    expect(
+      isCreditSummaryResponse({
+        credit: {
+          code: 'DABC12',
+          domain: 'emergency',
+          balance: 173,
+          contacts_count: 3,
+          rounds: 57,
+          extra_alerts: 2,
+          rounds_label: '57 rounds',
+        },
+      }),
+    ).toBe(true);
+    expect(
+      isCreditSummaryResponse({
+        credit: { balance: -1, rounds: -1 },
+      }),
+    ).toBe(true);
+    expect(isCreditSummaryResponse({ credit: { future_field: true } })).toBe(
+      true,
+    );
+    expect(isCreditSummaryResponse({ credit: null })).toBe(false);
+    expect(isCreditSummaryResponse({})).toBe(false);
+  });
+
+  it('accepts the credit history envelope without enforcing entries or pagination', () => {
+    expect(
+      isCreditHistoryResponse({
+        items: [
+          {
+            id: 3,
+            type: 'refund',
+            amount: 1,
+            balance_after: 10,
+            contacts_count: 1,
+            rounds: 10,
+            extra_alerts: 0,
+            emergency_id: null,
+            reference: null,
+            created_at: null,
+          },
+        ],
+        pagination: {
+          total: 1,
+          per_page: 15,
+          current_page: 1,
+          last_page: 1,
+        },
+      }),
+    ).toBe(true);
+    expect(
+      isCreditHistoryResponse({
+        items: [{ balance_after: '10', future_field: true }],
+      }),
+    ).toBe(true);
+    expect(isCreditHistoryResponse({ items: [] })).toBe(true);
+    expect(isCreditHistoryResponse({ items: 'not-an-array' })).toBe(false);
+    expect(isCreditHistoryResponse({})).toBe(false);
   });
 });

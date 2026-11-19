@@ -1,4 +1,5 @@
 import { EmergencyHeader } from '@/react/components/EmergencyHeader';
+import { EmptyState } from '@/react/components/EmptyState';
 import { formatDateTime } from '@/core/date';
 import { cls } from '@/react/classnames';
 import { useScreenNavigation } from '@/react/screens/context';
@@ -8,10 +9,7 @@ import {
   formatMessages,
   historyCopy,
 } from '@/react/screens/history/copy';
-import {
-  historyEntryById,
-  historyEntryRounds,
-} from '@/react/screens/history/data';
+import { historyEntryById } from '@/react/screens/history/data';
 import { EmergencyScreenLayout } from '@/react/screens/layout';
 import type { EmergencyScreenProps } from '@/react/screens/types';
 
@@ -30,14 +28,16 @@ export const messageDetailCopy = {
 export function MessageDetailScreen({
   titleId,
   locale,
+  credits,
   onClose,
 }: EmergencyScreenProps) {
   const { back, params, replace } = useScreenNavigation();
-  const entry = historyEntryById(params.messageId);
+  const entry = historyEntryById(params.messageId, credits.history);
   const header = (
     <EmergencyHeader
       titleId={titleId}
       title={messageDetailCopy.title}
+      variant="administrative"
       onClose={() => onClose('close')}
       onBack={back}
     />
@@ -53,9 +53,7 @@ export function MessageDetailScreen({
         footer={null}
       >
         <div className={cls('emergency-message-detail__empty')}>
-          <p className={cls('emergency-message-detail__empty-text')}>
-            {messageDetailCopy.notFound}
-          </p>
+          <EmptyState message={messageDetailCopy.notFound} />
           <button
             type="button"
             className={cls('emergency-message-detail__back')}
@@ -67,8 +65,6 @@ export function MessageDetailScreen({
       </EmergencyScreenLayout>
     );
   }
-
-  const rounds = historyEntryRounds(entry);
 
   return (
     <EmergencyScreenLayout
@@ -91,7 +87,7 @@ export function MessageDetailScreen({
                 {messageDetailCopy.dateTime}
               </dt>
               <dd className={cls('emergency-message-detail__value')}>
-                {formatDateTime(entry.occurredAt, locale)}
+                {formatDateTime(entry.createdAt, locale)}
               </dd>
             </div>
             <div className={cls('emergency-message-detail__row')}>
@@ -107,7 +103,7 @@ export function MessageDetailScreen({
                 {messageDetailCopy.responders}
               </dt>
               <dd className={cls('emergency-message-detail__value')}>
-                {formatContacts(entry.responders)}
+                {formatContacts(entry.contactsCount)}
               </dd>
             </div>
             <div className={cls('emergency-message-detail__row')}>
@@ -115,7 +111,7 @@ export function MessageDetailScreen({
                 {messageDetailCopy.messages}
               </dt>
               <dd className={cls('emergency-message-detail__value')}>
-                {formatMessages(entry.remainingMessages)}
+                {formatMessages(entry.balanceAfter)}
               </dd>
             </div>
             <div className={cls('emergency-message-detail__row')}>
@@ -123,7 +119,7 @@ export function MessageDetailScreen({
                 {messageDetailCopy.rounds}
               </dt>
               <dd className={cls('emergency-message-detail__value')}>
-                {formatHistoryRounds(rounds)}
+                {formatHistoryRounds(entry.rounds)}
               </dd>
             </div>
           </dl>
