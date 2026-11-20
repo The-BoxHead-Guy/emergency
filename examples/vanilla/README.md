@@ -44,6 +44,9 @@ flow when no scenario is selected.
 | Simulación en proceso    | `slow`                  | Spinner and disabled buttons while simulating.     |
 | Aborto exitoso           | `active-mixed`          | Success feedback after abort.                      |
 | Aborto fallido           | `abort-error`           | Error feedback, emergency stays active.            |
+| Aborto sin créditos      | `abort-credits`         | `402`, credit feedback, emergency stays active.    |
+| Aborto parcial           | `abort-partial`         | Abort completes with some failed contacts.         |
+| Aborto ya cerrado        | `abort-not-found`       | `404`, stale emergency cleared, no ghost active.   |
 | Geolocalización denegada | `default`               | Error feedback with 5 s auto-dismiss.              |
 | Error al activar         | `activate-error`        | Error block with retry.                            |
 | Error de sesión          | `session-error`         | Reloads with a failing `/session`.                 |

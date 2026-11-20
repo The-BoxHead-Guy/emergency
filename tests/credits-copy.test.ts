@@ -4,6 +4,7 @@ import {
   formatExtraAlerts,
 } from '@/react/screens/credits-copy';
 import { creditResourceView } from '@/react/screens/credits-view';
+import { historyCopy } from '@/react/screens/history/copy';
 
 describe('credit copy', () => {
   it('formats extra alerts with singular and plural units', () => {
@@ -11,6 +12,12 @@ describe('credit copy', () => {
     expect(formatExtraAlerts(2)).toBe('más 2 alertas extra');
     expect(extraAlertsUnit(1)).toBe('alerta extra');
     expect(extraAlertsUnit(0)).toBe('alertas extra');
+  });
+});
+
+describe('history copy', () => {
+  it('labels an abort debit as a cancellation', () => {
+    expect(historyCopy.kindLabels.abort).toBe('Cancelación');
   });
 });
 

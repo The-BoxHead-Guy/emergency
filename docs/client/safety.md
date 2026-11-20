@@ -43,23 +43,36 @@ contacts were reached; the panel shows per-contact delivery status.
 
 ## Abort is explicit
 
-Cancelling has two steps:
+Aborting has two steps:
 
-1. **Cancelar emergencia** opens a confirmation that explains contacts will be
-   notified of the cancellation and that it cannot be undone.
-2. **Sí, cancelar emergencia** sends `DELETE /{id}`.
+1. **Abortar Aviso de Emergencia** opens a confirmation that explains contacts
+   will be notified of the abort and that it cannot be undone.
+2. **Si, abortar** sends `DELETE /{id}`.
 
 `client.abort()` enforces the confirmation flag: the first call sets
 `abortConfirmation` and returns without sending a request. The second call
 performs the abort. `cancelAbortConfirmation()` clears it.
 
-The BFF sends the abort template to the contacts before deleting the emergency
-state. If the BFF call fails, the panel reports
-`No se pudo cancelar la emergencia. Inténtalo de nuevo.` and keeps the
-emergency active; it does not pretend the cancellation succeeded.
+The BFF sends the abort template to the contacts and removes the emergency
+state. The library reads the response explicitly:
+
+- `deleted: true` clears the snapshot and returns to `ready`.
+- `deleted: false` keeps the emergency active and reports a failed abort.
+- `failures` in a `2xx` body set `abortResult.partial = true`; the feedback
+  never claims that every contact was notified.
+- `402 insufficient_credits` means the billed abort template could not be sent.
+  The emergency stays active, the abort buttons are re-enabled after the
+  feedback is dismissed, and the copy points to topping up or calling the
+  hotline directly.
+- `404 emergency_not_found` is treated as an already-completed abort: the stale
+  snapshot is cleared instead of leaving a ghost active emergency.
+
+Other failures keep the emergency active and report
+`No se pudo abortar la emergencia. Inténtalo de nuevo.`; the client never
+pretends the abort succeeded.
 
 Aborting a simulated result is a no-op with an informational message, because
-there is no real emergency to cancel.
+there is no real emergency to abort.
 
 ## Geolocation is required for activation and simulation
 

@@ -12,21 +12,24 @@ require a BFF release, and the reverse is also true.
 | `dataemergencia/emergency-bff` | Packagist | `0.1.0`         |
 | `@dataemergencia/emergency`    | npm       | `0.1.0`         |
 
-## Pre-1.0 policy
+## Development line (`0.y.z`)
 
-Both packages are `0.x`. Semver applies, with the pre-1.0 convention:
+Both packages are still in the `0.y.z` line; `@dataemergencia/emergency` is
+currently `0.9.0`. Semver applies, with the pre-1.0 convention:
 
-- **Patch** (`0.1.1`): bug fixes, documentation fixes, no API change.
-- **Minor** (`0.2.0`): new features and potentially breaking changes. Read the
+- **Patch** (`0.9.1`): bug fixes, documentation fixes, no API change.
+- **Minor** (`0.10.0`): new features and potentially breaking changes. Read the
   changelog before upgrading.
-- **Major** (`1.0.0`): the first stability commitment.
+- **Major** (`1.0.0`): the first public release after general testing. It is not
+  reached merely by finishing a feature; publish it once the library leaves
+  internal testing and is in use by the public.
 
 Once a package reaches `1.0.0`, breaking changes require a major version.
 
 ## Compatibility
 
 The client and BFF speak the HTTP contract documented in the
-[BFF API contract](https://github.com/The-BoxHead-Guy/emergency-bff/blob/v0.1.0/docs/api-contract.md).
+[BFF HTTP contract](https://github.com/The-BoxHead-Guy/emergency-bff/blob/main/docs/bff/routes.md).
 The contract is versioned with the BFF.
 
 | Client  | BFF     | Status                                                    |

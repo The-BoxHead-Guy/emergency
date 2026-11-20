@@ -15,6 +15,9 @@ export const FEEDBACK_AUTO_DISMISS_MS = 12000;
 /** Time the geolocation feedback stays on screen before dismissing itself. */
 export const GEOLOCATION_FEEDBACK_AUTO_DISMISS_MS = 12000;
 
+/** Time an abort credit error stays on screen before dismissing itself. */
+export const ABORT_CREDITS_FEEDBACK_AUTO_DISMISS_MS = 24000;
+
 interface EmergencyFeedbackProps {
   readonly abortResult: AbortResult | null;
   readonly simulationResult: SimulationResult | null;
@@ -38,9 +41,11 @@ export function EmergencyFeedback({
   });
   const dismissRef = useRef(onDismiss);
   const autoDismissMs =
-    geolocationError || activationError
-      ? GEOLOCATION_FEEDBACK_AUTO_DISMISS_MS
-      : FEEDBACK_AUTO_DISMISS_MS;
+    abortResult?.code === 'insufficient_credits'
+      ? ABORT_CREDITS_FEEDBACK_AUTO_DISMISS_MS
+      : geolocationError || activationError
+        ? GEOLOCATION_FEEDBACK_AUTO_DISMISS_MS
+        : FEEDBACK_AUTO_DISMISS_MS;
   const feedbackKey =
     abortResult?.at ??
     simulationResult?.at ??

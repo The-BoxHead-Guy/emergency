@@ -69,6 +69,70 @@ describe('resolveFeedbackMessage', () => {
     });
   });
 
+  it('resolves an abort that failed because of insufficient credits', () => {
+    expect(
+      resolveFeedbackMessage({
+        abortResult: {
+          ok: false,
+          message: copy.abortCreditsText,
+          at: 1,
+          code: 'insufficient_credits',
+        },
+        simulationResult: null,
+        geolocationError: null,
+        activationError: null,
+      }),
+    ).toEqual({
+      variant: 'error',
+      icon: 'alert-triangle',
+      title: copy.abortCreditsTitle,
+      text: copy.abortCreditsText,
+    });
+  });
+
+  it('resolves a partial abort without claiming every contact was notified', () => {
+    const resolved = resolveFeedbackMessage({
+      abortResult: {
+        ok: true,
+        message: copy.abortResultPartial,
+        at: 1,
+        partial: true,
+      },
+      simulationResult: null,
+      geolocationError: null,
+      activationError: null,
+    });
+
+    expect(resolved).toEqual({
+      variant: 'warning',
+      icon: 'alert-triangle',
+      title: copy.abortPartialTitle,
+      text: copy.abortPartialText,
+    });
+    expect(resolved?.text).not.toBe(copy.abortSuccessText);
+  });
+
+  it('resolves an already-completed abort', () => {
+    expect(
+      resolveFeedbackMessage({
+        abortResult: {
+          ok: true,
+          message: copy.abortAlreadyDone,
+          at: 1,
+          code: 'emergency_not_found',
+        },
+        simulationResult: null,
+        geolocationError: null,
+        activationError: null,
+      }),
+    ).toEqual({
+      variant: 'success',
+      icon: 'check-circle',
+      title: copy.abortAlreadyTitle,
+      text: copy.abortAlreadyText,
+    });
+  });
+
   it('resolves a successful simulation', () => {
     expect(
       resolveFeedbackMessage({

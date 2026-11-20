@@ -268,6 +268,11 @@ export interface AbortResult {
   readonly ok: boolean;
   readonly message: string;
   readonly at: number;
+
+  /** Upstream error code when the abort failed. */
+  readonly code?: EmergencyErrorCode;
+  /** Whether only some contacts were notified before the abort completed. */
+  readonly partial?: boolean;
 }
 
 export interface SimulationResult {

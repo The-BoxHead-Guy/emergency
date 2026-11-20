@@ -67,8 +67,8 @@ secret to the browser. Private channels are post-MVP.
 
 ## How do I upgrade?
 
-Read the [versioning policy](../release/versioning.md). Within `0.x`, minor versions
-can contain breaking changes; pin a version and review the changelog.
+Read the [versioning policy](../release/versioning.md). Within `0.y.z`, minor
+versions can contain breaking changes; pin a version and review the changelog.
 
 ## Next step
 

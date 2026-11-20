@@ -1427,6 +1427,7 @@ p.emergency-pricing__package-footnote {
 }
 
 .simulacrum-success-message,
+.emergency-warning-message,
 .emergency-error-message {
   display: flex;
   flex-direction: column;
@@ -1436,6 +1437,7 @@ p.emergency-pricing__package-footnote {
 }
 
 .simulacrum-success-message__container,
+.emergency-warning-message__container,
 .emergency-error-message__container {
   position: relative;
   display: flex;
@@ -1447,6 +1449,7 @@ p.emergency-pricing__package-footnote {
 }
 
 .simulacrum-success-message__icon,
+.emergency-warning-message__icon,
 .emergency-error-message__icon {
   display: flex;
   flex: none;
@@ -1475,7 +1478,13 @@ p.emergency-pricing__package-footnote {
   animation: de-emergency-pulse-error 2s infinite;
 }
 
+.emergency-warning-message__icon {
+  color: var(--de-emergency-warning, #f0ad4e);
+  background: rgb(240 173 78 / 12%);
+}
+
 .simulacrum-success-message__content,
+.emergency-warning-message__content,
 .emergency-error-message__content {
   display: flex;
   flex: 1;
@@ -1493,7 +1502,12 @@ p.emergency-pricing__package-footnote {
   color: var(--de-emergency-error, #dc3545);
 }
 
+.emergency-warning-message__content {
+  color: var(--de-emergency-warning, #f0ad4e);
+}
+
 .simulacrum-success-message__title,
+.emergency-warning-message__title,
 .emergency-error-message__title {
   margin: 0;
   font-size: var(--de-emergency-font-title, clamp(1.5rem, 2vw, 1.75rem));
@@ -1501,6 +1515,7 @@ p.emergency-pricing__package-footnote {
 }
 
 .simulacrum-success-message__text,
+.emergency-warning-message__text,
 .emergency-error-message__text {
   margin: 0;
   font-size: var(--de-emergency-font-medium, clamp(1rem, 2vw, 1.125rem));
@@ -1938,6 +1953,7 @@ p.emergency-pricing__package-footnote {
 
   .sos-img,
   .simulacrum-success-message__icon,
+  .emergency-warning-message__icon,
   .emergency-error-message__icon,
   .emergency-resume-notification-icon {
     animation: none;

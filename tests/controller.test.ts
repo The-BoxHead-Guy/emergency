@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEmergencyError } from '@/core/errors';
+import { copy } from '@/core/copy';
+import type { BffClient } from '@/core/bff-types';
 import type { EmergencyEventName } from '@/core/types';
 import type { EmergencyResultPayload } from '@/core/bff-types';
 import {
@@ -8,11 +10,21 @@ import {
   createFakeBff,
   createTestController,
   responders,
+  type FakeBff,
 } from '@/test/fakes';
 
 afterEach(() => {
   vi.useRealTimers();
 });
+
+function controllerWithAbort(abort: FakeBff['abort']) {
+  return createTestController({ bff: createFakeBff({ abort }) });
+}
+
+async function abortNow(controller: ReturnType<typeof createTestController>) {
+  await controller.client.abort();
+  await controller.client.abort();
+}
 
 describe('emergency controller', () => {
   it('creates a session once and is safe to repeat', async () => {
@@ -449,8 +461,10 @@ describe('emergency controller', () => {
     await controller.client.abort();
 
     const state = controller.client.getState();
+    expect(controller.bff.abort).toHaveBeenCalledTimes(1);
     expect(controller.bff.abort).toHaveBeenCalledWith('emg-1');
     expect(state.abortResult?.ok).toBe(true);
+    expect(state.abortResult?.partial).toBe(false);
     expect(state.phase.kind).toBe('ready');
     expect(state.snapshot).toBeNull();
     expect(controller.realtime.disconnect).toHaveBeenCalled();
@@ -465,13 +479,166 @@ describe('emergency controller', () => {
     const controller = createTestController({ bff });
     await controller.client.activate();
 
-    await controller.client.abort();
-    await controller.client.abort();
+    await abortNow(controller);
 
     const state = controller.client.getState();
     expect(state.abortResult?.ok).toBe(false);
+    expect(state.abortResult?.code).toBe('network');
     expect(state.phase.kind).toBe('active');
     expect(state.snapshot?.emergencyId).toBe('emg-1');
+  });
+
+  it('keeps the emergency active and reports insufficient credits on a billed abort', async () => {
+    const controller = controllerWithAbort(
+      vi.fn(async () => {
+        throw createEmergencyError('insufficient_credits', 'No credits');
+      }),
+    );
+    await controller.client.activate();
+
+    await abortNow(controller);
+
+    const state = controller.client.getState();
+    expect(state.abortResult?.ok).toBe(false);
+    expect(state.abortResult?.code).toBe('insufficient_credits');
+    expect(state.phase.kind).toBe('active');
+    expect(state.snapshot?.emergencyId).toBe('emg-1');
+    expect(state.abortConfirmation).toBe(false);
+  });
+
+  it('reports a partial abort without claiming every contact was notified', async () => {
+    const controller = controllerWithAbort(
+      vi.fn(async () => ({
+        emergency_id: 'emg-1',
+        deleted: true,
+        simulated: false,
+        responders,
+        failures: [
+          { phone: '573007654321', message: 'Delivery failed', status: 502 },
+        ],
+      })),
+    );
+    await controller.client.activate();
+
+    await abortNow(controller);
+
+    const state = controller.client.getState();
+    expect(state.abortResult?.ok).toBe(true);
+    expect(state.abortResult?.partial).toBe(true);
+    expect(state.abortResult?.message).not.toBe(copy.abortResultOk);
+    expect(state.phase.kind).toBe('ready');
+    expect(state.snapshot).toBeNull();
+  });
+
+  it('reports a total notification failure on a deleted abort', async () => {
+    const failedResponders = responders.map((responder) => ({
+      ...responder,
+      sent: false,
+      delivered: false,
+      read: false,
+      failed: true,
+    }));
+    const controller = controllerWithAbort(
+      vi.fn(async () => ({
+        emergency_id: 'emg-1',
+        deleted: true,
+        simulated: false,
+        responders: failedResponders,
+        failures: failedResponders.map((responder) => ({
+          phone: responder.phone,
+          message: 'Delivery failed',
+          status: 502,
+        })),
+        total_failure: true,
+      })),
+    );
+    await controller.client.activate();
+
+    await abortNow(controller);
+
+    const state = controller.client.getState();
+    expect(state.abortResult?.ok).toBe(true);
+    expect(state.abortResult?.partial).toBe(true);
+    expect(state.abortResult?.message).not.toBe(copy.abortResultOk);
+    expect(state.phase.kind).toBe('ready');
+    expect(state.snapshot).toBeNull();
+  });
+
+  it('keeps the emergency active and syncs the snapshot when the BFF reports deleted: false', async () => {
+    const failedResponders = responders.map((responder) => ({
+      ...responder,
+      failed: true,
+    }));
+    const controller = controllerWithAbort(
+      vi.fn(async () => ({
+        emergency_id: 'emg-1',
+        deleted: false,
+        simulated: false,
+        responders: failedResponders,
+        failures: [
+          { phone: '573007654321', message: 'Delivery failed', status: 502 },
+        ],
+      })),
+    );
+    await controller.client.activate();
+
+    await abortNow(controller);
+
+    const state = controller.client.getState();
+    expect(state.abortResult?.ok).toBe(false);
+    expect(state.abortResult?.code).toBe('unknown');
+    expect(state.phase.kind).toBe('active');
+    expect(state.snapshot?.emergencyId).toBe('emg-1');
+    expect(state.snapshot?.responders[0]?.failed).toBe(true);
+    expect(state.failures).toHaveLength(1);
+    expect(state.abortConfirmation).toBe(false);
+  });
+
+  it('clears a ghost emergency when abort reports emergency_not_found', async () => {
+    const controller = controllerWithAbort(
+      vi.fn(async () => {
+        throw createEmergencyError('emergency_not_found', 'Already gone');
+      }),
+    );
+    await controller.client.activate();
+
+    await abortNow(controller);
+
+    const state = controller.client.getState();
+    expect(state.abortResult?.ok).toBe(true);
+    expect(state.abortResult?.code).toBe('emergency_not_found');
+    expect(state.phase.kind).toBe('ready');
+    expect(state.snapshot).toBeNull();
+    expect(controller.realtime.disconnect).toHaveBeenCalled();
+  });
+
+  it('can retry an abort after an ambiguous failure', async () => {
+    const controller = controllerWithAbort(
+      vi
+        .fn<NonNullable<BffClient['abort']>>()
+        .mockRejectedValueOnce(createEmergencyError('network', 'Timeout'))
+        .mockResolvedValueOnce({
+          emergency_id: 'emg-1',
+          deleted: true,
+          simulated: false,
+          responders,
+          failures: [],
+        }),
+    );
+    await controller.client.activate();
+
+    await abortNow(controller);
+
+    expect(controller.client.getState().phase.kind).toBe('active');
+    expect(controller.client.getState().snapshot?.emergencyId).toBe('emg-1');
+
+    await abortNow(controller);
+
+    const state = controller.client.getState();
+    expect(controller.bff.abort).toHaveBeenCalledTimes(2);
+    expect(state.abortResult?.ok).toBe(true);
+    expect(state.phase.kind).toBe('ready');
+    expect(state.snapshot).toBeNull();
   });
 
   it('reconciles after the realtime connection is restored', async () => {

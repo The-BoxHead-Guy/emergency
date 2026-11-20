@@ -108,8 +108,12 @@ client.abort(): Promise<void>
 - `refresh()` reconciles the active emergency with `GET /current`. It is
   throttled to one call per 1500 ms and is triggered automatically by realtime
   events, window focus, `online` and visibility changes.
-- `abort()` cancels the active emergency. A confirmation is required; see
-  below. Aborting a simulated emergency is a no-op.
+- `abort()` aborts the active emergency. A confirmation is required; see
+  below. Aborting a simulated emergency is a no-op. The outcome is stored in
+  `abortResult`: `ok`, `message`, `at`, optional `code` (normalized error) and
+  optional `partial` (`true` when some contacts were not notified). A failed
+  abort keeps the emergency active; `emergency_not_found` clears a stale
+  snapshot as an already-completed abort.
 
 All four resolve when the attempt finishes, successful or not. Inspect
 `lastError`, `abortResult` or `simulationResult` for the outcome.
@@ -128,7 +132,7 @@ call the request method, render your confirmation, then call `abort()` or
 `simulate()`.
 
 `abort()` refuses to run unless `abortConfirmation` is true. This prevents a
-stray click from cancelling a real emergency.
+stray click from aborting a real emergency.
 
 ## Events
 
@@ -188,7 +192,7 @@ and the `X-Request-Id` value. Client-only codes include `configuration`,
 `geolocation_denied`, `geolocation_timeout`, `geolocation_unavailable`,
 `geolocation_unsupported` and `network_error`.
 
-See the [BFF error table](https://github.com/The-BoxHead-Guy/emergency-bff/blob/v0.1.0/docs/api-contract.md#errors) for the server codes.
+See the [BFF error table](https://github.com/The-BoxHead-Guy/emergency-bff/blob/main/docs/bff/routes.md#error-envelope) for the server codes.
 
 ## Snapshot shape
 

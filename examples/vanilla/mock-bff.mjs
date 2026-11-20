@@ -23,6 +23,9 @@ const scenarios = new Set([
   'simulacrum-error',
   'activate-error',
   'abort-error',
+  'abort-credits',
+  'abort-partial',
+  'abort-not-found',
   'session-error',
   'slow',
   'credits-zero',
@@ -473,6 +476,27 @@ const server = createServer(async (request, response) => {
       return;
     }
 
+    if (scenario === 'abort-credits') {
+      error(
+        response,
+        402,
+        'insufficient_credits',
+        'Not enough credits to notify the contacts.'
+      );
+      return;
+    }
+
+    if (scenario === 'abort-not-found') {
+      activeEmergency = null;
+      error(
+        response,
+        404,
+        'emergency_not_found',
+        'The emergency was not found.'
+      );
+      return;
+    }
+
     if (!activeEmergency || route !== `/${activeEmergency.id}`) {
       error(
         response,
@@ -489,7 +513,16 @@ const server = createServer(async (request, response) => {
       deleted: true,
       simulated: false,
       responders: fixtures(),
-      failures: [],
+      failures:
+        scenario === 'abort-partial'
+          ? [
+              {
+                phone: '573007654321',
+                message: 'Delivery failed.',
+                status: 502,
+              },
+            ]
+          : [],
     });
     return;
   }

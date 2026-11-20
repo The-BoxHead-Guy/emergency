@@ -155,8 +155,22 @@ BFF. A successful capture is announced through `emergency:location`, and both
 coordinates.
 
 Abort requires confirmation: `requestAbortConfirmation()` sets the state that
-the UI uses for the "keep active / cancel emergency" step, and `abort()` acts on
-it.
+the UI uses for the "keep active / abort emergency" step, and `abort()` acts on
+it. The outcome is stored in `abortResult`:
+
+- `ok: true` and `partial: false` means the emergency was deleted and every
+  contact was notified.
+- `ok: true` and `partial: true` means the emergency was deleted but at least
+  one contact failed; the feedback never claims that everyone was notified.
+- `ok: false` keeps the emergency active, and `code` carries the normalized
+  error. `insufficient_credits` (`402`) means the abort template could not be
+  sent and the emergency was not deleted.
+- `code: 'emergency_not_found'` means the emergency was already gone. The stale
+  snapshot is cleared so no ghost emergency stays active.
+
+The BFF only removes the emergency when the `DELETE /{id}` response reports
+`deleted: true`. A `2xx` with `deleted: false` is treated as a failed abort and
+keeps the snapshot.
 
 Simulation is disabled while a real emergency is active.
 
@@ -192,7 +206,7 @@ The client expects the emergency BFF documented in
 | `POST`   | `/activate`        | `{ geolocation: { latitude, longitude } }`.                       |
 | `POST`   | `/simulacrum`      | `{ geolocation: { latitude, longitude } }`, no emergency created. |
 | `POST`   | `/{id}/refresh`    | Reconcile snapshot and responder statuses.                        |
-| `DELETE` | `/{id}`            | Abort and notify contacts.                                        |
+| `DELETE` | `/{id}`            | Abort, notify contacts and delete the emergency.                  |
 
 Every mutating request sends the CSRF token in `X-CSRF-Token`. The default
 strategy keeps the token in memory and updates it from `/config` and `/session`.

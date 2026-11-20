@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { copy } from '@/core/copy';
 import { createEmergencyError } from '@/core/errors';
 import {
+  ABORT_CREDITS_FEEDBACK_AUTO_DISMISS_MS,
   EmergencyFeedback,
   FEEDBACK_AUTO_DISMISS_MS,
   GEOLOCATION_FEEDBACK_AUTO_DISMISS_MS,
@@ -36,6 +37,40 @@ describe('emergency feedback auto-dismiss', () => {
 
     act(() => {
       vi.advanceTimersByTime(1);
+    });
+
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps an abort credit error on screen longer than a regular result', () => {
+    vi.useFakeTimers();
+    const onDismiss = vi.fn();
+
+    render(
+      <EmergencyFeedback
+        abortResult={{
+          ok: false,
+          message: copy.abortCreditsText,
+          at: 1,
+          code: 'insufficient_credits',
+        }}
+        simulationResult={null}
+        geolocationError={null}
+        activationError={null}
+        onDismiss={onDismiss}
+      />,
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(FEEDBACK_AUTO_DISMISS_MS);
+    });
+
+    expect(onDismiss).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(
+        ABORT_CREDITS_FEEDBACK_AUTO_DISMISS_MS - FEEDBACK_AUTO_DISMISS_MS,
+      );
     });
 
     expect(onDismiss).toHaveBeenCalledTimes(1);

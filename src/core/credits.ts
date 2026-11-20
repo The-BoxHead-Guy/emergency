@@ -2,7 +2,12 @@ import { isRecord } from '@/core/guards';
 import type { EmergencyError } from '@/core/types';
 
 /** Normalized ledger movement kind. */
-export type CreditHistoryKind = 'recharge' | 'emergency' | 'refund' | 'other';
+export type CreditHistoryKind =
+  | 'recharge'
+  | 'emergency'
+  | 'abort'
+  | 'refund'
+  | 'other';
 
 export interface CreditSummary {
   readonly code: string;
@@ -125,6 +130,8 @@ function toKind(type: string): CreditHistoryKind {
       return 'recharge';
     case 'emergency':
       return 'emergency';
+    case 'abort':
+      return 'abort';
     case 'refund':
       return 'refund';
     default:

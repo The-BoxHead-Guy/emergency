@@ -9,6 +9,7 @@ export const historyCopy = {
   showMore: 'Ver más',
   kindLabels: {
     emergency: 'Alerta',
+    abort: 'Cancelación',
     recharge: 'Recarga',
     refund: 'Reembolso',
     other: 'Otro movimiento',

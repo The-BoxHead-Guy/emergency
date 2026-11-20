@@ -8,7 +8,7 @@ import type {
 import type { IconName } from '@/react/components/Icon';
 
 export interface ResolvedMessage {
-  readonly variant: 'success' | 'error';
+  readonly variant: 'success' | 'warning' | 'error';
   readonly icon: IconName;
   readonly title: string;
   readonly text: string;
@@ -155,6 +155,10 @@ function successMessage(title: string, text: string): ResolvedMessage {
   return { variant: 'success', icon: 'check-circle', title, text };
 }
 
+function warningMessage(title: string, text: string): ResolvedMessage {
+  return { variant: 'warning', icon: 'alert-triangle', title, text };
+}
+
 function errorMessage(copyValue: MessageCopy, icon: IconName): ResolvedMessage {
   return {
     variant: 'error',
@@ -194,20 +198,42 @@ function resolveSimulationMessage(
       );
 }
 
+function resolveAbortMessage(abortResult: AbortResult): ResolvedMessage {
+  if (abortResult.code === 'emergency_not_found') {
+    return successMessage(copy.abortAlreadyTitle, copy.abortAlreadyText);
+  }
+
+  if (abortResult.ok) {
+    return abortResult.partial
+      ? warningMessage(copy.abortPartialTitle, copy.abortPartialText)
+      : successMessage(copy.abortSuccessTitle, copy.abortSuccessText);
+  }
+
+  if (abortResult.code === 'insufficient_credits') {
+    return errorMessage(
+      {
+        title: copy.abortCreditsTitle,
+        text: copy.abortCreditsText,
+      },
+      'alert-triangle',
+    );
+  }
+
+  return errorMessage(
+    {
+      title: copy.abortErrorTitle,
+      text: copy.abortErrorText,
+    },
+    'alert-triangle',
+  );
+}
+
 function resolveResult(
   abortResult: AbortResult | null,
   simulationResult: SimulationResult | null,
 ): ResolvedMessage | null {
   if (abortResult) {
-    return abortResult.ok
-      ? successMessage(copy.abortSuccessTitle, copy.abortSuccessText)
-      : errorMessage(
-          {
-            title: copy.abortErrorTitle,
-            text: copy.abortErrorText,
-          },
-          'alert-triangle',
-        );
+    return resolveAbortMessage(abortResult);
   }
 
   return simulationResult ? resolveSimulationMessage(simulationResult) : null;

@@ -56,6 +56,7 @@ describe('credit mappers', () => {
     expect(toCreditHistoryEntry({ ...base, type: 'refund' }).kind).toBe(
       'refund',
     );
+    expect(toCreditHistoryEntry({ ...base, type: 'abort' }).kind).toBe('abort');
     expect(toCreditHistoryEntry({ ...base, type: 'EMERGENCY' }).kind).toBe(
       'emergency',
     );
@@ -65,6 +66,27 @@ describe('credit mappers', () => {
     expect(toCreditHistoryEntry({ ...base, type: 'simulation' }).type).toBe(
       'simulation',
     );
+  });
+
+  it('maps an abort entry and keeps its emergency id', () => {
+    const entry = toCreditHistoryEntry({
+      id: 'ledger-abort',
+      type: 'abort',
+      amount: -1,
+      balance_after: 7,
+      contacts_count: 3,
+      rounds: 1,
+      emergency_id: 42,
+    });
+
+    expect(entry).toMatchObject({
+      id: 'ledger-abort',
+      kind: 'abort',
+      type: 'abort',
+      amount: -1,
+      balanceAfter: 7,
+      emergencyId: 42,
+    });
   });
 
   it('maps pagination and every history entry', () => {

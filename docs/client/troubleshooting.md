@@ -105,6 +105,28 @@ fan-out, deletes the emergency it created and returns `402 insufficient_credits`
 - Top up the account before retrying; the failure is not a delivery problem, so
   fixing contact data will not help.
 
+## Abort fails with `insufficient_credits`
+
+Aborting is billed because the BFF sends the abort template to the contacts
+before removing the emergency. A `402 insufficient_credits` means the template
+could not be sent.
+
+- The emergency stays active and the snapshot is retained; the panel shows
+  credit-specific copy and a longer auto-dismiss window.
+- After dismissing the feedback the status panel returns and the abort buttons
+  are enabled, so the user can retry after topping up.
+- The failure is not a delivery problem; fixing contact data will not help.
+- `deleted: false` in a `2xx` body is also treated as a failed abort and keeps
+  the emergency active.
+
+## Abort reports `emergency_not_found`
+
+The emergency is already gone, usually because a previous abort succeeded but
+its response was lost. The client treats this as a completed abort: it clears
+the stale snapshot, returns to `ready` and emits `emergency:aborted`, so no
+ghost emergency stays active. Refresh `GET /current` if the host needs to
+confirm the upstream state.
+
 ## No realtime updates
 
 - Pass a `realtime` mount option with the public Pusher `key` and `cluster`, and

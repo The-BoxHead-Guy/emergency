@@ -35,9 +35,21 @@ export const copy = {
   abortCancel: 'No, continuar',
   abortResultOk:
     'Emergencia abortada con éxito, tus contactos han sido notificados',
+  abortResultPartial:
+    'Emergencia abortada. Algunos contactos no pudieron ser notificados.',
   abortResultFail: 'No se pudo abortar la emergencia. Inténtalo de nuevo.',
+  abortAlreadyDone: 'La emergencia ya no estaba activa.',
   abortSuccessTitle: 'Emergencia Abortada',
   abortSuccessText: 'Tus contactos han sido notificados.',
+  abortPartialTitle: 'Emergencia abortada parcialmente',
+  abortPartialText:
+    'Algunos contactos no pudieron ser notificados. Revisa la lista.',
+  abortCreditsTitle: 'Sin créditos para avisar a tus contactos',
+  abortCreditsText:
+    'La emergencia sigue activa. Recarga tu saldo para notificar a tus contactos o comunícate directamente con la línea de emergencia.',
+  abortAlreadyTitle: 'La emergencia ya estaba cerrada',
+  abortAlreadyText:
+    'No hay una emergencia activa pendiente de abortar en este momento.',
   abortErrorTitle: 'No pudimos abortar la emergencia',
   abortErrorText: 'Vuelve a intentarlo.',
 

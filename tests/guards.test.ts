@@ -115,6 +115,29 @@ describe('BFF response guards', () => {
     ).toBe(false);
   });
 
+  it('accepts extra abort fields and both deleted values', () => {
+    const base = {
+      emergency_id: 'emg-1',
+      simulated: false,
+      responders,
+      failures: [],
+      user_name: 'Ana',
+      future_field: true,
+    };
+
+    expect(isAbortResponse({ ...base, deleted: true })).toBe(true);
+    expect(isAbortResponse({ ...base, deleted: false })).toBe(true);
+    expect(isAbortResponse({ ...base, deleted: 'true' })).toBe(false);
+
+    expect(
+      isAbortResponse({
+        ...base,
+        deleted: true,
+        failures: [{ phone: '573001234567', message: 'Failed', status: 402 }],
+      }),
+    ).toBe(true);
+  });
+
   it('validates the BFF error envelope', () => {
     expect(
       isErrorEnvelope({

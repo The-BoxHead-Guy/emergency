@@ -27,11 +27,11 @@ without the `workflow` scope.
 
 ## 1. Choose the version
 
-| Change                                            | Version |
-| ------------------------------------------------- | ------- |
-| Bug fix, docs, internal refactor, no API change   | patch   |
-| New feature or a potentially breaking pre-1.0 API | minor   |
-| First stable commitment (from `1.0.0`)            | major   |
+| Change                                                       | Version |
+| ------------------------------------------------------------ | ------- |
+| Bug fix, docs, internal refactor, no API change              | patch   |
+| New feature or a potentially breaking `0.y.z` API            | minor   |
+| First public, stable release after general testing (`1.0.0`) | major   |
 
 The rules in detail: [Versioning](versioning.md).
 

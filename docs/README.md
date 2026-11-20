@@ -43,7 +43,7 @@ deployment, and troubleshooting.
 
 ### Contract and examples
 
-- [API contract](https://github.com/The-BoxHead-Guy/emergency-bff/blob/main/docs/api-contract.md)
+- [HTTP contract](https://github.com/The-BoxHead-Guy/emergency-bff/blob/main/docs/bff/routes.md)
 - [Examples](examples.md)
 - [BFF documentation](https://github.com/The-BoxHead-Guy/emergency-bff)
 
@@ -58,7 +58,6 @@ deployment, and troubleshooting.
 ### Contributor documentation
 
 - [Documentation standards](contributing/documentation.md)
-- [Verification log](https://github.com/The-BoxHead-Guy/emergency-bff/blob/v0.1.0/docs/contributing/verification.md)
 
 ## Version
 

@@ -6,6 +6,31 @@ and [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-11-20
+
+### Added
+
+- `AbortResult` gains optional `code` and `partial` fields so hosts can
+  distinguish partial delivery from a normalized abort failure.
+
+### Changed
+
+- Abort debits now carry their own `abort` history kind instead of falling back
+  to the emergency or simulacrum type, with a `Cancelación` label in the history
+  screen.
+- Documentation links point to the BFF HTTP contract at its new path
+  (`docs/bff/routes.md`) after the BFF documentation consolidation.
+- Versioning docs describe the `0.y.z` development line and reserve `1.0.0` for
+  the first public release after general testing.
+
+### Fixed
+
+- A `402 insufficient_credits` abort keeps the emergency active and shows
+  credit-specific feedback instead of clearing the snapshot.
+- A partial abort no longer claims that every contact was notified.
+- A `2xx` abort with `deleted: false` keeps the emergency active, and
+  `emergency_not_found` clears a stale snapshot as an already-completed abort.
+
 ## [0.9.0] - 2026-11-19
 
 ### Added

@@ -32,6 +32,7 @@ import type {
   EmergencyClientState,
   EmergencyConfig,
   EmergencyError,
+  EmergencyFailure,
   EmergencyOperation,
   EmergencyPhase,
   EmergencySnapshot,
@@ -695,6 +696,66 @@ export function createEmergencyController(
     }
   }
 
+  function keepEmergencyAfterAbort(
+    abortResult: AbortResult,
+    snapshot: EmergencySnapshot,
+    options: {
+      readonly error: EmergencyError;
+      readonly message?: string;
+      readonly responders?: readonly Responder[];
+      readonly failures?: readonly EmergencyFailure[];
+    },
+  ): void {
+    const responders = options.responders ?? snapshot.responders;
+
+    patch({
+      abortResult,
+      abortConfirmation: false,
+      ...(options.responders
+        ? {
+            responders: options.responders,
+            snapshot: { ...snapshot, responders },
+          }
+        : {}),
+      ...(options.failures ? { failures: options.failures } : {}),
+    });
+    transition({
+      kind: 'active',
+      emergencyId: snapshot.emergencyId,
+      simulated: snapshot.simulated,
+    });
+    fail(options.error, 'abort', {
+      phase: null,
+      message: options.message,
+    });
+  }
+
+  function clearAfterAbort(
+    abortResult: AbortResult,
+    options: {
+      readonly emergencyId: string;
+      readonly responders: readonly Responder[];
+      readonly failures: readonly EmergencyFailure[];
+      readonly pushKind: MessageKind;
+    },
+  ): void {
+    patch({
+      abortResult,
+      responders: options.responders,
+      failures: options.failures,
+      abortConfirmation: false,
+      snapshot: null,
+      resumeAvailable: false,
+    });
+    stopRealtime();
+    transition({ kind: 'ready' });
+    pushMessage(options.pushKind, abortResult.message);
+    events.emit('emergency:aborted', {
+      emergencyId: options.emergencyId,
+      responders: options.responders,
+    });
+  }
+
   async function abort(): Promise<void> {
     if (get().destroyed) {
       return;
@@ -734,43 +795,79 @@ export function createEmergencyController(
     try {
       const result = await bff.abort(snapshot.emergencyId);
       const responders = result.responders.map(toResponder);
+      const failures = result.failures.map(toFailure);
+
+      if (!result.deleted) {
+        const abortResult: AbortResult = {
+          ok: false,
+          message: copy.abortResultFail,
+          at: Date.now(),
+          code: 'unknown',
+        };
+
+        keepEmergencyAfterAbort(abortResult, snapshot, {
+          responders,
+          failures,
+          error: createEmergencyError('unknown', copy.abortResultFail, {
+            status: null,
+          }),
+          message: copy.abortResultFail,
+        });
+
+        return;
+      }
+
+      const partial = failures.length > 0 || result.total_failure === true;
       const abortResult: AbortResult = {
         ok: true,
-        message: copy.abortResultOk,
+        message: partial ? copy.abortResultPartial : copy.abortResultOk,
         at: Date.now(),
+        partial,
       };
 
-      patch({
-        abortResult,
-        responders,
-        failures: result.failures.map(toFailure),
-        abortConfirmation: false,
-        snapshot: null,
-        resumeAvailable: false,
-      });
-      stopRealtime();
-      transition({ kind: 'ready' });
-      pushMessage('success', abortResult.message);
-      events.emit('emergency:aborted', {
+      clearAfterAbort(abortResult, {
         emergencyId: snapshot.emergencyId,
         responders,
+        failures,
+        pushKind: partial ? 'warning' : 'success',
       });
       await fetchCredits();
     } catch (error) {
       const normalized = toEmergencyError(error, 'network');
+
+      if (normalized.code === 'emergency_not_found') {
+        const abortResult: AbortResult = {
+          ok: true,
+          message: copy.abortAlreadyDone,
+          at: Date.now(),
+          code: 'emergency_not_found',
+        };
+
+        clearAfterAbort(abortResult, {
+          emergencyId: snapshot.emergencyId,
+          responders: [],
+          failures: [],
+          pushKind: 'info',
+        });
+        await fetchCredits();
+
+        return;
+      }
+
+      const insufficientCredits = normalized.code === 'insufficient_credits';
       const abortResult: AbortResult = {
         ok: false,
-        message: copy.abortResultFail,
+        message: insufficientCredits
+          ? copy.abortCreditsText
+          : copy.abortResultFail,
         at: Date.now(),
+        code: normalized.code,
       };
 
-      patch({ abortResult, abortConfirmation: false });
-      transition({
-        kind: 'active',
-        emergencyId: snapshot.emergencyId,
-        simulated: snapshot.simulated,
+      keepEmergencyAfterAbort(abortResult, snapshot, {
+        error: normalized,
+        message: insufficientCredits ? copy.abortCreditsText : undefined,
       });
-      fail(normalized, 'abort', { phase: null });
     }
   }
 

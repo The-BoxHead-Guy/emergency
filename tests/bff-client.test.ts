@@ -430,4 +430,54 @@ describe('createBffClient', () => {
       code: 'invalid_response',
     });
   });
+
+  it('aborts with DELETE /{id}, the CSRF header and no body', async () => {
+    const { instance, calls } = createInstance((config) =>
+      response(config, {
+        emergency_id: 'emg/1 2',
+        deleted: true,
+        simulated: false,
+        responders: [],
+        failures: [],
+      }),
+    );
+    const client = createBffClient({
+      bffBaseUrl: 'https://example.test',
+      axiosInstance: instance,
+      csrf: { headerName: 'X-CSRF-Token', read: () => 'csrf-abort' },
+    });
+
+    const result = await client.abort('emg/1 2');
+
+    expect(result.deleted).toBe(true);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.method).toBe('delete');
+    expect(calls[0]?.url).toBe('/emg%2F1%202');
+    expect(calls[0]?.headers.get('X-CSRF-Token')).toBe('csrf-abort');
+    expect(calls[0]?.headers.get('Idempotency-Key')).toBeUndefined();
+    expect(calls[0]?.data).toBeUndefined();
+  });
+
+  it('accepts an abort response with deleted: false and extra fields', async () => {
+    const { instance } = createInstance((config) =>
+      response(config, {
+        emergency_id: 'emg-1',
+        deleted: false,
+        simulated: false,
+        responders: [],
+        failures: [],
+        user_name: 'Ana',
+        future_field: true,
+      }),
+    );
+    const client = createBffClient({
+      bffBaseUrl: 'https://example.test',
+      axiosInstance: instance,
+    });
+
+    await expect(client.abort('emg-1')).resolves.toMatchObject({
+      deleted: false,
+      emergency_id: 'emg-1',
+    });
+  });
 });
