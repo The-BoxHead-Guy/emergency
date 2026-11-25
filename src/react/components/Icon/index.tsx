@@ -16,6 +16,8 @@ export type IconName =
   | 'info'
   | 'inbox'
   | 'arrow-left'
+  | 'chevron-down'
+  | 'chevron-up'
   | 'emergency'
   | 'credit-card-plus'
   | 'map-pin'
@@ -124,6 +126,8 @@ const paths: Readonly<Record<IconName, ReactNode>> = {
       <path d="m12 19-7-7 7-7" />
     </>
   ),
+  'chevron-down': <path d="m6 9 6 6 6-6" />,
+  'chevron-up': <path d="m18 15-6-6-6 6" />,
   'map-pin': (
     <>
       <path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" />

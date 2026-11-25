@@ -1,7 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEmergencyError } from '@/core/errors';
 import { copy } from '@/core/copy';
-import type { BffClient } from '@/core/bff-types';
+import type {
+  BffClient,
+  CreditHistoryResponse,
+  CreditSummaryResponse,
+} from '@/core/bff-types';
 import type { EmergencyEventName } from '@/core/types';
 import type { EmergencyResultPayload } from '@/core/bff-types';
 import {
@@ -9,6 +13,8 @@ import {
   config,
   createFakeBff,
   createTestController,
+  creditHistoryResponse,
+  creditSummaryResponse,
   responders,
   type FakeBff,
 } from '@/test/fakes';
@@ -731,31 +737,310 @@ describe('emergency controller', () => {
     expect(state.messages).toEqual([]);
   });
 
-  it('loads credits and history once the session becomes ready', async () => {
+  it('loads only the credit summary once the session becomes ready', async () => {
     const controller = createTestController();
 
     await controller.client.ensureSession();
     await vi.waitFor(() =>
       expect(controller.client.getState().credits.summaryStatus).toBe('ready'),
     );
+
+    const initial = controller.client.getState();
+    expect(controller.bff.credits).toHaveBeenCalledTimes(1);
+    expect(controller.bff.creditHistory).not.toHaveBeenCalled();
+    expect(initial.credits.credit?.balance).toBe(173);
+    expect(initial.credits.credit?.rounds).toBe(57);
+    expect(initial.credits.credit?.extraAlerts).toBe(2);
+    expect(initial.credits.history).toEqual([]);
+    expect(initial.credits.pagination).toBeNull();
+    expect(initial.credits.summaryStatus).toBe('ready');
+    expect(initial.credits.historyStatus).toBe('idle');
+
+    await controller.client.loadCreditHistory(1);
     await vi.waitFor(() =>
       expect(controller.client.getState().credits.historyStatus).toBe('ready'),
     );
 
     const state = controller.client.getState();
-    expect(controller.bff.credits).toHaveBeenCalledTimes(1);
     expect(controller.bff.creditHistory).toHaveBeenCalledWith({
       page: 1,
       perPage: undefined,
     });
-    expect(state.credits.credit?.balance).toBe(173);
-    expect(state.credits.credit?.rounds).toBe(57);
-    expect(state.credits.credit?.extraAlerts).toBe(2);
-    expect(state.credits.history).toHaveLength(2);
+    expect(state.credits.history).toHaveLength(4);
     expect(state.credits.history[0]?.rounds).toBe(57);
-    expect(state.credits.pagination?.total).toBe(2);
+    expect(state.credits.pagination?.total).toBe(4);
+  });
+
+  it('refreshes the summary silently without flashing a loading state', async () => {
+    const controller = createTestController();
+
+    await controller.client.ensureSession();
+    await vi.waitFor(() =>
+      expect(controller.client.getState().credits.summaryStatus).toBe('ready'),
+    );
+
+    const previous = controller.client.getState().credits.credit;
+    let resolveRequest: (value: CreditSummaryResponse) => void = () =>
+      undefined;
+
+    controller.bff.credits.mockReturnValueOnce(
+      new Promise<CreditSummaryResponse>((resolve) => {
+        resolveRequest = resolve;
+      }),
+    );
+
+    const request = controller.client.refreshCredits({ silent: true });
+    await Promise.resolve();
+
+    expect(controller.client.getState().credits.summaryStatus).toBe('ready');
+    expect(controller.client.getState().credits.credit).toEqual(previous);
+
+    resolveRequest({
+      credit: { ...creditSummaryResponse.credit, balance: 200 },
+    });
+    await request;
+
+    const state = controller.client.getState();
     expect(state.credits.summaryStatus).toBe('ready');
+    expect(state.credits.credit?.balance).toBe(200);
+    expect(state.credits.error).toBeNull();
+  });
+
+  it('keeps the ready summary when a silent refresh fails', async () => {
+    const controller = createTestController();
+
+    await controller.client.ensureSession();
+    await vi.waitFor(() =>
+      expect(controller.client.getState().credits.summaryStatus).toBe('ready'),
+    );
+
+    const previous = controller.client.getState().credits.credit;
+    controller.bff.credits.mockRejectedValueOnce(
+      createEmergencyError('network', 'Offline'),
+    );
+
+    await controller.client.refreshCredits({ silent: true });
+
+    const state = controller.client.getState();
+    expect(state.credits.summaryStatus).toBe('ready');
+    expect(state.credits.credit).toEqual(previous);
+    expect(state.credits.error).toBeNull();
+  });
+
+  it('refreshes the history silently without flashing a loading state', async () => {
+    const controller = createTestController();
+
+    await controller.client.ensureSession();
+    await controller.client.loadCreditHistory(1);
+    await vi.waitFor(() =>
+      expect(controller.client.getState().credits.historyStatus).toBe('ready'),
+    );
+
+    let resolveRequest: (value: CreditHistoryResponse) => void = () =>
+      undefined;
+
+    controller.bff.creditHistory.mockReturnValueOnce(
+      new Promise<CreditHistoryResponse>((resolve) => {
+        resolveRequest = resolve;
+      }),
+    );
+
+    const request = controller.client.loadCreditHistory(1, undefined, {
+      silent: true,
+    });
+    await Promise.resolve();
+
+    expect(controller.client.getState().credits.historyStatus).toBe('ready');
+    expect(controller.client.getState().credits.history).toHaveLength(4);
+
+    resolveRequest({
+      ...creditHistoryResponse,
+      items: creditHistoryResponse.items.slice(0, 1),
+    });
+    await request;
+
+    const state = controller.client.getState();
     expect(state.credits.historyStatus).toBe('ready');
+    expect(state.credits.history).toHaveLength(1);
+    expect(state.credits.error).toBeNull();
+  });
+
+  it('keeps the ready history when a silent refresh fails', async () => {
+    const controller = createTestController();
+
+    await controller.client.ensureSession();
+    await controller.client.loadCreditHistory(1);
+    await vi.waitFor(() =>
+      expect(controller.client.getState().credits.historyStatus).toBe('ready'),
+    );
+
+    controller.bff.creditHistory.mockRejectedValueOnce(
+      createEmergencyError('network', 'Offline'),
+    );
+
+    await controller.client.loadCreditHistory(1, undefined, { silent: true });
+
+    const state = controller.client.getState();
+    expect(state.credits.historyStatus).toBe('ready');
+    expect(state.credits.history).toHaveLength(4);
+    expect(state.credits.error).toBeNull();
+  });
+
+  it('reports an error when a silent history request has no data yet', async () => {
+    const controller = createTestController();
+
+    await controller.client.ensureSession();
+    controller.bff.creditHistory.mockRejectedValueOnce(
+      createEmergencyError('network', 'Offline'),
+    );
+
+    await controller.client.loadCreditHistory(1, undefined, { silent: true });
+
+    const state = controller.client.getState();
+    expect(state.credits.historyStatus).toBe('error');
+    expect(state.credits.history).toEqual([]);
+    expect(state.credits.error?.code).toBe('network');
+  });
+
+  it('coalesces overlapping history requests into one call', async () => {
+    const controller = createTestController();
+    let resolveRequest: (value: CreditHistoryResponse) => void = () =>
+      undefined;
+
+    await controller.client.ensureSession();
+    controller.bff.creditHistory.mockReturnValueOnce(
+      new Promise<CreditHistoryResponse>((resolve) => {
+        resolveRequest = resolve;
+      }),
+    );
+
+    const first = controller.client.loadCreditHistory(1);
+    const second = controller.client.loadCreditHistory(1, undefined, {
+      silent: true,
+    });
+
+    await vi.waitFor(() =>
+      expect(controller.bff.creditHistory).toHaveBeenCalledTimes(1),
+    );
+
+    resolveRequest(creditHistoryResponse);
+    await Promise.all([first, second]);
+
+    expect(controller.bff.creditHistory).toHaveBeenCalledTimes(1);
+    expect(controller.client.getState().credits.history).toHaveLength(4);
+  });
+
+  it('refreshes a loaded history after a successful simulation', async () => {
+    const controller = createTestController();
+
+    await controller.client.ensureSession();
+    await controller.client.loadCreditHistory(1);
+    controller.bff.creditHistory.mockClear();
+
+    await controller.client.simulate();
+
+    expect(controller.bff.creditHistory).toHaveBeenCalledTimes(1);
+    expect(controller.bff.creditHistory).toHaveBeenCalledWith({
+      page: 1,
+      perPage: undefined,
+    });
+    expect(controller.client.getState().credits.historyStatus).toBe('ready');
+  });
+
+  it('refreshes a loaded history after a successful activation', async () => {
+    const controller = createTestController();
+
+    await controller.client.ensureSession();
+    await controller.client.loadCreditHistory(1);
+    controller.bff.creditHistory.mockClear();
+
+    await controller.client.activate();
+
+    expect(controller.bff.creditHistory).toHaveBeenCalledTimes(1);
+    expect(controller.bff.creditHistory).toHaveBeenCalledWith({
+      page: 1,
+      perPage: undefined,
+    });
+  });
+
+  it('refreshes a loaded history after a successful abort', async () => {
+    const controller = createTestController();
+
+    await controller.client.activate();
+    await controller.client.loadCreditHistory(1);
+    controller.bff.creditHistory.mockClear();
+
+    await abortNow(controller);
+
+    expect(controller.bff.creditHistory).toHaveBeenCalledTimes(1);
+    expect(controller.bff.creditHistory).toHaveBeenCalledWith({
+      page: 1,
+      perPage: undefined,
+    });
+  });
+
+  it('stores the latest history page after activation and abort', async () => {
+    const freshTopUp: CreditHistoryResponse['items'][number] = {
+      id: 99,
+      type: 'recharge',
+      amount: 5,
+      balance_after: 178,
+      contacts_count: 3,
+      rounds: 58,
+      extra_alerts: 2,
+      emergency_id: null,
+      reference: 'recharge:FRESH',
+      created_at: '2026-11-24T09:30:00+00:00',
+      status: 'read',
+      status_timestamp: null,
+      seen: true,
+      ref: 'SYS-FRESH-1',
+      reporter_phone: null,
+      package: null,
+    };
+    const updatedHistory: CreditHistoryResponse = {
+      ...creditHistoryResponse,
+      items: [freshTopUp, ...creditHistoryResponse.items],
+    };
+    let historyCalls = 0;
+    const bff = createFakeBff({
+      creditHistory: vi.fn(async () => {
+        historyCalls += 1;
+
+        return historyCalls === 1 ? creditHistoryResponse : updatedHistory;
+      }),
+    });
+    const controller = createTestController({ bff });
+
+    await controller.client.ensureSession();
+    await controller.client.loadCreditHistory(1);
+    expect(controller.client.getState().credits.history[0]?.reference).toBe(
+      'recharge:DEMO0001',
+    );
+
+    await controller.client.activate();
+    expect(controller.client.getState().credits.history[0]?.reference).toBe(
+      'recharge:FRESH',
+    );
+
+    await abortNow(controller);
+
+    const state = controller.client.getState();
+    expect(bff.creditHistory).toHaveBeenCalledTimes(3);
+    expect(state.credits.history).toHaveLength(5);
+    expect(state.credits.history[0]?.reference).toBe('recharge:FRESH');
+  });
+
+  it('does not request history from mutations when it was never loaded', async () => {
+    const controller = createTestController();
+
+    await controller.client.ensureSession();
+    await controller.client.simulate();
+    await controller.client.activate();
+    await abortNow(controller);
+
+    expect(controller.bff.creditHistory).not.toHaveBeenCalled();
+    expect(controller.client.getState().credits.historyStatus).toBe('idle');
   });
 
   it('refreshes the credit summary when the panel opens', async () => {
@@ -834,6 +1119,7 @@ describe('emergency controller', () => {
 
     await controller.client.ensureSession();
     await controller.client.refreshCredits();
+    await controller.client.loadCreditHistory(1);
 
     const state = controller.client.getState();
     expect(state.phase.kind).toBe('ready');

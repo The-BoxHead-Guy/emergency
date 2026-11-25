@@ -32,9 +32,13 @@ export function formatShortTime(
   return `${hour}:${minute}${normalizePeriod(dayPeriod)}`;
 }
 
+/** Interface standard timezone for every displayed timestamp. */
+const INTERFACE_TIME_ZONE = 'America/Caracas';
+
 /**
- * Formats a timestamp as `dd/mm/yyyy hh:mm` in local time, using 24-hour time
- * and zero-padded parts. Missing or invalid input collapses to an empty string.
+ * Formats a timestamp as `dd/mm/yyyy hh:mm AM` in Venezuela local time
+ * (`America/Caracas`), using a zero-padded 12-hour clock. Missing or invalid
+ * input collapses to an empty string.
  */
 export function formatDateTime(
   value: string | number | Date | null,
@@ -51,6 +55,7 @@ export function formatDateTime(
   }
 
   const parts = new Intl.DateTimeFormat(locale, {
+    timeZone: INTERFACE_TIME_ZONE,
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -68,7 +73,16 @@ export function formatDateTime(
     return '';
   }
 
-  return `${day}/${month}/${year} ${hour}:${minute}`;
+  const hour24 = Number(hour);
+
+  if (!Number.isInteger(hour24)) {
+    return '';
+  }
+
+  const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+  const period = hour24 < 12 ? 'AM' : 'PM';
+
+  return `${day}/${month}/${year} ${String(hour12).padStart(2, '0')}:${minute} ${period}`;
 }
 
 function normalizePeriod(dayPeriod: string | undefined): string {

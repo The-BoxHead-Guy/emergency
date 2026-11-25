@@ -71,6 +71,7 @@ export type {
   BffClient,
   ConfigResponse,
   CreditHistoryItemPayload,
+  CreditHistoryPackagePayload,
   CreditHistoryPaginationPayload,
   CreditHistoryQuery,
   CreditHistoryResponse,
@@ -85,8 +86,10 @@ export type {
 } from '@/core/bff-types';
 
 export type {
+  CreditDeliveryStatus,
   CreditHistoryEntry,
   CreditHistoryKind,
+  CreditHistoryPackage,
   CreditHistoryPage,
   CreditPagination,
   CreditsState,

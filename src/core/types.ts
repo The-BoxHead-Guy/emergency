@@ -142,6 +142,12 @@ export interface EmergencyFontLoading {
   readonly fonts?: EmergencyFontFamilyFlags;
 }
 
+/** Options shared by the on-demand credit requests. */
+export interface CreditsFetchOptions {
+  /** Keeps visible data and skips the loading state while revalidating. */
+  readonly silent?: boolean;
+}
+
 export interface EmergencyGeolocation {
   readonly latitude: number;
   readonly longitude: number;
@@ -325,8 +331,12 @@ export interface EmergencyClient {
   ): void;
   ensureSession(): Promise<void>;
   resume(): Promise<void>;
-  refreshCredits(): Promise<void>;
-  loadCreditHistory(page?: number, perPage?: number): Promise<void>;
+  refreshCredits(options?: CreditsFetchOptions): Promise<void>;
+  loadCreditHistory(
+    page?: number,
+    perPage?: number,
+    options?: CreditsFetchOptions,
+  ): Promise<void>;
   dismissResume(): void;
   activate(): Promise<void>;
   simulate(): Promise<void>;

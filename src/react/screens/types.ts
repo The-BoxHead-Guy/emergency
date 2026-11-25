@@ -13,12 +13,14 @@ export type EmergencyScreenId =
   | 'pre-emergency'
   | 'pricing'
   | 'details'
-  | 'history'
-  | 'message-detail';
+  | 'history';
+
+/** Movement type shown by the history screen. */
+export type HistoryFilter = 'alerts' | 'top-ups';
 
 /** Optional per-screen data carried through navigation. */
 export interface EmergencyScreenParams {
-  readonly messageId?: string;
+  readonly filter?: HistoryFilter;
 }
 
 /** Props every screen receives from the panel shell. */

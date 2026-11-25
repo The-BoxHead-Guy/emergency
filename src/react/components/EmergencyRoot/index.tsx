@@ -59,6 +59,7 @@ export function EmergencyRoot() {
         aborting={phase.kind === 'aborting'}
         simulating={phase.kind === 'simulating'}
         loading={phase.kind === 'initializing' || phase.kind === 'activating'}
+        initializing={phase.kind === 'initializing'}
         locale={config.locale ?? 'es'}
         responders={responders}
         refreshing={phase.kind === 'refreshing'}

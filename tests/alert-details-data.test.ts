@@ -3,26 +3,33 @@ import { toCreditHistoryEntry } from '@/core/credits';
 import { formatDateTime } from '@/core/date';
 import { formatAlertBalance } from '@/react/screens/details/copy';
 import {
+  historyEntriesForFilter,
   historyEntryById,
   partitionHistory,
+  resolveHistoryFilter,
   sortedHistoryEntries,
+  topUpAlertsAmount,
+  topUpPackageName,
 } from '@/react/screens/history/data';
 import { creditHistoryResponse } from '@/test/fakes';
 
 const entries = creditHistoryResponse.items.map(toCreditHistoryEntry);
 
 describe('formatDateTime', () => {
-  it('formats a timestamp as dd/mm/yyyy hh:mm', () => {
-    const value = new Date(2026, 9, 31, 13, 50);
-
-    expect(formatDateTime(value)).toBe('31/10/2026 13:50');
-    expect(formatDateTime(value, 'es-VE')).toBe('31/10/2026 13:50');
+  it('formats a timestamp as dd/mm/yyyy hh:mm AM in Caracas time', () => {
+    expect(formatDateTime('2026-10-31T17:50:00Z')).toBe('31/10/2026 01:50 PM');
+    expect(formatDateTime('2026-10-31T17:50:00Z', 'es-VE')).toBe(
+      '31/10/2026 01:50 PM',
+    );
   });
 
-  it('pads every part and uses 24-hour time', () => {
-    const value = new Date(2026, 0, 5, 4, 7);
+  it('pads every part and uses a 12-hour clock', () => {
+    expect(formatDateTime('2026-01-05T08:07:00Z')).toBe('05/01/2026 04:07 AM');
+  });
 
-    expect(formatDateTime(value)).toBe('05/01/2026 04:07');
+  it('renders noon and midnight as 12', () => {
+    expect(formatDateTime('2026-11-16T16:30:00Z')).toBe('16/11/2026 12:30 PM');
+    expect(formatDateTime('2026-11-16T04:30:00Z')).toBe('16/11/2026 12:30 AM');
   });
 
   it('returns an empty string for missing or invalid input', () => {
@@ -78,11 +85,13 @@ describe('alert history selectors', () => {
     expect(sortedHistoryEntries(entries).map((entry) => entry.id)).toEqual([
       '1',
       '2',
+      '3',
+      '4',
     ]);
     expect(
       sortedHistoryEntries([...entries].reverse()).map((e) => e.id),
-    ).toEqual(['1', '2']);
-    expect(entries.map((entry) => entry.id)).toEqual(['1', '2']);
+    ).toEqual(['1', '2', '3', '4']);
+    expect(entries.map((entry) => entry.id)).toEqual(['1', '2', '3', '4']);
   });
 
   it('returns an empty list for an empty history', () => {
@@ -125,5 +134,40 @@ describe('partitionHistory', () => {
 
   it('returns empty sections for an empty history', () => {
     expect(partitionHistory([])).toEqual({ alerts: [], topUps: [] });
+  });
+});
+
+describe('top-up helpers', () => {
+  it('reads the package name and canonical alerts amount', () => {
+    const recharge = entries[0]!;
+
+    expect(topUpPackageName(recharge)).toBe('PAQUETE');
+    expect(topUpAlertsAmount(recharge)).toBe(100);
+  });
+
+  it('falls back to the ledger amount for a top-up without a package', () => {
+    const refund = toCreditHistoryEntry({ id: 'f', type: 'refund', amount: 5 });
+
+    expect(topUpPackageName(refund)).toBeNull();
+    expect(topUpAlertsAmount(refund)).toBe(5);
+  });
+});
+
+describe('history filter selectors', () => {
+  it('defaults to alerts for an absent filter', () => {
+    expect(resolveHistoryFilter(undefined)).toBe('alerts');
+    expect(resolveHistoryFilter('alerts')).toBe('alerts');
+    expect(resolveHistoryFilter('top-ups')).toBe('top-ups');
+  });
+
+  it('picks the movements of the resolved filter', () => {
+    const partition = partitionHistory(entries);
+
+    expect(
+      historyEntriesForFilter(partition, 'top-ups').map((entry) => entry.id),
+    ).toEqual(['1', '4']);
+    expect(
+      historyEntriesForFilter(partition, 'alerts').map((entry) => entry.id),
+    ).toEqual(['2', '3']);
   });
 });

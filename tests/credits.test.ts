@@ -47,6 +47,17 @@ describe('credit mappers', () => {
       emergencyId: null,
       reference: 'recharge:DEMO0001',
       createdAt: '2026-11-16T09:30:00+00:00',
+      status: 'read',
+      statusTimestamp: '2026-11-16T09:31:00.000000Z',
+      seen: true,
+      ref: 'SYS-000000001',
+      reporterPhone: null,
+      package: {
+        id: '01m87evag4pjrz20pzqjgykz5j',
+        displayableId: 'emergency-alerts-100',
+        name: 'PAQUETE',
+        alerts: 100,
+      },
     });
   });
 
@@ -57,6 +68,9 @@ describe('credit mappers', () => {
       'refund',
     );
     expect(toCreditHistoryEntry({ ...base, type: 'abort' }).kind).toBe('abort');
+    expect(toCreditHistoryEntry({ ...base, type: 'simulacrum' }).kind).toBe(
+      'simulacrum',
+    );
     expect(toCreditHistoryEntry({ ...base, type: 'EMERGENCY' }).kind).toBe(
       'emergency',
     );
@@ -92,9 +106,9 @@ describe('credit mappers', () => {
   it('maps pagination and every history entry', () => {
     const page = toCreditHistoryPage(creditHistoryResponse);
 
-    expect(page.entries.map((entry) => entry.id)).toEqual(['1', '2']);
+    expect(page.entries.map((entry) => entry.id)).toEqual(['1', '2', '3', '4']);
     expect(page.pagination).toEqual({
-      total: 2,
+      total: 4,
       perPage: 15,
       currentPage: 1,
       lastPage: 1,
@@ -126,6 +140,12 @@ describe('credit mappers', () => {
       emergencyId: null,
       reference: null,
       createdAt: null,
+      status: null,
+      statusTimestamp: null,
+      seen: false,
+      ref: null,
+      reporterPhone: null,
+      package: null,
     });
 
     expect(
@@ -144,6 +164,126 @@ describe('credit mappers', () => {
     expect(toCreditHistoryPage({})).toEqual({
       entries: [],
       pagination: { total: 0, perPage: 0, currentPage: 1, lastPage: 1 },
+    });
+  });
+
+  it.each(['pending', 'sent', 'delivered', 'read', 'failed'] as const)(
+    'maps the %s delivery status',
+    (status) => {
+      expect(
+        toCreditHistoryEntry({ id: 1, type: 'emergency', status }).status,
+      ).toBe(status);
+    },
+  );
+
+  it('maps an unknown or absent delivery status to null', () => {
+    expect(
+      toCreditHistoryEntry({ id: 1, type: 'emergency', status: 'queued' })
+        .status,
+    ).toBeNull();
+    expect(
+      toCreditHistoryEntry({ id: 1, type: 'emergency', status: null }).status,
+    ).toBeNull();
+    expect(
+      toCreditHistoryEntry({ id: 1, type: 'emergency' }).status,
+    ).toBeNull();
+  });
+
+  it('maps status_timestamp as a nullable string', () => {
+    expect(
+      toCreditHistoryEntry({
+        id: 1,
+        status_timestamp: '2026-11-23T18:22:39.000000Z',
+      }).statusTimestamp,
+    ).toBe('2026-11-23T18:22:39.000000Z');
+    expect(
+      toCreditHistoryEntry({ id: 1, status_timestamp: null }).statusTimestamp,
+    ).toBeNull();
+    expect(toCreditHistoryEntry({ id: 1 }).statusTimestamp).toBeNull();
+  });
+
+  it('keeps seen as provided and defaults absent or non-boolean values to false', () => {
+    expect(toCreditHistoryEntry({ id: 1, seen: true }).seen).toBe(true);
+    expect(
+      toCreditHistoryEntry({ id: 1, status: 'delivered', seen: true }).seen,
+    ).toBe(true);
+    expect(
+      toCreditHistoryEntry({ id: 1, status: 'read', seen: false }).seen,
+    ).toBe(false);
+    expect(toCreditHistoryEntry({ id: 1 }).seen).toBe(false);
+    expect(toCreditHistoryEntry({ id: 1, seen: 'yes' }).seen).toBe(false);
+  });
+
+  it('maps ref and reporter_phone as nullable strings', () => {
+    expect(
+      toCreditHistoryEntry({
+        id: 1,
+        ref: 'SYS-000000501',
+        reporter_phone: '573001234567',
+      }),
+    ).toMatchObject({ ref: 'SYS-000000501', reporterPhone: '573001234567' });
+    expect(
+      toCreditHistoryEntry({ id: 1, ref: null, reporter_phone: null }),
+    ).toMatchObject({ ref: null, reporterPhone: null });
+    expect(toCreditHistoryEntry({ id: 1 })).toMatchObject({
+      ref: null,
+      reporterPhone: null,
+    });
+  });
+
+  it('maps a package object and defaults its missing subfields', () => {
+    expect(
+      toCreditHistoryEntry({
+        id: 1,
+        package: {
+          id: '01m87evag4pjrz20pzqjgykz5j',
+          displayable_id: 'emergency-alerts-100',
+          name: 'PAQUETE',
+          alerts: 100,
+        },
+      }).package,
+    ).toEqual({
+      id: '01m87evag4pjrz20pzqjgykz5j',
+      displayableId: 'emergency-alerts-100',
+      name: 'PAQUETE',
+      alerts: 100,
+    });
+
+    expect(
+      toCreditHistoryEntry({ id: 1, package: { name: 'X' } }).package,
+    ).toEqual({ id: '', displayableId: '', name: 'X', alerts: 0 });
+  });
+
+  it('maps a null, absent or malformed package to null', () => {
+    expect(toCreditHistoryEntry({ id: 1, package: null }).package).toBeNull();
+    expect(toCreditHistoryEntry({ id: 1 }).package).toBeNull();
+    expect(
+      toCreditHistoryEntry({ id: 1, package: 'PAQUETE' }).package,
+    ).toBeNull();
+    expect(toCreditHistoryEntry({ id: 1, package: 100 }).package).toBeNull();
+  });
+
+  it('tolerates an older BFF that omits every delivery field', () => {
+    expect(
+      toCreditHistoryEntry({
+        id: 3,
+        type: 'recharge',
+        amount: 10,
+        balance_after: 10,
+        contacts_count: 0,
+        rounds: 2,
+        extra_alerts: 0,
+        emergency_id: null,
+        reference: null,
+        created_at: null,
+      }),
+    ).toMatchObject({
+      status: null,
+      statusTimestamp: null,
+      seen: false,
+      ref: null,
+      reporterPhone: null,
+      package: null,
     });
   });
 });

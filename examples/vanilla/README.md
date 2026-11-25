@@ -55,6 +55,8 @@ flow when no scenario is selected.
 | Saldo en cero            | `credits-zero`          | Zero rounds, zero messages, zero extra alerts.     |
 | Historial vacío          | `credits-empty`         | Empty history state on details and history.        |
 | Créditos no disponibles  | `credits-error`         | Unavailable credit states without breaking SOS.    |
+| Skeletons: detalles      | `credits-slow`          | 20 s summary/history delay on the details screen.  |
+| Skeletons: historial     | `history-slow`          | Ready summary, 20 s history delay on history.      |
 | Reiniciar                | `default`               | Clears the fixture and reloads.                    |
 
 ## Visual review loop

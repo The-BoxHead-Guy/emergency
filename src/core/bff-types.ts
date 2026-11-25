@@ -92,6 +92,13 @@ export interface CreditSummaryResponse {
   readonly credit: CreditSummaryPayload;
 }
 
+export interface CreditHistoryPackagePayload {
+  readonly id: string;
+  readonly displayable_id: string;
+  readonly name: string;
+  readonly alerts: number;
+}
+
 export interface CreditHistoryItemPayload {
   readonly id: number;
   readonly type: string;
@@ -103,6 +110,13 @@ export interface CreditHistoryItemPayload {
   readonly emergency_id: number | null;
   readonly reference: string | null;
   readonly created_at: string | null;
+  /** Optional so an older BFF that omits these fields still maps. */
+  readonly status?: string | null;
+  readonly status_timestamp?: string | null;
+  readonly seen?: boolean;
+  readonly ref?: string | null;
+  readonly reporter_phone?: string | null;
+  readonly package?: CreditHistoryPackagePayload | null;
 }
 
 export interface CreditHistoryPaginationPayload {

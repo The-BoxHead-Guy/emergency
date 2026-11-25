@@ -16,8 +16,12 @@ describe('credit copy', () => {
 });
 
 describe('history copy', () => {
-  it('labels an abort debit as a cancellation', () => {
-    expect(historyCopy.kindLabels.abort).toBe('Cancelación');
+  it('labels an abort debit as an abort', () => {
+    expect(historyCopy.kindLabels.abort).toBe('Aborto');
+  });
+
+  it('labels a simulacrum movement', () => {
+    expect(historyCopy.kindLabels.simulacrum).toBe('Simulacro');
   });
 });
 

@@ -31,7 +31,11 @@ const scenarios = new Set([
   'credits-zero',
   'credits-empty',
   'credits-error',
+  'credits-slow',
+  'history-slow',
 ]);
+
+const SLOW_CREDITS_MS = 20_000;
 
 let scenario = 'default';
 let activeEmergency = null;
@@ -132,6 +136,10 @@ function fixtures() {
   }
 
   return mixed;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function json(response, status, body) {
@@ -240,6 +248,89 @@ function creditHistoryItems() {
       emergency_id: null,
       reference: 'recharge:DEMO0001',
       created_at: '2026-11-16T09:30:00+00:00',
+      status: 'read',
+      status_timestamp: '2026-11-16T09:31:00+00:00',
+      seen: true,
+      ref: 'SYS-000000001',
+      reporter_phone: null,
+      package: {
+        id: '01m87evag4pjrz20pzqjgykz5j',
+        displayable_id: 'emergency-alerts-100',
+        name: 'Paquete 100 alertas',
+        alerts: 100,
+      },
+    },
+    {
+      id: 2,
+      type: 'emergency',
+      amount: -3,
+      balance_after: 170,
+      contacts_count: 3,
+      rounds: 56,
+      extra_alerts: 2,
+      emergency_id: 501,
+      reference: 'emergency:EMG000501',
+      created_at: '2026-11-15T18:10:00+00:00',
+      status: 'delivered',
+      status_timestamp: '2026-11-15T18:11:00+00:00',
+      seen: false,
+      ref: 'SYS-000000501',
+      reporter_phone: '573001234567',
+      package: null,
+    },
+    {
+      id: 3,
+      type: 'abort',
+      amount: -1,
+      balance_after: 169,
+      contacts_count: 3,
+      rounds: 56,
+      extra_alerts: 2,
+      emergency_id: 501,
+      reference: 'abort:EMG000501',
+      created_at: '2026-11-15T18:15:00+00:00',
+      status: null,
+      status_timestamp: null,
+      seen: true,
+      ref: 'SYS-000000502',
+      reporter_phone: '573007654321',
+      package: null,
+    },
+    {
+      id: 4,
+      type: 'simulacrum',
+      amount: 0,
+      balance_after: 169,
+      contacts_count: 3,
+      rounds: 56,
+      extra_alerts: 2,
+      emergency_id: null,
+      reference: 'simulacrum:SIM000001',
+      created_at: '2026-11-14T12:00:00+00:00',
+      status: 'delivered',
+      status_timestamp: '2026-11-14T12:01:00+00:00',
+      seen: false,
+      ref: 'SYS-000000777',
+      reporter_phone: '573007654321',
+      package: null,
+    },
+    {
+      id: 5,
+      type: 'refund',
+      amount: 5,
+      balance_after: 174,
+      contacts_count: 3,
+      rounds: 57,
+      extra_alerts: 2,
+      emergency_id: null,
+      reference: 'refund:DEMO0002',
+      created_at: '2026-11-13T08:45:00+00:00',
+      status: null,
+      status_timestamp: null,
+      seen: false,
+      ref: 'SYS-000000778',
+      reporter_phone: null,
+      package: null,
     },
   ];
 }
@@ -359,6 +450,10 @@ const server = createServer(async (request, response) => {
       return;
     }
 
+    if (scenario === 'credits-slow') {
+      await sleep(SLOW_CREDITS_MS);
+    }
+
     json(response, 200, { credit: creditSummary() });
     return;
   }
@@ -367,6 +462,10 @@ const server = createServer(async (request, response) => {
     if (scenario === 'credits-error') {
       error(response, 502, 'upstream_error', 'Credit read failed.');
       return;
+    }
+
+    if (scenario === 'credits-slow' || scenario === 'history-slow') {
+      await sleep(SLOW_CREDITS_MS);
     }
 
     const parsedPerPage = Number(url.searchParams.get('per_page') ?? 15);

@@ -49,11 +49,11 @@ export interface EmergencyScreenProviderProps {
   readonly initialScreen?: EmergencyScreenId;
 }
 
-function paramsEqual(
+function filtersEqual(
   first: EmergencyScreenParams,
   second: EmergencyScreenParams,
 ): boolean {
-  return first.messageId === second.messageId;
+  return first.filter === second.filter;
 }
 
 export function EmergencyScreenProvider({
@@ -69,7 +69,7 @@ export function EmergencyScreenProvider({
   const navigate = useCallback(
     (next: EmergencyScreenId, params: EmergencyScreenParams = EMPTY_PARAMS) => {
       setState((current) => {
-        if (current.screen === next && paramsEqual(current.params, params)) {
+        if (current.screen === next && filtersEqual(current.params, params)) {
           return current;
         }
 
@@ -105,7 +105,7 @@ export function EmergencyScreenProvider({
   const replace = useCallback(
     (next: EmergencyScreenId, params: EmergencyScreenParams = EMPTY_PARAMS) => {
       setState((current) => {
-        if (current.screen === next && paramsEqual(current.params, params)) {
+        if (current.screen === next && filtersEqual(current.params, params)) {
           return current;
         }
 
@@ -124,7 +124,7 @@ export function EmergencyScreenProvider({
     setState((current) => {
       if (
         current.screen === 'primary' &&
-        current.params.messageId === undefined &&
+        filtersEqual(current.params, EMPTY_PARAMS) &&
         current.history.length === 0
       ) {
         return current;

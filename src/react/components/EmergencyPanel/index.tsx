@@ -29,6 +29,7 @@ export interface EmergencyPanelProps {
   aborting: boolean;
   simulating: boolean;
   loading: boolean;
+  initializing: boolean;
   locale: string;
   responders: readonly Responder[];
   refreshing: boolean;
@@ -112,6 +113,7 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
     aborting,
     simulating,
     loading,
+    initializing,
     locale,
     responders,
     refreshing,
@@ -144,7 +146,8 @@ export function EmergencyPanel(props: EmergencyPanelProps) {
     Boolean(activationError) ||
     abortResult !== null ||
     simulationResult !== null;
-  const forcePrimary = active || loading || error !== null || feedbackVisible;
+  const forcePrimary =
+    active || (loading && !initializing) || error !== null || feedbackVisible;
 
   const closeOnEscape = useCallback(() => {
     onClose('escape');

@@ -19,67 +19,67 @@ afterEach(() => {
 });
 
 describe('screen navigation params', () => {
-  it('carries messageId when navigating to a message detail', () => {
+  it('carries the history filter when navigating to history', () => {
     const { result } = setup();
 
     act(() => {
-      result.current.navigate('message-detail', { messageId: 'alert-a' });
+      result.current.navigate('history', { filter: 'top-ups' });
     });
 
-    expect(result.current.screen).toBe('message-detail');
-    expect(result.current.params.messageId).toBe('alert-a');
+    expect(result.current.screen).toBe('history');
+    expect(result.current.params.filter).toBe('top-ups');
   });
 
   it('restores the previous params when going back', () => {
     const { result } = setup();
 
     act(() => {
-      result.current.navigate('message-detail', { messageId: 'alert-a' });
+      result.current.navigate('history', { filter: 'top-ups' });
     });
     act(() => {
-      result.current.navigate('history');
+      result.current.navigate('details');
     });
 
-    expect(result.current.params.messageId).toBeUndefined();
+    expect(result.current.params.filter).toBeUndefined();
 
     act(() => {
       result.current.back();
     });
 
-    expect(result.current.screen).toBe('message-detail');
-    expect(result.current.params.messageId).toBe('alert-a');
+    expect(result.current.screen).toBe('history');
+    expect(result.current.params.filter).toBe('top-ups');
   });
 
   it('clears the params and history on reset', () => {
     const { result } = setup();
 
     act(() => {
-      result.current.navigate('message-detail', { messageId: 'alert-a' });
+      result.current.navigate('history', { filter: 'alerts' });
     });
     act(() => {
       result.current.reset();
     });
 
     expect(result.current.screen).toBe('primary');
-    expect(result.current.params.messageId).toBeUndefined();
+    expect(result.current.params.filter).toBeUndefined();
     expect(result.current.history).toHaveLength(0);
   });
 
-  it('updates the view when the same screen receives another messageId', () => {
+  it('updates the view when the same screen receives another filter', () => {
     const { result } = setup();
 
     act(() => {
-      result.current.navigate('message-detail', { messageId: 'alert-a' });
+      result.current.navigate('history', { filter: 'alerts' });
     });
     act(() => {
-      result.current.navigate('message-detail', { messageId: 'alert-b' });
+      result.current.navigate('history', { filter: 'top-ups' });
     });
 
-    expect(result.current.screen).toBe('message-detail');
-    expect(result.current.params.messageId).toBe('alert-b');
+    expect(result.current.screen).toBe('history');
+    expect(result.current.params.filter).toBe('top-ups');
     expect(result.current.history.map((entry) => entry.screen)).toEqual([
       'primary',
-      'message-detail',
+      'history',
     ]);
   });
 
@@ -87,10 +87,10 @@ describe('screen navigation params', () => {
     const { result } = setup();
 
     act(() => {
-      result.current.navigate('message-detail', { messageId: 'alert-a' });
+      result.current.navigate('history', { filter: 'alerts' });
     });
     act(() => {
-      result.current.navigate('message-detail', { messageId: 'alert-a' });
+      result.current.navigate('history', { filter: 'alerts' });
     });
 
     expect(result.current.history).toHaveLength(1);
@@ -101,13 +101,13 @@ describe('screen navigation params', () => {
     const { result } = setup();
 
     act(() => {
-      result.current.navigate('message-detail', { messageId: 'missing' });
+      result.current.navigate('history', { filter: 'top-ups' });
     });
     act(() => {
-      result.current.replace('history');
+      result.current.replace('details');
     });
 
-    expect(result.current.screen).toBe('history');
+    expect(result.current.screen).toBe('details');
     expect(result.current.history.map((entry) => entry.screen)).toEqual([
       'primary',
     ]);

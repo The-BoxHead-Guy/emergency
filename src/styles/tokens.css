@@ -9,6 +9,7 @@
   --de-emergency-red: #ff0000;
   --de-emergency-red-hover: #ff3535;
   --de-emergency-red-pressed: #e33327;
+  --de-emergency-red-dark: #a71d2a;
   --de-emergency-on-red: #fff;
   --de-emergency-blue: #00adf6;
   --de-emergency-blue-hover: #29bfff;
@@ -21,6 +22,7 @@
   --de-emergency-text: #3d4461;
   --de-emergency-text-secondary: #686868;
   --de-emergency-white: #fff;
+  --de-emergency-white-subtle: #fbfbfb;
   --de-emergency-white-soft: #f7f7f7;
   --de-emergency-white-pearl: #f1f1f1;
   --de-emergency-gray: #555;
@@ -32,6 +34,7 @@
   --de-emergency-error: #dc3545;
   --de-emergency-information: #3fabf3;
   --de-emergency-green: #008000;
+  --de-emergency-green-light: #5cb85c;
   --de-emergency-yellow: var(--de-emergency-alarm-step-two);
   --de-emergency-yellow-dark: #b38b00;
 
@@ -87,8 +90,10 @@
 
   --de-emergency-radius: 0.75rem;
   --de-emergency-radius-small: 0.5rem;
+  --de-emergency-radius-pill: 999px;
   --de-emergency-space-2: 0.5rem;
   --de-emergency-space-3: 0.75rem;
+  --de-emergency-space-4: 1rem;
   --de-emergency-space-5: 1.25rem;
   --de-emergency-space-8: 2rem;
   --de-emergency-font:

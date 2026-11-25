@@ -15,6 +15,7 @@ import {
 } from '@/core/mappers';
 import {
   createCreditsState,
+  creditHistoryPage,
   toCreditHistoryPage,
   toCreditSummary,
 } from '@/core/credits';
@@ -28,6 +29,7 @@ import { canTransition } from '@/core/state-machine';
 import { createEmergencyStore, type EmergencyStore } from '@/core/store';
 import type {
   AbortResult,
+  CreditsFetchOptions,
   EmergencyClient,
   EmergencyClientState,
   EmergencyConfig,
@@ -95,6 +97,8 @@ export function createEmergencyController(
   const store = createEmergencyStore(config);
 
   let sessionPromise: Promise<void> | null = null;
+  let creditsRequest: Promise<void> | null = null;
+  let historyRequest: Promise<void> | null = null;
   let refreshing = false;
   let realtimeSubscription: RealtimeSubscription | null = null;
   let subscribedPhones: readonly string[] = [];
@@ -112,12 +116,14 @@ export function createEmergencyController(
     patch({ credits: { ...get().credits, ...partial } });
   }
 
-  async function fetchCredits(): Promise<void> {
-    if (get().destroyed || !get().sessionReady) {
-      return;
-    }
+  async function performCreditsFetch(
+    options: CreditsFetchOptions,
+  ): Promise<void> {
+    const silent = options.silent === true;
 
-    patchCredits({ summaryStatus: 'loading', error: null });
+    if (!silent) {
+      patchCredits({ summaryStatus: 'loading', error: null });
+    }
 
     try {
       const response = await bff.credits();
@@ -136,6 +142,10 @@ export function createEmergencyController(
         return;
       }
 
+      if (silent && get().credits.credit !== null) {
+        return;
+      }
+
       patchCredits({
         summaryStatus: 'error',
         error: toEmergencyError(error, 'network'),
@@ -143,12 +153,33 @@ export function createEmergencyController(
     }
   }
 
-  async function fetchCreditHistory(page = 1, perPage?: number): Promise<void> {
+  function fetchCredits(options: CreditsFetchOptions = {}): Promise<void> {
     if (get().destroyed || !get().sessionReady) {
-      return;
+      return Promise.resolve();
     }
 
-    patchCredits({ historyStatus: 'loading' });
+    if (creditsRequest) {
+      return creditsRequest;
+    }
+
+    creditsRequest = performCreditsFetch(options).finally(() => {
+      creditsRequest = null;
+    });
+
+    return creditsRequest;
+  }
+
+  async function performHistoryFetch(
+    page: number,
+    perPage: number | undefined,
+    options: CreditsFetchOptions,
+  ): Promise<void> {
+    const silent = options.silent === true;
+    const hasHistory = get().credits.historyStatus !== 'idle';
+
+    if (!silent) {
+      patchCredits({ historyStatus: 'loading' });
+    }
 
     try {
       const response = await bff.creditHistory({ page, perPage });
@@ -169,11 +200,45 @@ export function createEmergencyController(
         return;
       }
 
+      if (silent && hasHistory) {
+        return;
+      }
+
       patchCredits({
         historyStatus: 'error',
         error: toEmergencyError(error, 'network'),
       });
     }
+  }
+
+  function fetchCreditHistory(
+    page = 1,
+    perPage?: number,
+    options: CreditsFetchOptions = {},
+  ): Promise<void> {
+    if (get().destroyed || !get().sessionReady) {
+      return Promise.resolve();
+    }
+
+    if (historyRequest) {
+      return historyRequest;
+    }
+
+    historyRequest = performHistoryFetch(page, perPage, options).finally(() => {
+      historyRequest = null;
+    });
+
+    return historyRequest;
+  }
+
+  function refreshLoadedHistory(): Promise<void> {
+    if (get().credits.historyStatus === 'idle') {
+      return Promise.resolve();
+    }
+
+    return fetchCreditHistory(creditHistoryPage(get().credits), undefined, {
+      silent: true,
+    });
   }
 
   function transition(next: EmergencyPhase): boolean {
@@ -337,7 +402,7 @@ export function createEmergencyController(
         expiresIn: session.expires_in,
       });
 
-      void Promise.all([fetchCredits(), fetchCreditHistory()]);
+      void fetchCredits();
     } catch (error) {
       const normalized = toEmergencyError(error, 'network');
       patch({ sessionReady: false });
@@ -507,6 +572,7 @@ export function createEmergencyController(
       });
       startRealtime(responders);
       await fetchCredits();
+      await refreshLoadedHistory();
     } catch (error) {
       const normalized = toEmergencyError(error, 'network');
 
@@ -611,6 +677,7 @@ export function createEmergencyController(
         geolocation: position,
       });
       await fetchCredits();
+      await refreshLoadedHistory();
     } catch (error) {
       const normalized = toEmergencyError(error, 'network');
       const insufficientCredits = normalized.code === 'insufficient_credits';
@@ -832,6 +899,7 @@ export function createEmergencyController(
         pushKind: partial ? 'warning' : 'success',
       });
       await fetchCredits();
+      await refreshLoadedHistory();
     } catch (error) {
       const normalized = toEmergencyError(error, 'network');
 
@@ -850,6 +918,7 @@ export function createEmergencyController(
           pushKind: 'info',
         });
         await fetchCredits();
+        await refreshLoadedHistory();
 
         return;
       }
@@ -991,8 +1060,9 @@ export function createEmergencyController(
     off: (event, handler) => events.off(event, handler),
     ensureSession,
     resume,
-    refreshCredits: () => fetchCredits(),
-    loadCreditHistory: (page, perPage) => fetchCreditHistory(page, perPage),
+    refreshCredits: (options) => fetchCredits(options),
+    loadCreditHistory: (page, perPage, options) =>
+      fetchCreditHistory(page, perPage, options),
     dismissResume: () => patch({ resumeAvailable: false }),
     activate,
     simulate,

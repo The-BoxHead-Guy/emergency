@@ -6,6 +6,7 @@ export type CreditHistoryKind =
   | 'recharge'
   | 'emergency'
   | 'abort'
+  | 'simulacrum'
   | 'refund'
   | 'other';
 
@@ -17,6 +18,21 @@ export interface CreditSummary {
   readonly rounds: number;
   readonly extraAlerts: number;
   readonly roundsLabel: string;
+}
+
+/** Delivery state of the emergency message tied to a ledger movement. */
+export type CreditDeliveryStatus =
+  | 'pending'
+  | 'sent'
+  | 'delivered'
+  | 'read'
+  | 'failed';
+
+export interface CreditHistoryPackage {
+  readonly id: string;
+  readonly displayableId: string;
+  readonly name: string;
+  readonly alerts: number;
 }
 
 export interface CreditHistoryEntry {
@@ -32,6 +48,14 @@ export interface CreditHistoryEntry {
   readonly emergencyId: string | number | null;
   readonly reference: string | null;
   readonly createdAt: string | null;
+  /** `null` when the BFF sends an unknown or absent status. */
+  readonly status: CreditDeliveryStatus | null;
+  readonly statusTimestamp: string | null;
+  readonly seen: boolean;
+  /** Public operation identifier, distinct from `reference`. */
+  readonly ref: string | null;
+  readonly reporterPhone: string | null;
+  readonly package: CreditHistoryPackage | null;
 }
 
 export interface CreditPagination {
@@ -44,6 +68,11 @@ export interface CreditPagination {
 export interface CreditHistoryPage {
   readonly entries: readonly CreditHistoryEntry[];
   readonly pagination: CreditPagination;
+}
+
+/** Current history page, falling back to the first page before any load. */
+export function creditHistoryPage(credits: CreditsState): number {
+  return credits.pagination?.currentPage ?? 1;
 }
 
 /** Lifecycle of one credit resource. */
@@ -132,11 +161,42 @@ function toKind(type: string): CreditHistoryKind {
       return 'emergency';
     case 'abort':
       return 'abort';
+    case 'simulacrum':
+      return 'simulacrum';
     case 'refund':
       return 'refund';
     default:
       return 'other';
   }
+}
+
+const DELIVERY_STATUSES: readonly CreditDeliveryStatus[] = [
+  'pending',
+  'sent',
+  'delivered',
+  'read',
+  'failed',
+];
+
+function toDeliveryStatus(value: unknown): CreditDeliveryStatus | null {
+  return DELIVERY_STATUSES.find((status) => status === value) ?? null;
+}
+
+function toSeen(value: unknown): boolean {
+  return value === true;
+}
+
+function toPackage(value: unknown): CreditHistoryPackage | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  return {
+    id: readString(value['id']),
+    displayableId: readString(value['displayable_id']),
+    name: readString(value['name']),
+    alerts: readNumber(value['alerts']),
+  };
 }
 
 export function toCreditHistoryEntry(payload: unknown): CreditHistoryEntry {
@@ -156,6 +216,12 @@ export function toCreditHistoryEntry(payload: unknown): CreditHistoryEntry {
     emergencyId: readIdentifier(raw['emergency_id']),
     reference: readText(raw['reference']),
     createdAt: readText(raw['created_at']),
+    status: toDeliveryStatus(raw['status']),
+    statusTimestamp: readText(raw['status_timestamp']),
+    seen: toSeen(raw['seen']),
+    ref: readText(raw['ref']),
+    reporterPhone: readText(raw['reporter_phone']),
+    package: toPackage(raw['package']),
   };
 }
 

@@ -6,6 +6,43 @@ and [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-25
+
+### Added
+
+- `CreditHistoryEntry` gains `status`, `statusTimestamp`, `seen`, `ref`,
+  `reporterPhone` and `package`, mapped from the BFF credit history payload.
+  Hosts that build `CreditHistoryEntry` objects by hand must supply the new
+  fields.
+- New exported types `CreditDeliveryStatus`, `CreditHistoryPackage` and
+  `CreditHistoryPackagePayload`.
+- The history screen shows a "Disponible" card above the section title, with
+  the available rounds, alerts and contacts for both alerts and top-ups.
+- The details and history screens poll their credit summary and current history
+  page every 10 seconds while mounted, pausing while the document is hidden.
+- Layout-matching loading skeletons on the details and history screens replace
+  the first-load empty messages.
+
+### Changed
+
+- History and details screens render alerts as collapsibles (kind, reporter
+  phone, seen check, "Saldo" rows) and top-ups as cards (package, alerts amount
+  — falling back to the ledger amount without a package —, ref), with
+  details buttons that open the history filtered by type and timestamps in
+  Venezuela local 12-hour time. The `message-detail`
+  screen is removed, `EmergencyScreenId` drops `'message-detail'`, and
+  `CreditHistoryKind` gains `simulacrum`.
+- Credit history now loads on demand when the user enters the details or
+  history screen instead of at session start, and revalidates silently when a
+  page is already cached.
+- The abort history label is `Aborto` again, naming the aborted emergency
+  message instead of a cancellation.
+
+### Fixed
+
+- The history ledger refreshes after simulation, activation and abort instead
+  of showing the page cached at session start.
+
 ## [0.10.0] - 2026-11-20
 
 ### Added

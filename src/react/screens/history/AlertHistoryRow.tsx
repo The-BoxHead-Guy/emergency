@@ -1,68 +1,76 @@
 import { formatDateTime } from '@/core/date';
 import type { CreditHistoryEntry } from '@/core/credits';
 import { cls } from '@/react/classnames';
-import {
-  formatContacts,
-  formatHistoryRounds,
-  formatMessages,
-  historyCopy,
-} from '@/react/screens/history/copy';
+import { Collapsible } from '@/react/components/Collapsible';
+import { Icon } from '@/react/components/Icon';
+import { historyCopy } from '@/react/screens/history/copy';
+import type { MovementRow } from '@/react/screens/history/MovementRows';
+import { MovementRows } from '@/react/screens/history/MovementRows';
 
 export interface AlertHistoryRowProps {
   readonly entry: CreditHistoryEntry;
   readonly locale: string;
-  readonly onOpen: (id: string) => void;
 }
 
-/** Reusable history row. The whole row is a button with a full text label. */
-export function AlertHistoryRow({
-  entry,
-  locale,
-  onOpen,
-}: AlertHistoryRowProps) {
+/** Alert movement rendered as a collapsible: timestamp and kind in the head. */
+export function AlertHistoryRow({ entry, locale }: AlertHistoryRowProps) {
   const occurredAt = formatDateTime(entry.createdAt, locale);
-  const label = [
-    historyCopy.kindLabels[entry.kind],
-    occurredAt,
-    formatContacts(entry.contactsCount),
-    `${formatMessages(entry.balanceAfter)} restantes`,
-    `${formatHistoryRounds(entry.rounds)} de avisos`,
-  ].join(', ');
+  const detailRows: MovementRow[] = [
+    ...(entry.reporterPhone
+      ? [
+          {
+            label: historyCopy.fields.reporterPhone,
+            value: entry.reporterPhone,
+          },
+        ]
+      : []),
+    ...(entry.seen
+      ? [
+          {
+            label: historyCopy.fields.seen,
+            value: (
+              <Icon
+                name="check-circle"
+                title={historyCopy.fields.seen}
+                className={cls('emergency-alert-row__seen')}
+              />
+            ),
+          },
+        ]
+      : []),
+  ];
+  const balanceRows: MovementRow[] = [
+    { label: historyCopy.stats.contacts, value: entry.contactsCount },
+    { label: historyCopy.stats.messages, value: entry.balanceAfter },
+    { label: historyCopy.stats.rounds, value: entry.rounds },
+  ];
 
   return (
     <li className={cls('emergency-alert-row')}>
-      <button
-        type="button"
-        className={cls('emergency-alert-row__button')}
-        aria-label={label}
-        onClick={() => onOpen(entry.id)}
+      <Collapsible
+        head={
+          <span className={cls('emergency-alert-row__summary')}>
+            <time
+              className={cls('emergency-alert-row__time')}
+              dateTime={entry.createdAt ?? undefined}
+            >
+              {occurredAt}
+            </time>
+            <span
+              className={cls('emergency-alert-row__badge')}
+              data-kind={entry.kind}
+            >
+              {historyCopy.kindLabels[entry.kind]}
+            </span>
+          </span>
+        }
       >
-        <span className={cls('emergency-alert-row__top')}>
-          <time
-            className={cls('emergency-alert-row__time')}
-            dateTime={entry.createdAt ?? undefined}
-          >
-            {occurredAt}
-          </time>
-          <span
-            className={cls('emergency-alert-row__badge')}
-            data-kind={entry.kind}
-          >
-            {historyCopy.kindLabels[entry.kind]}
-          </span>
-        </span>
-        <span className={cls('emergency-alert-row__stats')}>
-          <span className={cls('emergency-alert-row__stat')}>
-            {formatContacts(entry.contactsCount)}
-          </span>
-          <span className={cls('emergency-alert-row__stat')}>
-            {formatMessages(entry.balanceAfter)}
-          </span>
-          <span className={cls('emergency-alert-row__stat')}>
-            {formatHistoryRounds(entry.rounds)}
-          </span>
-        </span>
-      </button>
+        {detailRows.length > 0 ? <MovementRows rows={detailRows} /> : null}
+        <p className={cls('emergency-alert-row__subtitle')}>
+          {historyCopy.sections.balance}
+        </p>
+        <MovementRows rows={balanceRows} />
+      </Collapsible>
     </li>
   );
 }
