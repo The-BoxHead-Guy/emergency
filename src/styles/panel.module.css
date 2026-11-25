@@ -863,6 +863,10 @@ p.emergency-alert-row__subtitle {
   color: var(--de-emergency-green-light, #5cb85c);
 }
 
+.emergency-alert-row__seen--unseen {
+  color: var(--de-emergency-red, #ff0000);
+}
+
 /* Pre-emergency screen */
 
 .emergency-panel .emergency-pre-emergency {

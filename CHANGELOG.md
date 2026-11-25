@@ -6,6 +6,19 @@ and [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-11-25
+
+### Changed
+
+- The versioning guide no longer pins a current version; `package.json` and the
+  changelog are the canonical sources.
+
+### Fixed
+
+- Alert history rows always show the `seen` field and use filled icons: a
+  filled check when the alert was seen and a filled cross when it was not,
+  instead of hiding the row for unseen alerts.
+
 ## [0.11.0] - 2026-11-25
 
 ### Added

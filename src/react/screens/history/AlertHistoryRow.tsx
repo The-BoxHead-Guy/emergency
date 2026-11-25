@@ -24,20 +24,19 @@ export function AlertHistoryRow({ entry, locale }: AlertHistoryRowProps) {
           },
         ]
       : []),
-    ...(entry.seen
-      ? [
-          {
-            label: historyCopy.fields.seen,
-            value: (
-              <Icon
-                name="check-circle"
-                title={historyCopy.fields.seen}
-                className={cls('emergency-alert-row__seen')}
-              />
-            ),
-          },
-        ]
-      : []),
+    {
+      label: historyCopy.fields.seen,
+      value: (
+        <Icon
+          name={entry.seen ? 'check-circle-filled' : 'x-circle-filled'}
+          title={historyCopy.fields.seen}
+          className={cls(
+            'emergency-alert-row__seen',
+            !entry.seen && 'emergency-alert-row__seen--unseen',
+          )}
+        />
+      ),
+    },
   ];
   const balanceRows: MovementRow[] = [
     { label: historyCopy.stats.contacts, value: entry.contactsCount },
@@ -65,7 +64,7 @@ export function AlertHistoryRow({ entry, locale }: AlertHistoryRowProps) {
           </span>
         }
       >
-        {detailRows.length > 0 ? <MovementRows rows={detailRows} /> : null}
+        <MovementRows rows={detailRows} />
         <p className={cls('emergency-alert-row__subtitle')}>
           {historyCopy.sections.balance}
         </p>

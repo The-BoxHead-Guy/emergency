@@ -4,7 +4,9 @@ export type IconName =
   | 'close'
   | 'alert-triangle'
   | 'check-circle'
+  | 'check-circle-filled'
   | 'x-circle'
+  | 'x-circle-filled'
   | 'exclamation-circle'
   | 'flag'
   | 'double-check'
@@ -38,6 +40,8 @@ const viewBoxes: Readonly<Partial<Record<IconName, string>>> = {
 
 /** Icons rendered as a solid shape instead of a stroked outline. */
 const filledIcons: ReadonlySet<IconName> = new Set<IconName>([
+  'check-circle-filled',
+  'x-circle-filled',
   'emergency',
   'return-on-investment',
 ]);
@@ -57,11 +61,23 @@ const paths: Readonly<Record<IconName, ReactNode>> = {
       <path d="m8.5 12.5 2.5 2.5 4.5-5" />
     </>
   ),
+  'check-circle-filled': (
+    <path
+      fillRule="evenodd"
+      d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20ZM7.91 11.69 10.6 14.39 16.09 8.89 17.51 10.31 9.89 16.51 6.49 13.11Z"
+    />
+  ),
   'x-circle': (
     <>
       <circle cx="12" cy="12" r="9" />
       <path d="m9 9 6 6M15 9l-6 6" />
     </>
+  ),
+  'x-circle-filled': (
+    <path
+      fillRule="evenodd"
+      d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20ZM8.5 7 12 10.5 15.5 7 17 8.5 13.5 12 17 15.5 15.5 17 12 13.5 8.5 17 7 15.5 10.5 12 7 8.5Z"
+    />
   ),
   'exclamation-circle': (
     <>

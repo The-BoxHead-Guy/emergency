@@ -5,21 +5,28 @@ Applies to: maintainers and integrators.
 The BFF and the client are versioned independently. A client release does not
 require a BFF release, and the reverse is also true.
 
-## Current line
+## Current version
 
-| Package                        | Registry  | Initial version |
-| ------------------------------ | --------- | --------------- |
-| `dataemergencia/emergency-bff` | Packagist | `0.1.0`         |
-| `@dataemergencia/emergency`    | npm       | `0.1.0`         |
+This document does not pin a version number. The canonical current version of
+each package is its `package.json` (when it has one) and its changelog:
+
+- `@dataemergencia/emergency`: [`package.json`](../../package.json) and
+  [`CHANGELOG.md`](../../CHANGELOG.md).
+- `dataemergencia/emergency-bff`: the latest `emergency-bff-v*` tag and
+  [`packages/emergency-bff/CHANGELOG.md`](../../../../packages/emergency-bff/CHANGELOG.md).
+  The BFF has no `version` field; the tag is its release marker.
+
+Registries: Packagist for the BFF, npm for the client.
 
 ## Development line (`0.y.z`)
 
-Both packages are still in the `0.y.z` line; `@dataemergencia/emergency` is
-currently `0.9.0`. Semver applies, with the pre-1.0 convention:
+Both packages are still in the `0.y.z` line. Semver applies, with the pre-1.0
+convention:
 
-- **Patch** (`0.9.1`): bug fixes, documentation fixes, no API change.
-- **Minor** (`0.10.0`): new features and potentially breaking changes. Read the
-  changelog before upgrading.
+- **Patch**: bump the last number. Bug fixes, documentation fixes, no API
+  change.
+- **Minor**: bump the middle number and reset the last to zero. New features and
+  potentially breaking changes. Read the changelog before upgrading.
 - **Major** (`1.0.0`): the first public release after general testing. It is not
   reached merely by finishing a feature; publish it once the library leaves
   internal testing and is in use by the public.
@@ -51,8 +58,8 @@ documentation and release-test concern.
 
 | Package                        | Monorepo tag              | Split tag |
 | ------------------------------ | ------------------------- | --------- |
-| `dataemergencia/emergency-bff` | `emergency-bff-v0.1.3`    | `v0.1.3`  |
-| `@dataemergencia/emergency`    | `emergency-client-v0.2.0` | `v0.2.0`  |
+| `dataemergencia/emergency-bff` | `emergency-bff-vX.Y.Z`    | `vX.Y.Z`  |
+| `@dataemergencia/emergency`    | `emergency-client-vX.Y.Z` | `vX.Y.Z`  |
 
 Monorepo tags are project-scoped so several packages can release independently in
 one repository. Split tags stay plain `vX.Y.Z` because each package has its own
